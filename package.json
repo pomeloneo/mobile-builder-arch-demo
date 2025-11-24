@@ -1,34 +1,11 @@
 {
     "name": "mobx-root",
     "private": true,
-    "workspaces": [
-        "packages/*"
-    ],
-    "resolutions": {
-        "jest": "^29.5.0",
-        "typescript": "^5.9.2",
-        "recast": "^0.23.1"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/mobxjs/mobx.git"
-    },
     "scripts": {
-        "test": "jest",
-        "coverage": "jest --coverage",
+        "test": "pnpm -r test",
+        "build": "pnpm -r build",
         "lint": "eslint packages/*/src/**/* --ext .js,.ts,.tsx",
-        "prettier": "prettier --write **/*.{js,ts,md}",
-        "release": "yarn lerna run prepublishOnly && yarn changeset publish",
-        "mobx": "yarn workspace mobx",
-        "mobx-react": "yarn workspace mobx-react",
-        "mobx-react-lite": "yarn workspace mobx-react-lite",
-        "mobx-undecorate": "yarn workspace mobx-undecorate",
-        "eslint-plugin-mobx": "yarn workspace eslint-plugin-mobx",
-        "docs:build": "yarn --cwd website build",
-        "docs:start": "yarn --cwd website start",
-        "docs:publish": "yarn --cwd website publish-gh-pages",
-        "prepare": "yarn dedup && yarn --cwd website install",
-        "dedup": "npx yarn-deduplicate --strategy fewer yarn.lock"
+        "prettier": "prettier --write **/*.{js,ts,md}"
     },
     "devDependencies": {
         "@changesets/changelog-github": "^0.2.7",
@@ -74,6 +51,5 @@
         "hooks": {
             "pre-commit": "pretty-quick --staged"
         }
-    },
-    "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
+    }
 }
