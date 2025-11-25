@@ -114,14 +114,34 @@ body {
 
 .tabs-content {
   padding: 1.5rem;
+  min-height: 600px;
+  /* 确保虚拟滚动容器有足够高度 */
 }
 
 .tab-panel {
   animation: fadeIn 0.3s ease;
+  height: 100%;
 }
 
 .tab-panel.hidden {
   display: none;
+}
+
+/* 容器默认样式 */
+.container-default {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  /* 移除间距，让虚拟滚动控制 */
+}
+
+/* 虚拟列表容器样式 */
+.virtual-list-container {
+  width: 100%;
+}
+
+.virtual-list-item {
+  width: 100%;
 }
 
 @keyframes fadeIn {
@@ -129,6 +149,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -217,6 +238,7 @@ body {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }

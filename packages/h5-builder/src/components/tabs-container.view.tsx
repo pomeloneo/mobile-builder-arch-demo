@@ -24,20 +24,27 @@ export interface TabsContainerViewProps {
 export const TabsContainerView: React.FC<TabsContainerViewProps> = observer(
   (props: TabsContainerViewProps) => {
     const { model, tabTitles = [] } = props;
-
     return (
       <div className="tabs-container">
         {/* Tab 头部 */}
         <div className="tabs-header">
-          {model.children.map((child: any, index: number) => (
-            <button
-              key={child.id}
-              className={`tab-button ${index === model.activeIndex ? 'active' : ''}`}
-              onClick={() => model.switchTab(index)}
-            >
-              {tabTitles[index] || `Tab ${index + 1}`}
-            </button>
-          ))}
+          {model.children.map((child: any, index: number) => {
+            // 获取子组件数量
+            const itemCount = child.children?.length || 0;
+            const isVirtual = model.isVirtualScrollEnabled(index);
+            const defaultTitle = tabTitles[index] || `Tab ${index + 1}`;
+            const title = `${defaultTitle} (${itemCount} items${isVirtual ? ' - Virtual' : ''})`;
+
+            return (
+              <button
+                key={child.id}
+                className={`tab-button ${index === model.activeIndex ? 'active' : ''}`}
+                onClick={() => model.switchTab(index)}
+              >
+                {title}
+              </button>
+            );
+          })}
         </div>
 
         {/* Tab 内容 */}
@@ -45,6 +52,8 @@ export const TabsContainerView: React.FC<TabsContainerViewProps> = observer(
           {model.children.map((child: any, index: number) => {
             const isActive = index === model.activeIndex;
             const virtualList = model.getVirtualList(index);
+
+            console.log(`[TabsContainerView] Rendering tab ${index}, active: ${isActive}, virtual: ${!!virtualList}, child:`, child.constructor.name);
 
             return (
               <div

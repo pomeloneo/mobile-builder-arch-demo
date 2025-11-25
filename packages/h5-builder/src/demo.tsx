@@ -9,6 +9,7 @@ import { JobScheduler, JobPriority } from './flow/scheduler';
 import { ComponentLoader, ComponentSchema } from './flow/component-loader';
 import { ProductCardModel } from './components/product-card.model';
 import { TabsContainerModel } from './components/tabs-container.model';
+import { SimpleListModel } from './components/simple-list.model';
 import { ModelRenderer } from './components/model-renderer';
 import { BaseComponentModel } from './kernel/model';
 import './demo.css';
@@ -20,13 +21,20 @@ import './demo.css';
 function DemoApp() {
   const [rootModel, setRootModel] = useState<BaseComponentModel | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     // 初始化应用
-    initializeApp().then((model) => {
-      setRootModel(model);
-      setLoading(false);
-    });
+    initializeApp()
+      .then((model) => {
+        setRootModel(model);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('[Demo] Initialization failed:', err);
+        setError(err);
+        setLoading(false);
+      });
 
     // 清理
     return () => {
@@ -40,9 +48,21 @@ function DemoApp() {
     return <div className="app-loading">正在初始化...</div>;
   }
 
+  if (error) {
+    return (
+      <div className="app-error">
+        <h2>初始化失败</h2>
+        <p>{error.message}</p>
+        <pre>{error.stack}</pre>
+      </div>
+    );
+  }
+
   if (!rootModel) {
     return <div className="app-error">初始化失败</div>;
   }
+
+  console.log('[DemoApp] Rendering with rootModel:', rootModel.constructor.name, rootModel.id);
 
   return (
     <div className="app">
@@ -111,39 +131,64 @@ async function initializeApp(): Promise<BaseComponentModel> {
   loader.registerAll({
     ProductCard: ProductCardModel,
     TabsContainer: TabsContainerModel,
+    ProductList: SimpleListModel, // 简单容器，用于包含商品列表
   });
 
-  // 5. 定义 Schema
+  // 5. 定义 Schema - 展示自动虚拟滚动
   const schema: ComponentSchema = {
     type: 'TabsContainer',
     id: 'main-tabs',
     props: {
       defaultIndex: 0,
+      // 自定义虚拟滚动配置
+      virtualScroll: {
+        threshold: 15,        // 超过 15 个就启用虚拟滚动
+        itemHeight: 120,      // 每项高度
+        containerHeight: 600, // 容器高度
+      },
     },
     children: [
+      // Tab 1: 少量商品（不会启用虚拟滚动）
       {
-        type: 'ProductCard',
-        id: 'product-1',
-        props: {
-          productId: 1,
-          showPrice: true,
-        },
+        type: 'ProductList',
+        id: 'tab-1-list',
+        props: {},
+        children: Array.from({ length: 10 }, (_, i) => ({
+          type: 'ProductCard',
+          id: `tab1-product-${i}`,
+          props: {
+            productId: i + 1,
+            showPrice: true,
+          },
+        })),
       },
+      // Tab 2: 大量商品（会自动启用虚拟滚动）
       {
-        type: 'ProductCard',
-        id: 'product-2',
-        props: {
-          productId: 2,
-          showPrice: true,
-        },
+        type: 'ProductList',
+        id: 'tab-2-list',
+        props: {},
+        children: Array.from({ length: 50 }, (_, i) => ({
+          type: 'ProductCard',
+          id: `tab2-product-${i}`,
+          props: {
+            productId: i + 100,
+            showPrice: true,
+          },
+        })),
       },
+      // Tab 3: 超大量商品（会自动启用虚拟滚动）
       {
-        type: 'ProductCard',
-        id: 'product-3',
-        props: {
-          productId: 3,
-          showPrice: false,
-        },
+        type: 'ProductList',
+        id: 'tab-3-list',
+        props: {},
+        children: Array.from({ length: 100 }, (_, i) => ({
+          type: 'ProductCard',
+          id: `tab3-product-${i}`,
+          props: {
+            productId: i + 1000,
+            showPrice: i % 2 === 0, // 一半显示价格
+          },
+        })),
       },
     ],
   };
@@ -168,6 +213,7 @@ async function initializeApp(): Promise<BaseComponentModel> {
   await scheduler.run();
 
   console.log('[Demo] App initialized successfully');
+  console.log('[Demo] Check console for virtual scroll status');
 
   return rootModel;
 }
