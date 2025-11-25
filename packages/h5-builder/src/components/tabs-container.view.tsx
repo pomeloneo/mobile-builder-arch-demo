@@ -2,6 +2,8 @@ import React from 'react';
 import { observer } from 'mobx-vue-lite';
 import { TabsContainerModel } from './tabs-container.model';
 import { ModelRenderer } from './model-renderer';
+import { VirtualListView } from './virtual-list.view';
+import { BaseContainerModel } from '../kernel/model';
 
 /**
  * Tabs 容器 View Props
@@ -14,6 +16,10 @@ export interface TabsContainerViewProps {
 /**
  * Tabs 容器 View
  * 展示如何渲染子组件、处理 Tab 切换
+ * 
+ * 新增功能：自动适配虚拟滚动
+ * - 如果 Tab 启用了虚拟滚动，自动使用 VirtualListView
+ * - 否则使用普通的 ModelRenderer
  */
 export const TabsContainerView: React.FC<TabsContainerViewProps> = observer(
   (props: TabsContainerViewProps) => {
@@ -36,15 +42,30 @@ export const TabsContainerView: React.FC<TabsContainerViewProps> = observer(
 
         {/* Tab 内容 */}
         <div className="tabs-content">
-          {model.children.map((child: any, index: number) => (
-            <div
-              key={child.id}
-              className={`tab-panel ${index === model.activeIndex ? 'active' : 'hidden'}`}
-            >
-              {/* 使用 ModelRenderer 递归渲染子组件 */}
-              <ModelRenderer model={child} />
-            </div>
-          ))}
+          {model.children.map((child: any, index: number) => {
+            const isActive = index === model.activeIndex;
+            const virtualList = model.getVirtualList(index);
+
+            return (
+              <div
+                key={child.id}
+                className={`tab-panel ${isActive ? 'active' : 'hidden'}`}
+              >
+                {virtualList ? (
+                  // 使用虚拟滚动渲染
+                  <VirtualListView
+                    model={virtualList}
+                    renderItem={(itemModel: any) => (
+                      <ModelRenderer model={itemModel} />
+                    )}
+                  />
+                ) : (
+                  // 普通渲染
+                  <ModelRenderer model={child} />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
