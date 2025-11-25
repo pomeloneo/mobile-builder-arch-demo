@@ -128,7 +128,7 @@ export class PageContextService {
   /**
    * 检测环境
    */
-  detectEnv(): Partial<EnvInfo> {
+  detectEnv(): EnvInfo {
     const ua = navigator.userAgent;
     let platform: 'ios' | 'android' | 'web' = 'web';
 

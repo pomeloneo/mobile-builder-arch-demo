@@ -43,3 +43,28 @@ export {
   EmptyPlaceholderModel,
 } from './flow';
 
+// Components exports
+export type {
+  ProductData,
+  ProductCardProps,
+  ProductCardViewProps,
+  TabsContainerProps,
+  TabsContainerViewProps,
+  ModelRendererProps,
+  VirtualListProps,
+  VirtualListViewProps,
+} from './components';
+
+
+export {
+  ProductCardModel,
+  ProductCardView,
+  TabsContainerModel,
+  TabsContainerView,
+  ModelRenderer,
+  registerModelView,
+  registerModelViews,
+  VirtualListModel,
+  VirtualListView,
+} from './components';
+
