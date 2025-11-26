@@ -696,11 +696,8 @@ export class ComponentLoader {
       const modelTree = this.buildModelTree(schema);
       console.log('[ComponentLoader] Model tree built');
 
-      // 4. 并行: 初始化 Model Tree (数据拉取) + 等待 View 加载完成
-      await Promise.all([
-        modelTree.init(),  // 数据拉取
-        viewsReady,        // View 加载
-      ]);
+      // 4. 等待 View 加载完成（不初始化数据，由外层控制）
+      await viewsReady;
 
       console.log('[ComponentLoader] Split loading completed');
       return modelTree;

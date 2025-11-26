@@ -77,7 +77,7 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
     }
 
     this.isActive = true;
-    console.log(`[Model:${this.id}] Activated`);
+    // console.log(`[Model:${this.id}] Activated`);
     this.onActive();
   }
 
@@ -198,27 +198,14 @@ export abstract class BaseContainerModel<P = any, C extends BaseComponentModel =
   /**
    * 默认初始化：初始化所有子组件
    * 子类可以覆写此方法来实现自定义逻辑（例如懒加载、闲时预热等）
-   * 
-   * 🎯 设计原则：触发子组件初始化，但不等待完成（非阻塞）
-   * - 外层通过 await rootModel.init() 可以等待所有初始化完成（阻塞式）
-   * - 或者不 await，让初始化在后台运行（渐进式）
    */
   protected async onInit(): Promise<void> {
-    const startTime = performance.now();
-    console.log(`[BaseContainer:${this.id}] 🚀 Triggering parallel init of ${this.children.length} children`);
+    console.log(`[BaseContainer:${this.id}] Initializing ${this.children.length} children`);
 
-    // 🔥 关键：触发所有子组件初始化，但不 await
-    // 这样 onInit() 立即返回，不阻塞调用者
-    this.children.forEach((child, index) => {
-      console.log(`[BaseContainer:${this.id}] 📦 Triggering init for child ${index}: ${child.id}`);
-      child.init().catch(err => {
-        console.error(`[BaseContainer:${this.id}] Child ${child.id} init failed:`, err);
-      });
-    });
+    // 并行初始化所有子组件
+    await Promise.all(this.children.map(child => child.init()));
 
-    const endTime = performance.now();
-    const duration = endTime - startTime;
-    console.log(`[BaseContainer:${this.id}] ✅ All ${this.children.length} children init triggered in ${duration.toFixed(0)}ms (non-blocking)`);
+    console.log(`[BaseContainer:${this.id}] All children initialized`);
   }
 
   /**

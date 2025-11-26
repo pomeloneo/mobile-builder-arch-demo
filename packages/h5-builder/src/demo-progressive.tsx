@@ -518,6 +518,7 @@ async function initializeProgressiveApp(
 
   // 1. 构建 Model Tree
   scheduler.register('build-tree', JobPriority.Prepare, async () => {
+    console.log('[ProgressiveDemo] 📋 build-tree task started');
     onProgress(null, 'Building Model Tree...');
     const start = performance.now();
 
@@ -525,9 +526,12 @@ async function initializeProgressiveApp(
 
     const duration = (performance.now() - start).toFixed(0);
     console.log(`[ProgressiveDemo] ✅ Tree built in ${duration}ms`);
+    console.log(`[ProgressiveDemo] 🔍 rootModel:`, rootModel ? rootModel.id : 'null');
 
     // 🔥 核心：构建完立即返回 Model，不等待数据加载
+    console.log('[ProgressiveDemo] 📤 Calling onProgress with rootModel...');
     onProgress(rootModel, 'Model Tree Ready (Loading Data...)');
+    console.log('[ProgressiveDemo] ✅ onProgress called');
   });
 
   // 2. 初始化数据（后台运行）
