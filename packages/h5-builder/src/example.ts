@@ -99,7 +99,7 @@ class ProductCardModel extends BaseComponentModel<{ productId: number }> {
 class CountdownModel extends BaseComponentModel<{ endTime: number }> {
   public timeLeft = 0;
 
-  protected onInit(): void {
+  protected async onInit(): Promise<void> {
     this.updateTime();
 
     // 注册定时器到垃圾袋，销毁时自动清理
@@ -139,7 +139,7 @@ class TabsContainerModel extends BaseContainerModel<any, ProductCardModel> {
     super(id, props);
   }
 
-  protected onInit(): void {
+  protected async onInit(): Promise<void> {
     // 创建 3 个 Tab
     for (let i = 0; i < 3; i++) {
       const child = new ProductCardModel(

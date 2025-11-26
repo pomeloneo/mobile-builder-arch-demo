@@ -61,6 +61,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
    * 初始化：只初始化第一个 Tab，并检测是否需要虚拟滚动
    */
   protected async onInit(): Promise<void> {
+    await super.onInit();
     if (this.children.length === 0) {
       console.warn(`[TabsContainer:${this.id}] No children to initialize`);
       return;
