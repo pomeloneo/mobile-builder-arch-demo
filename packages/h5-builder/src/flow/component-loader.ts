@@ -2,6 +2,27 @@ import { Injector } from '../kernel/di';
 import { BaseComponentModel, BaseContainerModel } from '../kernel/model';
 import { TrackerService } from '../modules/tracker.service';
 import { ErrorPlaceholderModel } from './placeholders';
+import { registerModelView } from '../components/model-renderer';
+
+/**
+ * 组件元数据
+ */
+export interface ComponentMetadata {
+  // 加载优先级
+  priority?: 'critical' | 'high' | 'normal' | 'low';
+
+  // 依赖的其他组件
+  dependencies?: string[];
+
+  // 是否预加载
+  preload?: boolean;
+
+  // 加载延迟范围（ms）
+  delayRange?: [number, number];
+
+  // 是否可以延迟加载
+  lazy?: boolean;
+}
 
 /**
  * 组件 Schema 定义
@@ -18,6 +39,9 @@ export interface ComponentSchema {
 
   // 子组件（可选，容器组件才有）
   children?: ComponentSchema[];
+
+  // 元数据（可选）
+  meta?: ComponentMetadata;
 }
 
 /**
@@ -157,21 +181,26 @@ export class ComponentLoader {
     parent: BaseContainerModel,
     childrenSchemas: ComponentSchema[]
   ): void {
-    childrenSchemas.forEach((childSchema) => {
+    console.log(`[ComponentLoader] 🏗️  Building ${childrenSchemas.length} children for ${parent.constructor.name} (id: ${parent.id})`);
+
+    childrenSchemas.forEach((childSchema, index) => {
       try {
         // 递归构建子 Model
         const childModel = this.buildTree(childSchema);
+        console.log(`[ComponentLoader]   ├─ [${index}] Built ${childModel.constructor.name} (id: ${childModel.id})`);
 
         // 添加到父 Model
         parent['addChild'](childModel);
       } catch (error) {
-        console.error('[ComponentLoader] Child build failed:', error);
+        console.error(`[ComponentLoader]   ├─ [${index}] ❌ Child build failed:`, error);
 
         // 创建错误占位组件
         const placeholder = this.createErrorPlaceholder(childSchema, error as Error);
         parent['addChild'](placeholder);
       }
     });
+
+    console.log(`[ComponentLoader] ✅ Finished building children for ${parent.constructor.name}, total: ${childrenSchemas.length}`);
   }
 
   /**
@@ -222,4 +251,257 @@ export class ComponentLoader {
       types: this.registry.getRegisteredTypes(),
     };
   }
+
+  // ========== 异步加载支持 ==========
+
+  // 异步加载器
+  private asyncLoaders = new Map<
+    string,
+    () => Promise<{ Model: any; View: any }>
+  >();
+
+  // 组件元数据
+  private metadata = new Map<string, ComponentMetadata>();
+
+  // 加载策略
+  private strategies: any[] = [];
+
+  /**
+   * 注册异步组件
+   */
+  registerAsync(
+    componentName: string,
+    loader: () => Promise<{ Model: any; View: any }>,
+    metadata?: ComponentMetadata
+  ): void {
+    this.asyncLoaders.set(componentName, loader);
+
+    if (metadata) {
+      this.metadata.set(componentName, metadata);
+    }
+  }
+
+  /**
+   * 批量注册异步组件
+   */
+  registerAsyncBatch(
+    components: Record<
+      string,
+      {
+        loader: () => Promise<{ Model: any; View: any }>;
+        metadata?: ComponentMetadata;
+      }
+    >
+  ): void {
+    for (const [name, config] of Object.entries(components)) {
+      this.registerAsync(name, config.loader, config.metadata);
+    }
+  }
+
+  /**
+   * 添加加载策略
+   */
+  addStrategy(strategy: any): void {
+    this.strategies.push(strategy);
+  }
+
+  /**
+   * 预加载组件
+   */
+  async preload(componentNames: string[]): Promise<void> {
+    await Promise.all(
+      componentNames.map(name => this.loadComponent(name))
+    );
+  }
+
+  /**
+   * 构建组件树（异步版本）
+   */
+  async buildTreeAsync(
+    schema: ComponentSchema,
+    context?: any
+  ): Promise<BaseComponentModel> {
+    try {
+      // 1. 收集所有需要加载的组件
+      const componentsToLoad = this.collectComponents(schema);
+
+      // 2. 去重：只保留唯一的组件类型
+      const uniqueTypes = new Map<string, { type: string; schema: ComponentSchema }>();
+      for (const comp of componentsToLoad) {
+        if (!uniqueTypes.has(comp.type)) {
+          uniqueTypes.set(comp.type, comp);
+        }
+      }
+
+      // 3. 应用加载策略（可选 - 暂时禁用以确保所有组件都被加载）
+      // const filteredComponents = this.applyStrategies(
+      //   Array.from(uniqueTypes.values()),
+      //   context || {}
+      // );
+
+      // 4. 按优先级加载所有唯一的组件类型
+      await this.loadComponentsWithPriority(
+        Array.from(uniqueTypes.values()),
+        context
+      );
+
+      // 5. 构建组件树（使用同步方法）
+      return this.buildTree(schema);
+    } catch (error) {
+      console.error('[ComponentLoader] Build tree async failed:', error);
+      return this.createErrorPlaceholder(schema, error as Error);
+    }
+  }
+
+  /**
+   * 收集所有需要加载的组件
+   */
+  private collectComponents(
+    schema: ComponentSchema,
+    result: Array<{ type: string; schema: ComponentSchema }> = []
+  ): Array<{ type: string; schema: ComponentSchema }> {
+    result.push({ type: schema.type, schema });
+
+    if (schema.children) {
+      for (const child of schema.children) {
+        this.collectComponents(child, result);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * 应用加载策略
+   */
+  private applyStrategies(
+    components: Array<{ type: string; schema: ComponentSchema }>,
+    context: any
+  ) {
+    let filtered = components;
+
+    for (const strategy of this.strategies) {
+      filtered = filtered.filter(comp =>
+        strategy.shouldLoad(comp.schema, context)
+      );
+    }
+
+    return filtered;
+  }
+
+  /**
+   * 按优先级加载组件
+   */
+  private async loadComponentsWithPriority(
+    components: Array<{ type: string; schema: ComponentSchema }>,
+    context?: any
+  ): Promise<void> {
+    // 1. 计算每个组件的优先级
+    const componentsWithPriority = components.map(comp => {
+      const meta = this.getMetadata(comp.type, comp.schema);
+      let priority = this.getPriority(meta);
+
+      // 2. 应用策略调整优先级
+      for (const strategy of this.strategies) {
+        if (strategy.adjustPriority) {
+          priority = strategy.adjustPriority(comp.schema, priority);
+        }
+      }
+
+      return { ...comp, priority };
+    });
+
+    // 3. 按优先级排序
+    componentsWithPriority.sort((a, b) => b.priority - a.priority);
+
+    // 4. 按顺序加载（保持优先级顺序）
+    for (const comp of componentsWithPriority) {
+      await this.loadComponent(comp.type);
+    }
+  }
+
+  /**
+   * 获取组件元数据
+   */
+  private getMetadata(
+    componentName: string,
+    schema?: ComponentSchema
+  ): ComponentMetadata {
+    // 优先使用 schema 中的 meta
+    if (schema?.meta) {
+      return { ...this.metadata.get(componentName), ...schema.meta };
+    }
+
+    return this.metadata.get(componentName) || {};
+  }
+
+  /**
+   * 获取优先级数值
+   */
+  private getPriority(meta: ComponentMetadata): number {
+    const priorityMap = {
+      critical: 1000,
+      high: 100,
+      normal: 10,
+      low: 1,
+    };
+
+    return priorityMap[meta.priority || 'normal'];
+  }
+
+  /**
+   * 加载组件（内部使用）
+   */
+  private async loadComponent(componentName: string): Promise<any> {
+    console.log(`[ComponentLoader] 🔍 Attempting to load: ${componentName}`);
+
+    // 1. 检查缓存
+    if (this.registry.has(componentName)) {
+      console.log(`[ComponentLoader] ✨ ${componentName} already loaded (cached)`);
+      return this.registry.get(componentName);
+    }
+
+    // 2. 获取元数据
+    const meta = this.metadata.get(componentName) || {};
+
+    // 3. 加载依赖
+    if (meta.dependencies) {
+      console.log(`[ComponentLoader] 📦 Loading dependencies for ${componentName}:`, meta.dependencies);
+      await Promise.all(
+        meta.dependencies.map(dep => this.loadComponent(dep))
+      );
+    }
+
+    // 4. 模拟延迟
+    const [minDelay, maxDelay] = meta.delayRange || [300, 1500];
+    const delay = Math.random() * (maxDelay - minDelay) + minDelay;
+
+    console.log(`[ComponentLoader] 🔄 Loading ${componentName}...`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    // 5. 动态 import
+    const loader = this.asyncLoaders.get(componentName);
+    if (!loader) {
+      console.error(`[ComponentLoader] ❌ No loader found for ${componentName}`);
+      throw new Error(`Component ${componentName} not registered`);
+    }
+
+    const { Model, View } = await loader();
+    console.log(`[ComponentLoader] 📥 Imported ${componentName}:`, { Model: Model.name, View: View?.name || 'null' });
+
+    // 6. 注册 Model
+    this.registry.register(componentName, Model);
+    console.log(`[ComponentLoader] 📝 Registered Model for ${componentName}`);
+
+    // 7. 注册 View
+    registerModelView(Model, View);
+    console.log(`[ComponentLoader] 📝 Registered View for ${componentName}`);
+
+    console.log(
+      `[ComponentLoader] ✅ Loaded ${componentName} in ${delay.toFixed(0)}ms`
+    );
+
+    return Model;
+  }
 }
+
