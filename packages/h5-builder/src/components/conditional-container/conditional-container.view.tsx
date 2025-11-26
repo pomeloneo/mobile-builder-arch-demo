@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-vue-lite';
 import { ConditionalContainerModel } from './conditional-container.model';
-import { ModelRenderer } from './model-renderer';
+import { ModelRenderer } from '../model-renderer';
 
 export interface ConditionalContainerViewProps {
   model: ConditionalContainerModel;

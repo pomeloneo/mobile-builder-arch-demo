@@ -7,22 +7,25 @@ import { TrackerService } from './modules/tracker.service';
 import { PageContextService } from './modules/context.service';
 import { JobScheduler, JobPriority } from './flow/scheduler';
 import { ComponentLoader, ComponentSchema } from './flow/component-loader';
-import { ProductCardModel } from './components/product-card.model';
-import { TabsContainerModel } from './components/tabs-container.model';
-import { SimpleListModel } from './components/simple-list.model';
-import { TextCardModel } from './components/text-card.model';
-import { ExperimentContainerModel } from './components/experiment-container.model';
-import { TimeBasedContainerModel } from './components/time-based-container.model';
-import { GridLayoutContainerModel } from './components/grid-layout-container.model';
-import { ConditionalContainerModel } from './components/conditional-container.model';
-import { ModelRenderer, registerModelView } from './components/model-renderer';
-import { ProductCardView } from './components/product-card.view';
-import { TabsContainerView } from './components/tabs-container.view';
-import { TextCardView } from './components/text-card.view';
-import { ExperimentContainerView } from './components/experiment-container.view';
-import { TimeBasedContainerView } from './components/time-based-container.view';
-import { GridLayoutContainerView } from './components/grid-layout-container.view';
-import { ConditionalContainerView } from './components/conditional-container.view';
+import {
+  ProductCardModel,
+  TabsContainerModel,
+  SimpleListModel,
+  TextCardModel,
+  ExperimentContainerModel,
+  TimeBasedContainerModel,
+  GridLayoutContainerModel,
+  ConditionalContainerModel,
+  ModelRenderer,
+  registerModelView,
+  ProductCardView,
+  TabsContainerView,
+  TextCardView,
+  ExperimentContainerView,
+  TimeBasedContainerView,
+  GridLayoutContainerView,
+  ConditionalContainerView,
+} from './components';
 import { BaseComponentModel } from './kernel/model';
 import './demo.css';
 

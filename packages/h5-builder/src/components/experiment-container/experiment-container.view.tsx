@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-vue-lite';
 import { ExperimentContainerModel } from './experiment-container.model';
-import { ModelRenderer } from './model-renderer';
+import { ModelRenderer } from '../model-renderer';
 
 export interface ExperimentContainerViewProps {
   model: ExperimentContainerModel;

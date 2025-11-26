@@ -36,7 +36,7 @@ export const ProductCardView: React.FC<ProductCardViewProps> = observer((props: 
     return (
       <div className="product-card error">
         <p>加载失败: {model.error.message}</p>
-        <button onClick={() => model.init()}>重试</button>
+        <button onClick={() => model.refresh()}>重试</button>
       </div>
     );
   }

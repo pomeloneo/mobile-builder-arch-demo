@@ -7,7 +7,7 @@ import { TrackerService } from './modules/tracker.service';
 import { PageContextService } from './modules/context.service';
 import { JobScheduler, JobPriority } from './flow/scheduler';
 import { ComponentLoader, ComponentSchema } from './flow/component-loader';
-import { ModelRenderer } from './components/model-renderer';
+import { ModelRenderer } from './components';
 import { BaseComponentModel } from './kernel/model';
 import './demo.css';
 
@@ -549,7 +549,7 @@ async function initializeApp(): Promise<BaseComponentModel> {
     ProductList: {
       loader: () => import('./components/simple-list').then(m => ({
         Model: m.SimpleListModel,
-        View: undefined as any, // 设置为 undefined，使用 ModelRenderer 的默认容器渲染
+        View: m.SimpleListView,
       })),
       metadata: {
         priority: 'high',
@@ -599,15 +599,15 @@ async function initializeApp(): Promise<BaseComponentModel> {
     },
   });
 
-  // 5. 添加 Tab 感知加载策略（暂时禁用以调试）
-  // const { TabAwareStrategy } = await import('./flow/tab-aware-strategy');
+  // 5. 添加 Tab 感知加载策略
+  const { TabAwareStrategy } = await import('./flow/tab-aware-strategy');
 
-  // loader.addStrategy(
-  //   new TabAwareStrategy(0, {
-  //     preloadNextTab: true,      // 预加载下一个 Tab
-  //     lazyLoadOtherTabs: false,  // 演示模式：加载所有 Tab
-  //   })
-  // );
+  loader.addStrategy(
+    new TabAwareStrategy(0, {
+      preloadNextTab: true,      // 预加载下一个 Tab
+      lazyLoadOtherTabs: false,  // 演示模式：加载所有 Tab
+    })
+  );
 
   console.log('[Demo-Async] 🚀 Building component tree with async loading...');
 

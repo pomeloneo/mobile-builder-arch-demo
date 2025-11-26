@@ -1,4 +1,4 @@
-import { BaseContainerModel } from '../kernel/model';
+import { BaseContainerModel } from '../../kernel/model';
 
 /**
  * 时间段容器 Props

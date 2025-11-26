@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-vue-lite';
 import { GridLayoutContainerModel } from './grid-layout-container.model';
-import { ModelRenderer } from './model-renderer';
+import { ModelRenderer } from '../model-renderer';
 
 export interface GridLayoutContainerViewProps {
   model: GridLayoutContainerModel;

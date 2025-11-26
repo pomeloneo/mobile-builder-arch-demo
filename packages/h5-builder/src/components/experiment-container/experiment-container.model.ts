@@ -1,6 +1,6 @@
-import { BaseContainerModel } from '../kernel/model';
-import { Inject } from '../kernel/di';
-import { HttpService } from '../modules/http.service';
+import { BaseContainerModel } from '../../kernel/model';
+import { Inject } from '../../kernel/di';
+import { HttpService } from '../../modules/http.service';
 
 /**
  * 实验容器 Props

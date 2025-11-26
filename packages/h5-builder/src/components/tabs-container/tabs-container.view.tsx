@@ -1,9 +1,9 @@
 import React from 'react';
 import { observer } from 'mobx-vue-lite';
 import { TabsContainerModel } from './tabs-container.model';
-import { ModelRenderer } from './model-renderer';
-import { VirtualListView } from './virtual-list.view';
-import { BaseContainerModel } from '../kernel/model';
+import { ModelRenderer } from '../model-renderer';
+import { VirtualListView } from '../virtual-list/virtual-list.view';
+
 
 /**
  * Tabs 容器 View Props

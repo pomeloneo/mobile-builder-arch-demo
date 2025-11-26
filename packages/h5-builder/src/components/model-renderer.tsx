@@ -1,9 +1,7 @@
 import React from 'react';
 import { BaseComponentModel, BaseContainerModel } from '../kernel/model';
-import { ProductCardModel } from './product-card.model';
-import { ProductCardView } from './product-card.view';
-import { TabsContainerModel } from './tabs-container.model';
-import { TabsContainerView } from './tabs-container.view';
+import { ProductCardModel, ProductCardView } from './product-card';
+import { TabsContainerModel, TabsContainerView } from './tabs-container';
 import { ErrorPlaceholderModel, LoadingPlaceholderModel, EmptyPlaceholderModel } from '../flow/placeholders';
 
 /**

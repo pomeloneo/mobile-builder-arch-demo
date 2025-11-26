@@ -1,7 +1,7 @@
-import { BaseComponentModel } from '../kernel/model';
-import { Inject } from '../kernel/di';
-import { HttpService } from '../modules/http.service';
-import { TrackerService } from '../modules/tracker.service';
+import { BaseComponentModel } from '../../kernel/model';
+import { Inject } from '../../kernel/di';
+import { HttpService } from '../../modules/http.service';
+import { TrackerService } from '../../modules/tracker.service';
 
 /**
  * 商品数据
@@ -28,9 +28,7 @@ export interface ProductCardProps {
  */
 export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
   // 响应式状态
-  public loading = false;
-  public error: Error | null = null;
-  public data: ProductData | null = null;
+  // data, loading, error 已在基类定义
 
   constructor(
     id: string,
@@ -45,7 +43,7 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
    * 初始化：加载商品数据
    */
   protected async onInit(): Promise<void> {
-    await this.loadData();
+    await this.refresh();
   }
 
   /**
@@ -61,31 +59,32 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
   }
 
   /**
-   * 加载商品数据
+   * 获取数据
    */
-  private async loadData(): Promise<void> {
-    this.loading = true;
-    this.error = null;
+  async fetchData(): Promise<void> {
+    // 模拟 API 请求延迟
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    try {
-      this.data = await this.http.get<ProductData>(
-        `/api/product/${this.props.productId}`
-      );
+    // 模拟 API 响应
+    const mockData: ProductData = {
+      id: this.props.productId,
+      name: `商品 ${this.props.productId}`,
+      price: Math.floor(Math.random() * 10000) / 100,
+      image: `https://p16-oec-general-useast5.ttcdn-us.com/tos-useast5-i-omjb5zjo8w-tx/ba781dbf25134621b7b05b7919cacee8~tplv-fhlh96nyum-crop-webp:360:360.webp?dr=12190&from=1578644683&idc=useast5&ps=933b5bde&shcp=b4b98b7c&shp=5e1834cb&t=555f072d`,
+      description: '这是一个模拟的商品描述，展示了异步数据加载的能力。',
+    };
 
-      this.tracker.track('PRODUCT_LOADED', {
-        productId: this.props.productId,
-        productName: this.data.name,
-      });
-    } catch (error) {
-      this.error = error as Error;
+    // 模拟随机错误
+    // if (Math.random() < 0.1) {
+    //   throw new Error('模拟的网络错误');
+    // }
 
-      this.tracker.track('PRODUCT_LOAD_ERROR', {
-        productId: this.props.productId,
-        error: (error as Error).message,
-      });
-    } finally {
-      this.loading = false;
-    }
+    this.data = mockData;
+
+    this.tracker.track('PRODUCT_LOADED', {
+      productId: this.props.productId,
+      productName: this.data.name,
+    });
   }
 
   /**

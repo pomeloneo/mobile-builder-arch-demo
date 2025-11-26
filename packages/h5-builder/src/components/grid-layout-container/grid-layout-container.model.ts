@@ -1,4 +1,4 @@
-import { BaseContainerModel } from '../kernel/model';
+import { BaseContainerModel } from '../../kernel/model';
 
 /**
  * 网格布局容器 Props

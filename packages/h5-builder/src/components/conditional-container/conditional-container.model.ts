@@ -1,4 +1,4 @@
-import { BaseContainerModel } from '../kernel/model';
+import { BaseContainerModel } from '../../kernel/model';
 
 /**
  * 条件渲染容器 Props

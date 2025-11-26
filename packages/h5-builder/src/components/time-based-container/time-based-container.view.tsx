@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-vue-lite';
 import { TimeBasedContainerModel } from './time-based-container.model';
-import { ModelRenderer } from './model-renderer';
+import { ModelRenderer } from '../model-renderer';
 
 export interface TimeBasedContainerViewProps {
   model: TimeBasedContainerModel;

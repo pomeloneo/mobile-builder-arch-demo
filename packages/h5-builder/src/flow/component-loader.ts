@@ -181,26 +181,21 @@ export class ComponentLoader {
     parent: BaseContainerModel,
     childrenSchemas: ComponentSchema[]
   ): void {
-    console.log(`[ComponentLoader] 🏗️  Building ${childrenSchemas.length} children for ${parent.constructor.name} (id: ${parent.id})`);
-
-    childrenSchemas.forEach((childSchema, index) => {
+    childrenSchemas.forEach((childSchema) => {
       try {
         // 递归构建子 Model
         const childModel = this.buildTree(childSchema);
-        console.log(`[ComponentLoader]   ├─ [${index}] Built ${childModel.constructor.name} (id: ${childModel.id})`);
 
         // 添加到父 Model
         parent['addChild'](childModel);
       } catch (error) {
-        console.error(`[ComponentLoader]   ├─ [${index}] ❌ Child build failed:`, error);
+        console.error('[ComponentLoader] Child build failed:', error);
 
         // 创建错误占位组件
         const placeholder = this.createErrorPlaceholder(childSchema, error as Error);
         parent['addChild'](placeholder);
       }
     });
-
-    console.log(`[ComponentLoader] ✅ Finished building children for ${parent.constructor.name}, total: ${childrenSchemas.length}`);
   }
 
   /**
@@ -453,11 +448,8 @@ export class ComponentLoader {
    * 加载组件（内部使用）
    */
   private async loadComponent(componentName: string): Promise<any> {
-    console.log(`[ComponentLoader] 🔍 Attempting to load: ${componentName}`);
-
     // 1. 检查缓存
     if (this.registry.has(componentName)) {
-      console.log(`[ComponentLoader] ✨ ${componentName} already loaded (cached)`);
       return this.registry.get(componentName);
     }
 
@@ -466,7 +458,6 @@ export class ComponentLoader {
 
     // 3. 加载依赖
     if (meta.dependencies) {
-      console.log(`[ComponentLoader] 📦 Loading dependencies for ${componentName}:`, meta.dependencies);
       await Promise.all(
         meta.dependencies.map(dep => this.loadComponent(dep))
       );
@@ -476,32 +467,27 @@ export class ComponentLoader {
     const [minDelay, maxDelay] = meta.delayRange || [300, 1500];
     const delay = Math.random() * (maxDelay - minDelay) + minDelay;
 
-    console.log(`[ComponentLoader] 🔄 Loading ${componentName}...`);
+    // console.log(`[ComponentLoader] 🔄 Loading ${componentName}...`);
     await new Promise(resolve => setTimeout(resolve, delay));
 
     // 5. 动态 import
     const loader = this.asyncLoaders.get(componentName);
     if (!loader) {
-      console.error(`[ComponentLoader] ❌ No loader found for ${componentName}`);
       throw new Error(`Component ${componentName} not registered`);
     }
 
     const { Model, View } = await loader();
-    console.log(`[ComponentLoader] 📥 Imported ${componentName}:`, { Model: Model.name, View: View?.name || 'null' });
 
     // 6. 注册 Model
     this.registry.register(componentName, Model);
-    console.log(`[ComponentLoader] 📝 Registered Model for ${componentName}`);
 
     // 7. 注册 View
     registerModelView(Model, View);
-    console.log(`[ComponentLoader] 📝 Registered View for ${componentName}`);
 
-    console.log(
-      `[ComponentLoader] ✅ Loaded ${componentName} in ${delay.toFixed(0)}ms`
-    );
+    // console.log(
+    //   `[ComponentLoader] ✅ Loaded ${componentName} in ${delay.toFixed(0)}ms`
+    // );
 
     return Model;
   }
 }
-

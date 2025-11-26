@@ -15,6 +15,11 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
   public isInited = false;
   public isActive = false;
 
+  // 数据获取相关状态（响应式）
+  public data: any = null;
+  public loading = false;
+  public error: Error | null = null;
+
   constructor(public id: string, public props: P) {
     // 使用 mobx-vue-lite 的 observable 使整个对象响应式
     return observable(this) as this;
@@ -87,6 +92,30 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
     this.isActive = false;
     console.log(`[Model:${this.id}] Deactivated`);
     this.onInactive();
+  }
+
+  /**
+   * 获取数据
+   * 子类可以覆写此方法来实现具体的数据获取逻辑
+   */
+  async fetchData(): Promise<void> {
+    // 默认空实现
+  }
+
+  /**
+   * 刷新数据
+   */
+  async refresh(): Promise<void> {
+    this.loading = true;
+    this.error = null;
+    try {
+      await this.fetchData();
+    } catch (err) {
+      this.error = err as Error;
+      console.error(`[Model:${this.id}] Fetch data failed:`, err);
+    } finally {
+      this.loading = false;
+    }
   }
 
   // ===== 生命周期钩子（子类覆写） =====
