@@ -50,7 +50,7 @@ export interface ModelRendererProps {
  * 根据 Model 类型渲染对应的 View
  */
 export const ModelRenderer: React.FC<ModelRendererProps> = ({ model }) => {
-  console.log(`[ModelRenderer] Rendering model:`, model.constructor.name, model.id);
+  // console.log(`[ModelRenderer] Rendering model:`, model.constructor.name, model.id);
 
   // 查找对应的 View 组件
   const ViewComponent = modelViewMap.get(model.constructor);

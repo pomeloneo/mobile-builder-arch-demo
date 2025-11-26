@@ -60,7 +60,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
   /**
    * 初始化：只初始化第一个 Tab，并检测是否需要虚拟滚动
    */
-  protected onInit(): void {
+  protected async onInit(): Promise<void> {
     if (this.children.length === 0) {
       console.warn(`[TabsContainer:${this.id}] No children to initialize`);
       return;
@@ -72,7 +72,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
     // 只初始化第一个 Tab
     const firstTab = this.children[this.activeIndex];
     if (firstTab) {
-      firstTab.init();
+      await firstTab.init();
       firstTab.activate();
     }
 
@@ -123,9 +123,9 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
    * 为指定 Tab 启用虚拟滚动
    */
   private enableVirtualScrollForTab(tab: BaseContainerModel, index: number): void {
-    // 创建虚拟列表
+    // 创建虚拟列表（使用动态高度模式）
     const virtualList = new VirtualListModel(`${this.id}-tab-${index}-virtual`, {
-      itemHeight: this.ITEM_HEIGHT,
+      estimatedItemHeight: this.ITEM_HEIGHT, // 使用估算高度，而不是固定高度
       containerHeight: this.CONTAINER_HEIGHT,
       overscan: this.OVERSCAN,
     });

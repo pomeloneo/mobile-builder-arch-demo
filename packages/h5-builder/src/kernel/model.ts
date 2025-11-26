@@ -125,6 +125,13 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
 /**
  * 容器 Model 基类
  * 用于包含子 Model 的容器组件（如 Tabs, List 等）
+ * 
+ * 默认行为：
+ * - onInit: 自动初始化所有子组件
+ * - onActive: 自动激活所有子组件
+ * - onInactive: 自动停用所有子组件
+ * 
+ * 子类可以覆写这些方法来实现自定义逻辑（记得调用 super）
  */
 export abstract class BaseContainerModel<P = any, C extends BaseComponentModel = BaseComponentModel>
   extends BaseComponentModel<P> {
@@ -156,6 +163,47 @@ export abstract class BaseContainerModel<P = any, C extends BaseComponentModel =
   protected clearChildren(): void {
     this.children.forEach((child) => child.dispose());
     this.children = [];
+  }
+
+  /**
+   * 默认初始化：初始化所有子组件
+   * 子类可以覆写此方法来实现自定义逻辑（例如懒加载、闲时预热等）
+   */
+  protected async onInit(): Promise<void> {
+    console.log(`[BaseContainer:${this.id}] Initializing ${this.children.length} children`);
+
+    // 默认初始化所有子组件
+    for (const child of this.children) {
+      await child.init();
+    }
+
+    console.log(`[BaseContainer:${this.id}] All children initialized`);
+  }
+
+  /**
+   * 默认激活：激活所有子组件
+   * 子类可以覆写此方法来实现自定义逻辑（例如只激活当前 Tab）
+   */
+  protected onActive(): void {
+    console.log(`[BaseContainer:${this.id}] Activating ${this.children.length} children`);
+
+    // 默认激活所有子组件
+    for (const child of this.children) {
+      child.activate();
+    }
+  }
+
+  /**
+   * 默认停用：停用所有子组件
+   * 子类可以覆写此方法来实现自定义逻辑
+   */
+  protected onInactive(): void {
+    console.log(`[BaseContainer:${this.id}] Deactivating ${this.children.length} children`);
+
+    // 默认停用所有子组件
+    for (const child of this.children) {
+      child.deactivate();
+    }
   }
 
   protected override onDestroy(): void {

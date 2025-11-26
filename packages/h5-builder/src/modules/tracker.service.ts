@@ -84,7 +84,7 @@ export class TrackerService implements IDisposable {
    * Debug 模式埋点
    */
   private async debugTrack(trackEvent: TrackEvent): Promise<void> {
-    console.log(`[Tracker] ${trackEvent.event}`, trackEvent.params);
+    // console.log(`[Tracker] ${trackEvent.event}`, trackEvent.params);
 
     try {
       // Toast 提示

@@ -10,7 +10,13 @@ import { ComponentLoader, ComponentSchema } from './flow/component-loader';
 import { ProductCardModel } from './components/product-card.model';
 import { TabsContainerModel } from './components/tabs-container.model';
 import { SimpleListModel } from './components/simple-list.model';
-import { ModelRenderer } from './components/model-renderer';
+import { TextCardModel } from './components/text-card.model';
+import { ExperimentContainerModel } from './components/experiment-container.model';
+import { ModelRenderer, registerModelView } from './components/model-renderer';
+import { ProductCardView } from './components/product-card.view';
+import { TabsContainerView } from './components/tabs-container.view';
+import { TextCardView } from './components/text-card.view';
+import { ExperimentContainerView } from './components/experiment-container.view';
 import { BaseComponentModel } from './kernel/model';
 import './demo.css';
 
@@ -67,17 +73,13 @@ function DemoApp() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>H5 Builder Demo</h1>
-        <p>展示 Model-View 分离架构</p>
+        <h1>Demo</h1>
+        <p>新架构</p>
       </header>
 
       <main className="app-main">
         <ModelRenderer model={rootModel} />
       </main>
-
-      <footer className="app-footer">
-        <p>Powered by H5 Builder Framework</p>
-      </footer>
     </div>
   );
 }
@@ -93,6 +95,81 @@ async function initializeApp(): Promise<BaseComponentModel> {
 
   // 2. 创建并注册服务
   const bridge = new BridgeService(true); // Debug 模式
+
+  // 🎨 改进 Mock 数据生成 - 支持多种类型的请求
+  const productNames = [
+    'iPhone 15 Pro Max', 'MacBook Pro 16"', 'AirPods Pro', 'iPad Air', 'Apple Watch Ultra',
+    'Sony WH-1000XM5', 'Nintendo Switch', 'PlayStation 5', 'Xbox Series X', 'Steam Deck',
+    'Canon EOS R5', 'DJI Mini 3 Pro', 'GoPro Hero 11', 'Kindle Oasis', 'Bose QuietComfort',
+    '戴森吹风机', '小米扫地机器人', '华为 Mate 60 Pro', 'OPPO Find X6', 'vivo X90 Pro',
+    '联想拯救者 Y9000P', '华硕 ROG 幻 16', '雷蛇灵刃 14', '微星绝影 GS66', '外星人 M15',
+    '罗技 MX Master 3S', 'Keychron K8', 'HHKB Professional', '索尼 A7M4', '富士 X-T5',
+  ];
+
+  const productCategories = [
+    '手机数码', '电脑办公', '智能穿戴', '影音娱乐', '摄影摄像',
+    '游戏设备', '智能家居', '运动户外', '键鼠外设', '专业设备',
+  ];
+
+  const productDescriptions = [
+    '全新升级，性能强劲，体验卓越',
+    '精工细作，品质保证，值得信赖',
+    '创新科技，引领潮流，彰显品味',
+    '轻薄便携，续航持久，随行无忧',
+    '专业级性能，满足你的所有需求',
+    '时尚设计，精致工艺，尽显优雅',
+    '智能体验，便捷生活，触手可及',
+    '高清画质，震撼音效，沉浸体验',
+    '人体工学设计，舒适握持，久用不累',
+    '旗舰配置，极致性能，畅快体验',
+  ];
+
+  const textContents = [
+    '这是一段简短的文本内容。',
+    '这是一段中等长度的文本内容，包含了更多的信息和细节描述。',
+    '这是一段较长的文本内容，包含了非常详细的信息描述，可以用来测试不同高度的组件在虚拟滚动中的表现。我们需要确保虚拟滚动能够正确处理各种高度的组件。',
+    '这是一段非常长的文本内容，包含了大量的详细信息和描述。这段文本可以用来测试组件在不同高度下的渲染效果，以及虚拟滚动在处理大量不同高度组件时的性能表现。我们希望通过这个测试来验证虚拟滚动的稳定性和可靠性。',
+  ];
+
+  // 覆盖 bridge.call 方法，实现智能 Mock
+  const originalCall = bridge.call.bind(bridge);
+  bridge.call = async function <T>(method: string, params: any): Promise<T> {
+    // 拦截商品请求
+    if (method === 'fetch' && params.url?.includes('/api/product/')) {
+      const productId = parseInt(params.url.split('/').pop() || '0');
+
+      const nameIndex = productId % productNames.length;
+      const categoryIndex = Math.floor(productId / 10) % productCategories.length;
+      const descIndex = productId % productDescriptions.length;
+
+      const basePrice = 999 + (productId % 50) * 100;
+      const price = basePrice + (productId % 10) * 10 - 50;
+
+      const imageColors = ['667eea', 'f093fb', '4facfe', 'fa709a', '30cfd0', 'a8edea', 'fed6e3', 'c471f5'];
+      const colorIndex = productId % imageColors.length;
+      const image = `https://p16-oec-general-useast5.ttcdn-us.com/tos-useast5-i-omjb5zjo8w-tx/6d9b0fd7d0604e5eae162d25cd935eb2~tplv-fhlh96nyum-crop-webp:720:720.webp?dr=12190&from=1578644683&idc=useast5&ps=933b5bde&shcp=b4b98b7c&shp=5e1834cb&t=555f072d`;
+
+      return {
+        data: {
+          id: productId,
+          name: productNames[nameIndex],
+          price: price,
+          image: image,
+          description: `${productCategories[categoryIndex]} · ${productDescriptions[descIndex]}`,
+          category: productCategories[categoryIndex],
+          stock: 100 + (productId % 500),
+          rating: 4.0 + (productId % 10) / 10,
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+      } as T;
+    }
+
+    // 其他请求使用原始方法
+    return originalCall(method, params);
+  };
+
   const http = createHttpService(bridge, {
     baseURL: 'https://api.example.com',
   });
@@ -104,20 +181,6 @@ async function initializeApp(): Promise<BaseComponentModel> {
   const context = new PageContextService();
   const scheduler = new JobScheduler();
 
-  // Mock 一些数据
-  bridge.setMockResponse('fetch', {
-    data: {
-      id: 1,
-      name: '测试商品',
-      price: 99.99,
-      image: 'https://via.placeholder.com/200',
-      description: '这是一个测试商品',
-    },
-    status: 200,
-    statusText: 'OK',
-    headers: {},
-  });
-
   globalInjector.registerInstance(BridgeService, bridge);
   globalInjector.registerInstance(HttpService, http);
   globalInjector.registerInstance(TrackerService, tracker);
@@ -127,83 +190,181 @@ async function initializeApp(): Promise<BaseComponentModel> {
   // 3. 创建 ComponentLoader
   const loader = new ComponentLoader(globalInjector, tracker);
 
-  // 4. 注册组件
+  // 4. 注册组件 Model
   loader.registerAll({
     ProductCard: ProductCardModel,
+    TextCard: TextCardModel,
     TabsContainer: TabsContainerModel,
-    ProductList: SimpleListModel, // 简单容器，用于包含商品列表
+    ProductList: SimpleListModel,
+    ExperimentContainer: ExperimentContainerModel,
   });
 
-  // 5. 定义 Schema - 展示自动虚拟滚动
+  // 5. 注册组件 View
+  registerModelView(ProductCardModel, ProductCardView);
+  registerModelView(TextCardModel, TextCardView);
+  registerModelView(TabsContainerModel, TabsContainerView);
+  registerModelView(ExperimentContainerModel, ExperimentContainerView);
+
+  // 6. 定义 Schema - 展示动态高度虚拟滚动 + 嵌套容器
   const schema: ComponentSchema = {
     type: 'TabsContainer',
     id: 'main-tabs',
     props: {
       defaultIndex: 0,
-      // 自定义虚拟滚动配置
+      // 虚拟滚动配置
       virtualScroll: {
-        threshold: 15,        // 超过 15 个就启用虚拟滚动
-        itemHeight: 120,      // 每项高度
-        containerHeight: 600, // 容器高度
+        threshold: 15,             // 超过 15 个就启用虚拟滚动
+        estimatedItemHeight: 120,  // 估算高度（动态高度模式）
+        containerHeight: 600,      // 容器高度
       },
     },
     children: [
-      // Tab 1: 少量商品（不会启用虚拟滚动）
+      // Tab 1: 混合高度组件（文本卡片 + 商品卡片）
       {
         type: 'ProductList',
         id: 'tab-1-list',
         props: {},
-        children: Array.from({ length: 10 }, (_, i) => ({
-          type: 'ProductCard',
-          id: `tab1-product-${i}`,
-          props: {
-            productId: i + 1,
-            showPrice: true,
-          },
-        })),
+        children: Array.from({ length: 20 }, (_, i) => {
+          // 每 3 个商品卡片插入 1-2 个文本卡片
+          if (i % 3 === 0) {
+            const textCards = [];
+            // 随机 1-2 个文本卡片
+            const textCardCount = (i % 2) + 1;
+            for (let j = 0; j < textCardCount; j++) {
+              const lines = ((i + j) % 4) + 1; // 1-4 行
+              textCards.push({
+                type: 'TextCard',
+                id: `tab1-text-${i}-${j}`,
+                props: {
+                  title: `文本卡片 #${i}-${j}`,
+                  content: textContents[(i + j) % textContents.length],
+                  lines: lines,
+                },
+              });
+            }
+            return textCards;
+          }
+          // 商品卡片
+          return {
+            type: 'ProductCard',
+            id: `tab1-product-${i}`,
+            props: {
+              productId: i + 1,
+              showPrice: true,
+            },
+          };
+        }).flat(),
       },
-      // Tab 2: 大量商品（会自动启用虚拟滚动）
+
+      // Tab 2: 嵌套容器 - 实验容器根据实验信息动态渲染
       {
         type: 'ProductList',
         id: 'tab-2-list',
         props: {},
-        children: Array.from({ length: 50 }, (_, i) => ({
-          type: 'ProductCard',
-          id: `tab2-product-${i}`,
-          props: {
-            productId: i + 100,
-            showPrice: true,
-          },
-        })),
+        children: Array.from({ length: 30 }, (_, i) => {
+          // 每 5 个商品插入一个实验容器
+          if (i % 5 === 0) {
+            return {
+              type: 'ExperimentContainer',
+              id: `tab2-experiment-${i}`,
+              props: {
+                experimentKey: `product_card_style_${i}`,
+                variants: {
+                  control: [],    // 对照组：不显示
+                  variant_a: [],  // 实验组 A：显示文本卡片
+                  variant_b: [],  // 实验组 B：显示商品卡片
+                },
+              },
+              // 实验容器的子组件（根据实验分组决定渲染哪些）
+              children: [
+                {
+                  type: 'TextCard',
+                  id: `tab2-experiment-${i}-text`,
+                  props: {
+                    title: `🧪 实验组内容 #${i}`,
+                    content: `这是实验容器内的文本卡片，根据实验分组动态渲染。${textContents[i % textContents.length]}`,
+                    lines: 3,
+                  },
+                },
+                {
+                  type: 'ProductCard',
+                  id: `tab2-experiment-${i}-product`,
+                  props: {
+                    productId: i + 100,
+                    showPrice: true,
+                  },
+                },
+              ],
+            };
+          }
+          // 普通商品卡片
+          return {
+            type: 'ProductCard',
+            id: `tab2-product-${i}`,
+            props: {
+              productId: i + 50,
+              showPrice: true,
+            },
+          };
+        }),
       },
-      // Tab 3: 超大量商品（会自动启用虚拟滚动）
+
+      // Tab 3: 大量混合组件（测试虚拟滚动性能）
       {
         type: 'ProductList',
         id: 'tab-3-list',
         props: {},
-        children: Array.from({ length: 100 }, (_, i) => ({
-          type: 'ProductCard',
-          id: `tab3-product-${i}`,
-          props: {
-            productId: i + 1000,
-            showPrice: i % 2 === 0, // 一半显示价格
-          },
-        })),
+        children: Array.from({ length: 100 }, (_, i) => {
+          const type = i % 4;
+          if (type === 0) {
+            // 短文本卡片
+            return {
+              type: 'TextCard',
+              id: `tab3-text-short-${i}`,
+              props: {
+                title: `短文本 #${i}`,
+                content: textContents[0],
+                lines: 1,
+              },
+            };
+          } else if (type === 1) {
+            // 长文本卡片
+            return {
+              type: 'TextCard',
+              id: `tab3-text-long-${i}`,
+              props: {
+                title: `长文本 #${i}`,
+                content: textContents[3],
+                lines: 5,
+              },
+            };
+          } else {
+            // 商品卡片
+            return {
+              type: 'ProductCard',
+              id: `tab3-product-${i}`,
+              props: {
+                productId: i + 200,
+                showPrice: true,
+              },
+            };
+          }
+        }),
       },
     ],
   };
 
-  // 6. 构建 Model Tree
+  // 7. 构建 Model Tree 并初始化
   const rootModel = loader.buildTree(schema);
 
-  // 7. 使用 JobScheduler 编排启动任务
+  // 8. 使用 JobScheduler 编排启动任务
   scheduler.register('init-context', JobPriority.Start, () => {
     context.setEnvInfo(context.detectEnv());
     context.setRouteInfo(context.parseRouteFromURL());
   });
 
-  scheduler.register('init-root-model', JobPriority.Prepare, () => {
-    rootModel.init();
+  scheduler.register('init-root-model', JobPriority.Prepare, async () => {
+    await rootModel.init();
   });
 
   scheduler.register('activate-root-model', JobPriority.Render, () => {
