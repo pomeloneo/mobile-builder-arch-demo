@@ -63,7 +63,9 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
    * ⚠️ 注意：这里不调用 super.onInit()，因为 BaseContainerModel 会初始化所有子组件
    * 而 TabsContainer 需要懒加载（只初始化当前激活的 Tab）
    * 
-   * 🔥 关键：不 await firstTab.init()，让初始化在后台运行，避免阻塞主线程
+   * 🎯 设计原则：
+   * - 内部正确 await，让 Promise 链完整
+   * - 外层通过是否 await rootModel.init() 来控制阻塞/渐进式
    */
   protected async onInit(): Promise<void> {
     if (this.children.length === 0) {
@@ -74,13 +76,11 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
     // 检测所有 Tab 是否需要虚拟滚动
     this.detectAndEnableVirtualScroll();
 
-    // 🔥 关键修改：不 await，让初始化在后台运行
+    // 初始化第一个 Tab（正确 await，让 Promise 链完整）
     const firstTab = this.children[this.activeIndex];
     if (firstTab) {
-      firstTab.init().then(() => {
-        console.log(`[TabsContainer:${this.id}] First tab initialized, activating...`);
-        firstTab.activate();
-      });
+      await firstTab.init();
+      firstTab.activate();
     }
 
     // 闲时预热其他 Tab

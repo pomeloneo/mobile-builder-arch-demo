@@ -62,10 +62,8 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
    * 获取数据
    */
   async fetchData(): Promise<void> {
-    // 🧪 测试渐进式渲染：每个卡片延迟递增 200ms
-    // 第1个卡片 200ms，第2个 400ms，第3个 600ms...
-    const delay = Math.min(this.props.productId * 200, 5000);
-    console.log(`[ProductCard:${this.id}] Fetching data with ${delay}ms delay...`);
+    // 模拟 API 请求延迟 (500ms - 1500ms)
+    const delay = 500 + Math.random() * 1000;
     await new Promise(resolve => setTimeout(resolve, delay));
 
     // 模拟 API 响应

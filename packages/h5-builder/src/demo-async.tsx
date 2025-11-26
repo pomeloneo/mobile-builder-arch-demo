@@ -566,6 +566,13 @@ async function initializeApp(): Promise<BaseComponentModel> {
     console.log(`[Demo-Async] 📊 Performance: Model-View separation enabled`);
   });
 
+  // 🔥 关键：等待数据加载完成（阻塞式）
+  scheduler.register('init-root-model', JobPriority.Prepare, async () => {
+    console.log('[Demo-Async] 🔄 Initializing root model (blocking mode)...');
+    await rootModel.init();
+    console.log('[Demo-Async] ✅ Root model initialized');
+  });
+
   scheduler.register('activate-root-model', JobPriority.Render, () => {
     rootModel.activate();
   });

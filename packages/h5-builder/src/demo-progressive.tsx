@@ -554,9 +554,11 @@ async function initializeProgressiveApp(
 
   // 启动任务调度
   console.log('[ProgressiveDemo] 🚀 Starting scheduler...');
-  // 这里 await 是为了保证任务按顺序启动，但因为 init-data 现在是立即返回的，
-  // 所以 activate 会立刻执行，UI 会立刻变为 Active 状态
-  await scheduler.run();
+  // 🔥 关键：不 await，让 scheduler 在后台运行
+  // 这样函数立即返回，不阻塞主线程
+  scheduler.run().then(() => {
+    console.log('[ProgressiveDemo] ✅ All tasks completed');
+  });
 }
 
 // 挂载

@@ -21,6 +21,10 @@ export interface ProductCardViewProps {
  */
 export const ProductCardView: React.FC<ProductCardViewProps> = observer((props: ProductCardViewProps) => {
   const { model } = props;
+
+  // 🔍 调试日志
+  console.log(`[ProductCardView:${model.id}] Rendering - loading: ${model.loading}, data: ${!!model.data}`);
+
   // Loading 状态
   if (model.loading) {
     return (
