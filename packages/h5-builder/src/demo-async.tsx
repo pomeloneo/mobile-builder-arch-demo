@@ -452,46 +452,6 @@ async function initializeApp(): Promise<BaseComponentModel> {
   const bridge = new BridgeService(true); // Debug 模式
 
 
-
-  // 覆盖 bridge.call 方法，实现智能 Mock
-  const originalCall = bridge.call.bind(bridge);
-  bridge.call = async function <T>(method: string, params: any): Promise<T> {
-    // 拦截商品请求
-    if (method === 'fetch' && params.url?.includes('/api/product/')) {
-      const productId = parseInt(params.url.split('/').pop() || '0');
-
-      const nameIndex = productId % productNames.length;
-      const categoryIndex = Math.floor(productId / 10) % productCategories.length;
-      const descIndex = productId % productDescriptions.length;
-
-      const basePrice = 999 + (productId % 50) * 100;
-      const price = basePrice + (productId % 10) * 10 - 50;
-
-      const imageColors = ['667eea', 'f093fb', '4facfe', 'fa709a', '30cfd0', 'a8edea', 'fed6e3', 'c471f5'];
-      const colorIndex = productId % imageColors.length;
-      const image = `https://p16-oec-general-useast5.ttcdn-us.com/tos-useast5-i-omjb5zjo8w-tx/6d9b0fd7d0604e5eae162d25cd935eb2~tplv-fhlh96nyum-crop-webp:720:720.webp?dr=12190&from=1578644683&idc=useast5&ps=933b5bde&shcp=b4b98b7c&shp=5e1834cb&t=555f072d`;
-
-      return {
-        data: {
-          id: productId,
-          name: productNames[nameIndex],
-          price: price,
-          image: image,
-          description: `${productCategories[categoryIndex]} · ${productDescriptions[descIndex]}`,
-          category: productCategories[categoryIndex],
-          stock: 100 + (productId % 500),
-          rating: 4.0 + (productId % 10) / 10,
-        },
-        status: 200,
-        statusText: 'OK',
-        headers: {},
-      } as T;
-    }
-
-    // 其他请求使用原始方法
-    return originalCall(method, params);
-  };
-
   const http = createHttpService(bridge, {
     baseURL: 'https://api.example.com',
   });
