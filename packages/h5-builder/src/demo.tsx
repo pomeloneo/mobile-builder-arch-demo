@@ -549,8 +549,8 @@ async function initializeApp(): Promise<BaseComponentModel> {
   });
 
   loader.registerAsync('ProductList', {
-    model: async () => SimpleListModel,
-    view: async () => React.Fragment, // SimpleList 没有专门的 View
+    model: () => import('./components/simple-list').then(m => m.SimpleListModel),
+    view: () => import('./components/simple-list').then(m => m.SimpleListView),
   });
 
   loader.registerAsync('ExperimentContainer', {
@@ -591,6 +591,13 @@ async function initializeApp(): Promise<BaseComponentModel> {
 
     const endTime = performance.now();
     console.log(`[Demo] Split loading completed in ${(endTime - startTime).toFixed(0)}ms`);
+  });
+
+  // 初始化数据
+  scheduler.register('init-root-model', JobPriority.Prepare, async () => {
+    console.log('[Demo] Initializing root model...');
+    await rootModel.init();
+    console.log('[Demo] Root model initialized');
   });
 
   scheduler.register('activate-root-model', JobPriority.Render, () => {
