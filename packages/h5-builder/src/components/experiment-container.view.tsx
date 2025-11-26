@@ -44,7 +44,7 @@ export const ExperimentContainerView: React.FC<ExperimentContainerViewProps> = o
       </div>
 
       {/* 渲染子组件 */}
-      {model.children.map((child: any) => (
+      {model.activeChildren.map((child: any) => (
         <ModelRenderer key={child.id} model={child} />
       ))}
     </div>

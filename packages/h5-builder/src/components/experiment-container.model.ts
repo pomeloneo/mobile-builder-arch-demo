@@ -8,7 +8,7 @@ import { HttpService } from '../modules/http.service';
 export interface ExperimentContainerProps {
   experimentKey: string; // 实验 key
   variants: {
-    [variantName: string]: any[]; // 每个实验分组对应的子组件 schema
+    [variantName: string]: number[]; // 每个实验分组对应的子组件索引列表
   };
 }
 
@@ -40,9 +40,17 @@ export class ExperimentContainerModel extends BaseContainerModel<ExperimentConta
     this.fetchExperiment();
 
     // 2. 根据实验分组初始化对应的子组件
-    for (const child of this.children) {
+    for (const child of this.activeChildren) {
       await child.init();
     }
+  }
+
+  /**
+   * 获取当前实验分组对应的子组件
+   */
+  get activeChildren(): any[] {
+    const indices = this.props.variants[this.variant] || [];
+    return indices.map(index => this.children[index]).filter(Boolean);
   }
 
   /**
@@ -59,14 +67,14 @@ export class ExperimentContainerModel extends BaseContainerModel<ExperimentConta
 
   protected onActive(): void {
     // 激活所有子组件
-    for (const child of this.children) {
+    for (const child of this.activeChildren) {
       child.activate();
     }
   }
 
   protected onInactive(): void {
     // 停用所有子组件
-    for (const child of this.children) {
+    for (const child of this.activeChildren) {
       child.deactivate();
     }
   }
