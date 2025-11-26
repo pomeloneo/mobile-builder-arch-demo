@@ -59,7 +59,8 @@ function DemoApp() {
     return <div className="app-error">初始化失败</div>;
   }
 
-  console.log('[DemoApp] Rendering with rootModel:', rootModel.constructor.name, rootModel.id);
+  console.log('[DemoApp] Rendering with rootModel:', rootModel, rootModel.constructor.name, rootModel.id);
+
 
   return (
     <div className="app" >

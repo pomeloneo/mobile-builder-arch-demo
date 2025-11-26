@@ -103,14 +103,12 @@ export class BridgeService implements IDisposable {
    * Mock 调用（用于浏览器调试）
    */
   private async mockCall<T>(method: string, params: BridgeCallParams): Promise<T> {
-    console.log(`[MockBridge] Call: ${method}`, params);
 
     // 模拟网络延迟
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     const mockData = this.mockResponses.get(method);
     if (mockData !== undefined) {
-      console.log(`[MockBridge] Response: ${method}`, mockData);
       return mockData as T;
     }
 
