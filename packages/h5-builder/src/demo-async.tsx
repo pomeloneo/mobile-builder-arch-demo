@@ -473,120 +473,97 @@ async function initializeApp(): Promise<BaseComponentModel> {
   // 3. 创建 ComponentLoader
   const loader = new ComponentLoader(globalInjector, tracker);
 
-  // 4. 注册异步组件（使用动态 import）
-  console.log('[Demo-Async] 📦 Registering async components...');
+  // 4. 注册异步组件（使用 Model-View 分离加载）
+  console.log('[Demo-Async] 📦 Registering async components with split loading...');
 
-  loader.registerAsyncBatch({
-    ProductCard: {
-      loader: () => import('./components/product-card').then(m => ({
-        Model: m.ProductCardModel,
-        View: m.ProductCardView,
-      })),
-      metadata: {
-        priority: 'high',
-        delayRange: [200, 800],
-      },
-    },
-    TextCard: {
-      loader: () => import('./components/text-card').then(m => ({
-        Model: m.TextCardModel,
-        View: m.TextCardView,
-      })),
-      metadata: {
-        priority: 'normal',
-        delayRange: [300, 1000],
-      },
-    },
-    TabsContainer: {
-      loader: () => import('./components/tabs-container').then(m => ({
-        Model: m.TabsContainerModel,
-        View: m.TabsContainerView,
-      })),
-      metadata: {
-        priority: 'critical',
-        delayRange: [100, 500],
-      },
-    },
-    ProductList: {
-      loader: () => import('./components/simple-list').then(m => ({
-        Model: m.SimpleListModel,
-        View: m.SimpleListView,
-      })),
-      metadata: {
-        priority: 'high',
-        delayRange: [150, 600],
-      },
-    },
-    ExperimentContainer: {
-      loader: () => import('./components/experiment-container').then(m => ({
-        Model: m.ExperimentContainerModel,
-        View: m.ExperimentContainerView,
-      })),
-      metadata: {
-        priority: 'normal',
-        dependencies: ['TextCard', 'ProductCard'],
-        delayRange: [400, 1200],
-      },
-    },
-    TimeBasedContainer: {
-      loader: () => import('./components/time-based-container').then(m => ({
-        Model: m.TimeBasedContainerModel,
-        View: m.TimeBasedContainerView,
-      })),
-      metadata: {
-        priority: 'high',
-        delayRange: [300, 900],
-      },
-    },
-    GridLayoutContainer: {
-      loader: () => import('./components/grid-layout-container').then(m => ({
-        Model: m.GridLayoutContainerModel,
-        View: m.GridLayoutContainerView,
-      })),
-      metadata: {
-        priority: 'normal',
-        delayRange: [250, 800],
-      },
-    },
-    ConditionalContainer: {
-      loader: () => import('./components/conditional-container').then(m => ({
-        Model: m.ConditionalContainerModel,
-        View: m.ConditionalContainerView,
-      })),
-      metadata: {
-        priority: 'normal',
-        delayRange: [300, 1000],
-      },
-    },
+  // 使用新的分离加载 API
+  loader.registerAsync('ProductCard', {
+    model: () => import('./components/product-card').then(m => m.ProductCardModel),
+    view: () => import('./components/product-card').then(m => m.ProductCardView),
+  }, {
+    priority: 'high',
+    delayRange: [200, 800],
   });
 
-  // 5. 添加 Tab 感知加载策略
-  const { TabAwareStrategy } = await import('./flow/tab-aware-strategy');
-
-  loader.addStrategy(
-    new TabAwareStrategy(0, {
-      preloadNextTab: true,      // 预加载下一个 Tab
-      lazyLoadOtherTabs: false,  // 演示模式：加载所有 Tab
-    })
-  );
-
-  console.log('[Demo-Async] 🚀 Building component tree with async loading...');
-
-  // 6. 异步构建 Model Tree
-  const rootModel = await loader.buildTreeAsync(schema, {
-    activeTabIndex: 0, // 首屏显示第 1 个 Tab
+  loader.registerAsync('TextCard', {
+    model: () => import('./components/text-card').then(m => m.TextCardModel),
+    view: () => import('./components/text-card').then(m => m.TextCardView),
+  }, {
+    priority: 'normal',
+    delayRange: [300, 1000],
   });
 
-  console.log('[Demo-Async] ✅ Component tree built successfully');
+  loader.registerAsync('TabsContainer', {
+    model: () => import('./components/tabs-container').then(m => m.TabsContainerModel),
+    view: () => import('./components/tabs-container').then(m => m.TabsContainerView),
+  }, {
+    priority: 'critical',
+    delayRange: [100, 500],
+  });
 
-  // 7. 使用 JobScheduler 编排启动任务
+  loader.registerAsync('ProductList', {
+    model: () => import('./components/simple-list').then(m => m.SimpleListModel),
+    view: () => import('./components/simple-list').then(m => m.SimpleListView),
+  }, {
+    priority: 'high',
+    delayRange: [150, 600],
+  });
+
+  loader.registerAsync('ExperimentContainer', {
+    model: () => import('./components/experiment-container').then(m => m.ExperimentContainerModel),
+    view: () => import('./components/experiment-container').then(m => m.ExperimentContainerView),
+  }, {
+    priority: 'normal',
+    dependencies: ['TextCard', 'ProductCard'],
+    delayRange: [400, 1200],
+  });
+
+  loader.registerAsync('TimeBasedContainer', {
+    model: () => import('./components/time-based-container').then(m => m.TimeBasedContainerModel),
+    view: () => import('./components/time-based-container').then(m => m.TimeBasedContainerView),
+  }, {
+    priority: 'high',
+    delayRange: [300, 900],
+  });
+
+  loader.registerAsync('GridLayoutContainer', {
+    model: () => import('./components/grid-layout-container').then(m => m.GridLayoutContainerModel),
+    view: () => import('./components/grid-layout-container').then(m => m.GridLayoutContainerView),
+  }, {
+    priority: 'normal',
+    delayRange: [250, 800],
+  });
+
+  loader.registerAsync('ConditionalContainer', {
+    model: () => import('./components/conditional-container').then(m => m.ConditionalContainerModel),
+    view: () => import('./components/conditional-container').then(m => m.ConditionalContainerView),
+  }, {
+    priority: 'normal',
+    delayRange: [300, 1000],
+  });
+
+  console.log('[Demo-Async] 🚀 Building component tree with split loading...');
+
+  // 5. 使用 JobScheduler 编排启动任务
   scheduler.register('init-context', JobPriority.Start, () => {
     context.setEnvInfo(context.detectEnv());
     context.setRouteInfo(context.parseRouteFromURL());
   });
 
-  scheduler.register('init-root-model', JobPriority.Prepare, async () => {
-    await rootModel.init();
+  // 6. 使用分离加载构建 Model Tree
+  let rootModel: BaseComponentModel;
+
+  scheduler.register('build-model-tree', JobPriority.Prepare, async () => {
+    console.log('[Demo-Async] ⏱️  Starting split loading...');
+    const startTime = performance.now();
+
+    // 使用新的分离加载方法
+    rootModel = await loader.buildTreeWithSplitLoading(schema);
+
+    const endTime = performance.now();
+    const duration = (endTime - startTime).toFixed(0);
+    console.log(`[Demo-Async] ✅ Split loading completed in ${duration}ms`);
+    console.log(`[Demo-Async] 📊 Performance: Model-View separation enabled`);
   });
 
   scheduler.register('activate-root-model', JobPriority.Render, () => {
@@ -595,10 +572,10 @@ async function initializeApp(): Promise<BaseComponentModel> {
 
   await scheduler.run();
 
-  console.log('[Demo] App initialized successfully');
-  console.log('[Demo] Check console for virtual scroll status');
+  console.log('[Demo-Async] 🎉 App initialized successfully');
+  console.log('[Demo-Async] 💡 Check console for split loading performance metrics');
 
-  return rootModel;
+  return rootModel!
 }
 
 // 启动应用

@@ -57,7 +57,7 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
    * 初始化 Model
    * 确保 onInit 只执行一次
    */
-  init(): void {
+  async init(): Promise<void> {
     if (this.isInited) {
       console.warn(`[Model:${this.id}] Already initialized`);
       return;
@@ -65,7 +65,7 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
 
     this.isInited = true;
     console.log(`[Model:${this.id}] Initializing`);
-    this.onInit();
+    await this.onInit();
   }
 
   /**
@@ -123,8 +123,9 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
   /**
    * 初始化钩子
    * 在这里发起网络请求、订阅事件等
+   * 注意：此方法必须返回 Promise，即使是同步操作也要用 async
    */
-  protected abstract onInit(): void | Promise<void>;
+  protected abstract onInit(): Promise<void>;
 
   /**
    * 销毁钩子
@@ -201,10 +202,8 @@ export abstract class BaseContainerModel<P = any, C extends BaseComponentModel =
   protected async onInit(): Promise<void> {
     console.log(`[BaseContainer:${this.id}] Initializing ${this.children.length} children`);
 
-    // 默认初始化所有子组件
-    for (const child of this.children) {
-      await child.init();
-    }
+    // 并行初始化所有子组件
+    await Promise.all(this.children.map(child => child.init()));
 
     console.log(`[BaseContainer:${this.id}] All children initialized`);
   }

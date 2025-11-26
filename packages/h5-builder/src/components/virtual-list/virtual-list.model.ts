@@ -44,7 +44,7 @@ export class VirtualListModel extends BaseComponentModel<VirtualListProps> {
     super(id, props);
   }
 
-  protected onInit(): void {
+  protected async onInit(): Promise<void> {
     // 初始化
   }
 

@@ -14,7 +14,7 @@ export interface TextCardProps {
  * 高度由内容行数决定（小）
  */
 export class TextCardModel extends BaseComponentModel<TextCardProps> {
-  protected onInit(): void {
+  protected async onInit(): Promise<void> {
     // 简单组件，无需初始化
   }
 }

@@ -62,8 +62,9 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
    * 获取数据
    */
   async fetchData(): Promise<void> {
-    // 模拟 API 请求延迟
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // 模拟 API 请求延迟 (500ms - 1500ms)
+    const delay = 500 + Math.random() * 1000;
+    await new Promise(resolve => setTimeout(resolve, delay));
 
     // 模拟 API 响应
     const mockData: ProductData = {

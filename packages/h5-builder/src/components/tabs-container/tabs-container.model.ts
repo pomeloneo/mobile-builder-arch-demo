@@ -161,7 +161,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
   /**
    * 切换 Tab
    */
-  switchTab(index: number): void {
+  async switchTab(index: number): Promise<void> {
     if (index === this.activeIndex) {
       return;
     }
@@ -177,7 +177,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
     // 懒加载：如果新 Tab 还没初始化，现在初始化
     if (!newTab.isInited) {
       console.log(`[TabsContainer:${this.id}] Lazy loading tab ${index}`);
-      newTab.init();
+      await newTab.init();
     }
 
     // 生命周期管理
@@ -203,11 +203,11 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
     const tabsToPrewarm = this.children.filter((_, index) => index !== this.activeIndex);
 
     tabsToPrewarm.forEach((tab, relativeIndex) => {
-      this.scheduler.scheduleIdleTask(() => {
+      this.scheduler.scheduleIdleTask(async () => {
         if (!tab.isInited) {
           const actualIndex = relativeIndex >= this.activeIndex ? relativeIndex + 1 : relativeIndex;
           console.log(`[TabsContainer:${this.id}] Prewarming tab ${actualIndex}`);
-          tab.init();
+          await tab.init();
         }
       });
     });

@@ -530,40 +530,67 @@ async function initializeApp(): Promise<BaseComponentModel> {
   // 3. 创建 ComponentLoader
   const loader = new ComponentLoader(globalInjector, tracker);
 
-  // 4. 注册组件 Model
-  loader.registerAll({
-    ProductCard: ProductCardModel,
-    TextCard: TextCardModel,
-    TabsContainer: TabsContainerModel,
-    ProductList: SimpleListModel,
-    ExperimentContainer: ExperimentContainerModel,
-    TimeBasedContainer: TimeBasedContainerModel,
-    GridLayoutContainer: GridLayoutContainerModel,
-    ConditionalContainer: ConditionalContainerModel,
+  // 4. 注册组件（使用分离加载）
+  // 注意：这里为了 demo，我们使用同步 import 模拟异步加载
+  // 实际项目中应该使用 dynamic import
+  loader.registerAsync('ProductCard', {
+    model: async () => ProductCardModel,
+    view: async () => ProductCardView,
   });
 
-  // 5. 注册组件 View
-  registerModelView(ProductCardModel, ProductCardView);
-  registerModelView(TextCardModel, TextCardView);
-  registerModelView(TabsContainerModel, TabsContainerView);
-  registerModelView(ExperimentContainerModel, ExperimentContainerView);
-  registerModelView(TimeBasedContainerModel, TimeBasedContainerView);
-  registerModelView(GridLayoutContainerModel, GridLayoutContainerView);
-  registerModelView(ConditionalContainerModel, ConditionalContainerView);
+  loader.registerAsync('TextCard', {
+    model: async () => TextCardModel,
+    view: async () => TextCardView,
+  });
 
+  loader.registerAsync('TabsContainer', {
+    model: async () => TabsContainerModel,
+    view: async () => TabsContainerView,
+  });
 
+  loader.registerAsync('ProductList', {
+    model: async () => SimpleListModel,
+    view: async () => React.Fragment, // SimpleList 没有专门的 View
+  });
 
-  // 7. 构建 Model Tree 并初始化
-  const rootModel = loader.buildTree(schema);
+  loader.registerAsync('ExperimentContainer', {
+    model: async () => ExperimentContainerModel,
+    view: async () => ExperimentContainerView,
+  });
 
-  // 8. 使用 JobScheduler 编排启动任务
+  loader.registerAsync('TimeBasedContainer', {
+    model: async () => TimeBasedContainerModel,
+    view: async () => TimeBasedContainerView,
+  });
+
+  loader.registerAsync('GridLayoutContainer', {
+    model: async () => GridLayoutContainerModel,
+    view: async () => GridLayoutContainerView,
+  });
+
+  loader.registerAsync('ConditionalContainer', {
+    model: async () => ConditionalContainerModel,
+    view: async () => ConditionalContainerView,
+  });
+
+  // 5. 使用 JobScheduler 编排启动任务
   scheduler.register('init-context', JobPriority.Start, () => {
     context.setEnvInfo(context.detectEnv());
     context.setRouteInfo(context.parseRouteFromURL());
   });
 
-  scheduler.register('init-root-model', JobPriority.Prepare, async () => {
-    await rootModel.init();
+  // 6. 使用分离加载构建 Model Tree
+  let rootModel: BaseComponentModel;
+
+  scheduler.register('build-model-tree', JobPriority.Prepare, async () => {
+    console.log('[Demo] Starting split loading...');
+    const startTime = performance.now();
+
+    // 使用分离加载
+    rootModel = await loader.buildTreeWithSplitLoading(schema);
+
+    const endTime = performance.now();
+    console.log(`[Demo] Split loading completed in ${(endTime - startTime).toFixed(0)}ms`);
   });
 
   scheduler.register('activate-root-model', JobPriority.Render, () => {
@@ -573,9 +600,9 @@ async function initializeApp(): Promise<BaseComponentModel> {
   await scheduler.run();
 
   console.log('[Demo] App initialized successfully');
-  console.log('[Demo] Check console for virtual scroll status');
+  console.log('[Demo] Check console for split loading performance');
 
-  return rootModel;
+  return rootModel!
 }
 
 // 启动应用
