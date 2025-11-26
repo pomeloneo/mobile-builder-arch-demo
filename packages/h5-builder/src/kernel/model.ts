@@ -200,12 +200,20 @@ export abstract class BaseContainerModel<P = any, C extends BaseComponentModel =
    * 子类可以覆写此方法来实现自定义逻辑（例如懒加载、闲时预热等）
    */
   protected async onInit(): Promise<void> {
-    console.log(`[BaseContainer:${this.id}] Initializing ${this.children.length} children`);
+    const startTime = performance.now();
+    console.log(`[BaseContainer:${this.id}] 🚀 Starting parallel init of ${this.children.length} children at ${startTime.toFixed(0)}ms`);
 
     // 并行初始化所有子组件
-    await Promise.all(this.children.map(child => child.init()));
+    const initPromises = this.children.map((child, index) => {
+      console.log(`[BaseContainer:${this.id}] 📦 Triggering init for child ${index}: ${child.id}`);
+      return child.init();
+    });
 
-    console.log(`[BaseContainer:${this.id}] All children initialized`);
+    await Promise.all(initPromises);
+
+    const endTime = performance.now();
+    const duration = endTime - startTime;
+    console.log(`[BaseContainer:${this.id}] ✅ All ${this.children.length} children initialized in ${duration.toFixed(0)}ms`);
   }
 
   /**
