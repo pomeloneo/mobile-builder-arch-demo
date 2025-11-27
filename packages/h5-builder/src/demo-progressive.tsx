@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ServiceCollection, InstantiationService } from './bedrock/di/index.common';
+import { InstantiationService, ServiceRegistry, SyncDescriptor } from './bedrock/di/index.common';
 import { IHttpService, ITrackerService, IBridgeService, IPageContextService, IJobScheduler } from './services/service-identifiers';
 import { BridgeService } from './modules/bridge.service';
-import { HttpService, createHttpService } from './modules/http.service';
+import { HttpService } from './modules/http.service';
 import { TrackerService } from './modules/tracker.service';
 import { PageContextService } from './modules/context.service';
 import { JobScheduler, JobPriority } from './flow/scheduler';
@@ -12,33 +12,6 @@ import { ModelRenderer } from './components';
 import { BaseComponentModel } from './bedrock/model';
 import './demo.css';
 
-// 🎨 改进 Mock 数据生成 - 支持多种类型的请求
-const productNames = [
-  'iPhone 15 Pro Max', 'MacBook Pro 16"', 'AirPods Pro', 'iPad Air', 'Apple Watch Ultra',
-  'Sony WH-1000XM5', 'Nintendo Switch', 'PlayStation 5', 'Xbox Series X', 'Steam Deck',
-  'Canon EOS R5', 'DJI Mini 3 Pro', 'GoPro Hero 11', 'Kindle Oasis', 'Bose QuietComfort',
-  '戴森吹风机', '小米扫地机器人', '华为 Mate 60 Pro', 'OPPO Find X6', 'vivo X90 Pro',
-  '联想拯救者 Y9000P', '华硕 ROG 幻 16', '雷蛇灵刃 14', '微星绝影 GS66', '外星人 M15',
-  '罗技 MX Master 3S', 'Keychron K8', 'HHKB Professional', '索尼 A7M4', '富士 X-T5',
-];
-
-const productCategories = [
-  '手机数码', '电脑办公', '智能穿戴', '影音娱乐', '摄影摄像',
-  '游戏设备', '智能家居', '运动户外', '键鼠外设', '专业设备',
-];
-
-const productDescriptions = [
-  '全新升级，性能强劲，体验卓越',
-  '精工细作，品质保证，值得信赖',
-  '创新科技，引领潮流，彰显品味',
-  '轻薄便携，续航持久，随行无忧',
-  '专业级性能，满足你的所有需求',
-  '时尚设计，精致工艺，尽显优雅',
-  '智能体验，便捷生活，触手可及',
-  '高清画质，震撼音效，沉浸体验',
-  '人体工学设计，舒适握持，久用不累',
-  '旗舰配置，极致性能，畅快体验',
-];
 
 const textContents = [
   '这是一段简短的文本内容。',
@@ -431,25 +404,26 @@ function ProgressiveDemoApp() {
 async function initializeProgressiveApp(
   onProgress: (model: BaseComponentModel | null, step: string) => void
 ): Promise<void> {
-  // 1. 创建服务集合
-  const services = new ServiceCollection();
+  // 1. 创建服务注册表
+  const registry = new ServiceRegistry();
 
-  // 2. 创建服务实例
-  const bridge = new BridgeService(true);
-  const http = createHttpService(bridge, { baseURL: 'https://api.example.com' });
-  const tracker = new TrackerService(bridge, { debug: true });
-  const context = new PageContextService();
-  const scheduler = new JobScheduler();
+  // 2. 注册服务
+  // 基础服务
+  registry.register(IBridgeService, new SyncDescriptor(BridgeService, [true]));
+  registry.register(IPageContextService, PageContextService);
+  registry.register(IJobScheduler, JobScheduler);
 
-  // 3. 注册服务
-  services.set(IBridgeService, bridge);
-  services.set(IHttpService, http);
-  services.set(ITrackerService, tracker);
-  services.set(IPageContextService, context);
-  services.set(IJobScheduler, scheduler);
+  // 依赖其他服务的服务 (配置通过静态参数传入)
+  registry.register(IHttpService, new SyncDescriptor(HttpService, [
+    { baseURL: 'https://api.example.com' }
+  ]));
 
-  // 4. 创建 InstantiationService
-  const instantiationService = new InstantiationService(services);
+  registry.register(ITrackerService, new SyncDescriptor(TrackerService, [
+    { debug: true }
+  ]));
+
+  // 3. 创建 InstantiationService
+  const instantiationService = new InstantiationService(registry.makeCollection());
 
   // 5. 创建 ComponentLoader
   const loader: ComponentLoader = instantiationService.createInstance(ComponentLoader);
@@ -521,6 +495,9 @@ async function initializeProgressiveApp(
   });
 
   console.log('[Demo-Async] 🚀 Building component tree with split loading...');
+
+  // 获取 Scheduler 实例
+  const scheduler = instantiationService.invokeFunction(accessor => accessor.get(IJobScheduler));
 
   // 编排任务
   let rootModel: BaseComponentModel;

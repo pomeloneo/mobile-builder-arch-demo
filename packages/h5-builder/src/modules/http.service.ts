@@ -1,5 +1,6 @@
 import { IDisposable, DisposableStore } from '../bedrock/dispose';
 import { BridgeService } from './bridge.service';
+import { IBridgeService } from '../services/service-identifiers';
 
 /**
  * HTTP 请求方法
@@ -43,6 +44,11 @@ export type ResponseInterceptor = <T>(response: HttpResponse<T>) => HttpResponse
  */
 export type ErrorInterceptor = (error: Error) => Error | Promise<Error>;
 
+export interface HttpServiceOptions {
+  baseURL?: string;
+  token?: string;
+}
+
 /**
  * HTTP 服务
  * 基于 JSBridge 的 fetch 实现，提供请求/响应拦截器、错误处理等功能
@@ -64,7 +70,37 @@ export class HttpService implements IDisposable {
     },
   };
 
-  constructor(private bridge: BridgeService) { }
+  constructor(
+    options: HttpServiceOptions | undefined,
+    @IBridgeService private bridge: BridgeService,
+  ) {
+    // 添加 baseURL 拦截器
+    if (options?.baseURL) {
+      this.addRequestInterceptor((config) => {
+        if (!config.url.startsWith('http')) {
+          config.url = `${options.baseURL}${config.url}`;
+        }
+        return config;
+      });
+    }
+
+    // 添加 token 拦截器
+    if (options?.token) {
+      this.addRequestInterceptor((config) => {
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${options.token}`,
+        };
+        return config;
+      });
+    }
+
+    // 添加通用错误处理
+    this.addErrorInterceptor((error) => {
+      console.error('[HttpService] Request failed:', error);
+      return error;
+    });
+  }
 
   /**
    * 添加请求拦截器
@@ -237,39 +273,8 @@ export class HttpService implements IDisposable {
 
 /**
  * 创建带有常用拦截器的 HttpService 实例
+ * @deprecated Use new HttpService(...) instead
  */
-export function createHttpService(bridge: BridgeService, options?: {
-  baseURL?: string;
-  token?: string;
-}): HttpService {
-  const http = new HttpService(bridge);
-
-  // 添加 baseURL 拦截器
-  if (options?.baseURL) {
-    http.addRequestInterceptor((config) => {
-      if (!config.url.startsWith('http')) {
-        config.url = `${options.baseURL}${config.url}`;
-      }
-      return config;
-    });
-  }
-
-  // 添加 token 拦截器
-  if (options?.token) {
-    http.addRequestInterceptor((config) => {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${options.token}`,
-      };
-      return config;
-    });
-  }
-
-  // 添加通用错误处理
-  http.addErrorInterceptor((error) => {
-    console.error('[HttpService] Request failed:', error);
-    return error;
-  });
-
-  return http;
+export function createHttpService(bridge: BridgeService, options?: HttpServiceOptions): HttpService {
+  return new HttpService(options, bridge);
 }

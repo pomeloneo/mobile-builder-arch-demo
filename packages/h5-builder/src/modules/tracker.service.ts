@@ -1,5 +1,6 @@
 import { IDisposable, DisposableStore } from '../bedrock/dispose';
 import { BridgeService } from './bridge.service';
+import { IBridgeService } from '../services/service-identifiers';
 
 /**
  * 埋点事件
@@ -38,8 +39,8 @@ export class TrackerService implements IDisposable {
   private config: Required<TrackerConfig>;
 
   constructor(
-    private bridge: BridgeService,
-    config: TrackerConfig = {}
+    config: TrackerConfig = {},
+    @IBridgeService private bridge: BridgeService,
   ) {
     this.config = {
       debug: config.debug ?? false,

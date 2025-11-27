@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ServiceCollection, InstantiationService } from './bedrock/di/index.common';
+import { InstantiationService, ServiceRegistry, SyncDescriptor } from './bedrock/di/index.common';
 import { IHttpService, ITrackerService, IBridgeService, IPageContextService, IJobScheduler } from './services/service-identifiers';
 import { BridgeService } from './modules/bridge.service';
-import { HttpService, createHttpService } from './modules/http.service';
+import { HttpService } from './modules/http.service';
 import { TrackerService } from './modules/tracker.service';
 import { PageContextService } from './modules/context.service';
 import { JobScheduler, JobPriority } from './flow/scheduler';
@@ -447,31 +447,30 @@ const schema: ComponentSchema = {
 async function initializeApp(): Promise<BaseComponentModel> {
   console.log('[Demo] Initializing app...');
 
-  // 1. 创建服务集合
-  const services = new ServiceCollection();
+  // 1. 创建服务注册表
+  const registry = new ServiceRegistry();
 
-  // 2. 创建服务实例
-  const bridge = new BridgeService(true);
-  const http = createHttpService(bridge, {
-    baseURL: 'https://api.example.com',
-  });
-  const tracker = new TrackerService(bridge, {
-    debug: true,
-    maxBatchSize: 10,
-    flushInterval: 3000,
-  });
-  const context = new PageContextService();
-  const scheduler = new JobScheduler();
+  // 2. 注册服务
+  // 基础服务
+  registry.register(IBridgeService, new SyncDescriptor(BridgeService, [true]));
+  registry.register(IPageContextService, PageContextService);
+  registry.register(IJobScheduler, JobScheduler);
 
-  // 3. 注册服务
-  services.set(IBridgeService, bridge);
-  services.set(IHttpService, http);
-  services.set(ITrackerService, tracker);
-  services.set(IPageContextService, context);
-  services.set(IJobScheduler, scheduler);
+  // 依赖其他服务的服务 (配置通过静态参数传入)
+  registry.register(IHttpService, new SyncDescriptor(HttpService, [
+    { baseURL: 'https://api.example.com' }
+  ]));
 
-  // 4. 创建 InstantiationService
-  const instantiationService = new InstantiationService(services);
+  registry.register(ITrackerService, new SyncDescriptor(TrackerService, [
+    {
+      debug: true,
+      maxBatchSize: 10,
+      flushInterval: 3000,
+    }
+  ]));
+
+  // 3. 创建 InstantiationService
+  const instantiationService = new InstantiationService(registry.makeCollection());
 
   // 5. 创建 ComponentLoader
   const loader = instantiationService.createInstance(ComponentLoader) as ComponentLoader;
@@ -548,6 +547,9 @@ async function initializeApp(): Promise<BaseComponentModel> {
   console.log('[Demo-Async] 🚀 Building component tree with split loading...');
 
   // 5. 使用 JobScheduler 编排启动任务
+  const scheduler = instantiationService.invokeFunction(accessor => accessor.get(IJobScheduler));
+  const context = instantiationService.invokeFunction(accessor => accessor.get(IPageContextService));
+
   scheduler.register('init-context', JobPriority.Start, () => {
     context.setEnvInfo(context.detectEnv());
     context.setRouteInfo(context.parseRouteFromURL());
