@@ -1,6 +1,3 @@
-// Kernel exports
-export type { IDisposable } from './bedrock';
-export { DisposableStore, createCancelablePromise, Injector, Inject, BaseComponentModel, BaseContainerModel } from './bedrock';
 
 // Modules exports
 export type {
