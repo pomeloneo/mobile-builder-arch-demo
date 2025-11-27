@@ -21,10 +21,10 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
   }
 
   protected _executePhase(phase: PageLifecycle) {
-    if (phase !== PageLifecycle.LoadResouse) return;
+    if (phase !== PageLifecycle.LoadComponentLogic) return;
 
 
-    this._setBarrier(PageLifecycle.LoadResouse, this._loadResouseBarrier);
+    this._setBarrier(PageLifecycle.LoadComponentLogic, this._loadResouseBarrier);
 
     this.onProgress('加载组件资源中...');
     console.log('[LoadComponentsJob] Starting component loading...');

@@ -87,7 +87,7 @@ function makeJobScheduler(
   // 注册 Jobs
   jobScheduler.registerJob(PageLifecycle.Open, RegisterComponentsJob);
   jobScheduler.registerJob(PageLifecycle.Open, GetSchemaJob, onProgress);
-  jobScheduler.registerJob(PageLifecycle.LoadResouse, LoadComponentsJob, schema, (msg: string) => onProgress(null, msg));
+  jobScheduler.registerJob(PageLifecycle.LoadComponentLogic, LoadComponentsJob, schema, (msg: string) => onProgress(null, msg));
   jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob, onProgress);
   jobScheduler.registerJob(PageLifecycle.StartRender, RenderJob, onProgress);
   jobScheduler.registerJob(PageLifecycle.RenderCompleted, InitDataJob, (msg: string) => onProgress(null, msg));
@@ -113,8 +113,8 @@ async function driveJobScheduler(
   // LoadResouse: 加载组件资源
   console.log('==========================LoadResouse 阶段开始');
   console.time('==========================LoadResouse 阶段完成');
-  jobScheduler.prepare(PageLifecycle.LoadResouse);
-  await jobScheduler.wait(PageLifecycle.LoadResouse);
+  jobScheduler.prepare(PageLifecycle.LoadComponentLogic);
+  await jobScheduler.wait(PageLifecycle.LoadComponentLogic);
   console.timeEnd('==========================LoadResouse 阶段完成');
 
   // Prepare: 构建模型树

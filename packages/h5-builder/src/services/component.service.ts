@@ -102,6 +102,12 @@ export class ComponentService {
   private registry = new ComponentRegistry();
   private _rootModel: BaseComponentModel | null = null;
 
+  // 缓存加载结果，确保只加载一次
+  private _loadingResult: {
+    modelTreeReady: Promise<void>;
+    viewsReady: Promise<void>;
+  } | null = null;
+
   constructor(
     @IInstantiationService private instantiationService: IInstantiationService,
     @ITrackerService private tracker: TrackerService
@@ -621,11 +627,18 @@ export class ComponentService {
   /**
    * 统一队列并发加载 (Public API)
    * Model 和 View 在同一队列，Model 排在前面，按总并发度统一调度
+   * 🔥 只会执行一次，后续调用返回缓存结果
    */
   public preloadComponentsUnified(schema: ComponentSchema): {
     modelTreeReady: Promise<void>;
     viewsReady: Promise<void>;
   } {
+    // 🔥 如果已经加载过，直接返回缓存结果
+    if (this._loadingResult) {
+      console.log('⚠️  preloadComponentsUnified 已调用过，返回缓存结果');
+      return this._loadingResult;
+    }
+
     const components = this.collectComponents(schema);
 
     // 去重：只保留唯一的组件类型
@@ -673,10 +686,35 @@ export class ComponentService {
       console.log('✅ 映射关系建立完成');
     });
 
-    return {
+    // 🔥 缓存结果
+    this._loadingResult = {
       modelTreeReady,
       viewsReady
     };
+
+    return this._loadingResult;
+  }
+
+  /**
+   * 获取 Model 加载完成的 Promise
+   * 必须先调用 preloadComponentsUnified
+   */
+  public getModelTreeReady(): Promise<void> {
+    if (!this._loadingResult) {
+      throw new Error('必须先调用 preloadComponentsUnified');
+    }
+    return this._loadingResult.modelTreeReady;
+  }
+
+  /**
+   * 获取所有资源加载完成的 Promise
+   * 必须先调用 preloadComponentsUnified
+   */
+  public getViewsReady(): Promise<void> {
+    if (!this._loadingResult) {
+      throw new Error('必须先调用 preloadComponentsUnified');
+    }
+    return this._loadingResult.viewsReady;
   }
 
 
