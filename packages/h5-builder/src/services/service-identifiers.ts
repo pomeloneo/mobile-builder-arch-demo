@@ -4,6 +4,7 @@ import type { TrackerService } from './tracker.service';
 import type { BridgeService } from './bridge.service';
 import type { PageContextService } from './context.service';
 import type { ComponentService } from './component.service';
+import type { SchemaService } from './schema.service';
 
 /**
  * Service identifiers for dependency injection
@@ -15,3 +16,4 @@ export const ITrackerService = createDecorator<TrackerService>('trackerService')
 export const IBridgeService = createDecorator<BridgeService>('bridgeService');
 export const IPageContextService = createDecorator<PageContextService>('pageContextService');
 export const IComponentService = createDecorator<ComponentService>('componentService');
+export const ISchemaService = createDecorator<SchemaService>('schemaService');

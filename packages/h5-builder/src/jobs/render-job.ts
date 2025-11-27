@@ -1,7 +1,9 @@
 import { AbstractJob } from '../bedrock/launch';
 import { BaseComponentModel } from '../bedrock/model';
 import { PageLifecycle } from './types';
-import { BuildTreeJob } from './build-tree-job';
+
+import type { ComponentService } from '../services/component.service';
+import { IComponentService } from '@/services';
 
 /**
  * Job: 渲染
@@ -11,19 +13,19 @@ export class RenderJob extends AbstractJob<PageLifecycle> {
   protected _name = 'Render';
 
   constructor(
-    private getBuildTreeJob: () => BuildTreeJob | undefined,
-    private onProgress: (model: BaseComponentModel | null, msg: string) => void
+
+    private onProgress: (model: BaseComponentModel | null, msg: string) => void,
+    @IComponentService private componentService: ComponentService
   ) {
     super();
   }
 
   protected _executePhase(phase: PageLifecycle) {
-    if (phase !== PageLifecycle.Render) return;
+    if (phase !== PageLifecycle.StartRender) return;
 
-    const buildTreeJob = this.getBuildTreeJob();
-    if (!buildTreeJob) return;
+    const rootModel = this.componentService.getRootModel();
+    if (!rootModel) return;
 
-    const rootModel = buildTreeJob.getRootModel();
     if (rootModel) {
       this.onProgress(rootModel, '模型树就绪，开始渲染');
       rootModel.activate();

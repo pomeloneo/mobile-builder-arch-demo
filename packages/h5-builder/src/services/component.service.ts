@@ -100,6 +100,7 @@ export class ComponentRegistry {
 export class ComponentService {
   readonly _serviceBrand: undefined;
   private registry = new ComponentRegistry();
+  private _rootModel: BaseComponentModel | null = null;
 
   constructor(
     @IInstantiationService private instantiationService: IInstantiationService,
@@ -107,14 +108,14 @@ export class ComponentService {
   ) { }
 
   /**
-   * 注册组件
+   * 同步注册组件
    */
   register(type: string, ModelClass: any): void {
     this.registry.register(type, ModelClass);
   }
 
   /**
-   * 批量注册组件
+   * 批量同步注册组件
    */
   registerAll(components: Record<string, any>): void {
     this.registry.registerAll(components);
@@ -576,7 +577,7 @@ export class ComponentService {
   /**
  * 使用分离加载构建组件树
  */
-  async buildTreeWithSplitLoading(schema: ComponentSchema): Promise<BaseComponentModel> {
+  public async buildTreeWithSplitLoading(schema: ComponentSchema): Promise<BaseComponentModel> {
     try {
       console.log('[ComponentLoader] Starting split loading...');
 
@@ -607,10 +608,12 @@ export class ComponentService {
    */
   public buildModelTree(schema: ComponentSchema): BaseComponentModel {
     // 此时所有 Model 已加载，可以同步构建
-    return this.buildTree(schema);
+    this._rootModel = this.buildTree(schema);
+    return this._rootModel;
   }
 
-
-
+  public getRootModel(): BaseComponentModel | null {
+    return this._rootModel;
+  }
 
 }

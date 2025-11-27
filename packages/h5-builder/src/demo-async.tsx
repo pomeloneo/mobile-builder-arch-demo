@@ -99,17 +99,14 @@ function makeJobScheduler(
     PageLifecycle.Open
   );
 
-  // 注册独立的 Jobs
-  jobScheduler.registerJob(PageLifecycle.Open, RegisterComponentsJob);
-  jobScheduler.registerJob(PageLifecycle.Open, LoadComponentsJob, schema, (msg: string) => onProgress(null, msg));
+  // 注册 Jobs
+  jobScheduler.registerJob(PageLifecycle.LoadResouse, RegisterComponentsJob);
+  jobScheduler.registerJob(PageLifecycle.LoadResouse, LoadComponentsJob, schema, (msg: string) => onProgress(null, msg));
+  jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob, onProgress);
+  jobScheduler.registerJob(PageLifecycle.StartRender, RenderJob, onProgress);
+  jobScheduler.registerJob(PageLifecycle.RenderCompleted, InitDataJob, (msg: string) => onProgress(null, msg));
 
-  const buildTreeJob = new BuildTreeJob(schema, onProgress, null as any); // 临时创建以获取引用
-  jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob, schema, onProgress);
-
-  // 对于需要 BuildTreeJob 引用的 Jobs，在 prepare 后才能添加
-  return { jobScheduler, buildTreeJob: null };
-
-  return { jobScheduler, buildTreeJob };
+  return jobScheduler
 }
 
 /**
@@ -128,14 +125,12 @@ async function driveJobScheduler(
   await jobScheduler.wait(PageLifecycle.Prepare);
 
   // Render: 渲染
-  jobScheduler.prepare(PageLifecycle.Render);
-  await jobScheduler.wait(PageLifecycle.Render);
+  jobScheduler.prepare(PageLifecycle.StartRender);
+  await jobScheduler.wait(PageLifecycle.StartRender);
 
   // Completed: 数据初始化（阻塞式）
-  jobScheduler.prepare(PageLifecycle.Completed);
-  await jobScheduler.wait(PageLifecycle.Completed);
-
-
+  jobScheduler.prepare(PageLifecycle.RenderCompleted);
+  await jobScheduler.wait(PageLifecycle.RenderCompleted);
 
   console.log('性能统计:', jobScheduler.getCost());
 }
@@ -143,7 +138,7 @@ async function driveJobScheduler(
 /**
  * 初始化应用
  */
-async function initializeApp(): Promise<BaseComponentModel> {
+async function initializeApp(): Promise<BaseComponentModel | null> {
   // 1. 初始化服务
   const registry = new ServiceRegistry();
   registry.register(IBridgeService, new SyncDescriptor(BridgeService, [true]));
@@ -164,20 +159,14 @@ async function initializeApp(): Promise<BaseComponentModel> {
   context.setRouteInfo(context.parseRouteFromURL());
 
   // 3. 创建并驱动 JobScheduler
-  const { jobScheduler, buildTreeJob } = makeJobScheduler(
+  const jobScheduler = makeJobScheduler(
     instantiationService,
     schema,
     (model: BaseComponentModel | null, msg: string) => console.log('[Demo-Async]', msg)
   );
 
   await driveJobScheduler(jobScheduler, (model, msg) => console.log('[Demo-Async]', msg));
-
-  const rootModel = (jobScheduler.getJob('BuildTree') as BuildTreeJob)?.getRootModel();
-  if (!rootModel) {
-    throw new Error('Failed to build root model');
-  }
-
-  return rootModel;
+  return instantiationService.invokeFunction((accessor) => accessor.get(IComponentService).getRootModel())
 }
 
 // 启动应用

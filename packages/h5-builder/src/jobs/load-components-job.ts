@@ -10,6 +10,7 @@ import { PageLifecycle } from './types';
  */
 export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
   protected _name = 'LoadComponents';
+  private _loadResouseBarrier: Barrier = new Barrier();
 
   constructor(
     private schema: ComponentSchema,
@@ -20,10 +21,10 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
   }
 
   protected _executePhase(phase: PageLifecycle) {
-    if (phase !== PageLifecycle.Open) return;
+    if (phase !== PageLifecycle.LoadResouse) return;
 
-    const barrier = new Barrier();
-    this._setBarrier(phase, barrier);
+
+    this._setBarrier(PageLifecycle.LoadResouse, this._loadResouseBarrier);
 
     this.onProgress('加载组件资源中...');
     console.log('==========================组件的model资源加载开始');
@@ -38,11 +39,11 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
 
 
         this.onProgress('组件资源加载完成');
-        barrier.open();
+        this._loadResouseBarrier.open();
       })
       .catch(err => {
         console.error('组件资源加载失败:', err);
-        barrier.open(); // 即使失败也要 open，避免死锁
+        this._loadResouseBarrier.open(); // 即使失败也要 open，避免死锁
       });
   }
 }
