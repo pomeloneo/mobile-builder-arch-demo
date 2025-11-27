@@ -31,6 +31,7 @@ export interface TrackerConfig {
  * 提供事件队列、批量发送、Debug 模式、持久化等功能
  */
 export class TrackerService implements IDisposable {
+  readonly _serviceBrand: undefined;
   private disposables = new DisposableStore();
   private queue: TrackEvent[] = [];
   private flushTimer?: number;

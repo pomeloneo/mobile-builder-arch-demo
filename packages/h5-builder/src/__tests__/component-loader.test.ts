@@ -1,39 +1,42 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentLoader, ComponentSchema } from '../flow/component-loader';
-import { Injector } from '../bedrock/di';
+import { ServiceCollection, InstantiationService } from '../bedrock/di/index.common';
 import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
+import { ITrackerService } from '../services/service-identifiers';
 import { TrackerService } from '../modules/tracker.service';
 import { BridgeService } from '../modules/bridge.service';
 import { ErrorPlaceholderModel } from '../flow/placeholders';
 
 // 测试用的简单组件
 class TestCardModel extends BaseComponentModel<{ title: string }> {
-  protected onInit(): void {
+  protected async onInit(): Promise<void> {
     // 空实现
   }
 }
 
 // 测试用的容器组件
 class TestContainerModel extends BaseContainerModel {
-  protected onInit(): void {
+  protected async onInit(): Promise<void> {
     // 空实现
   }
 }
 
 describe('ComponentLoader', () => {
-  let injector: Injector;
+  let services: ServiceCollection;
+  let instantiationService: InstantiationService;
   let tracker: TrackerService;
   let loader: ComponentLoader;
 
   beforeEach(() => {
-    injector = new Injector(undefined, 'TestInjector');
+    services = new ServiceCollection();
 
     const bridge = new BridgeService(true);
     tracker = new TrackerService(bridge, { debug: false });
 
-    injector.registerInstance(TrackerService, tracker);
+    services.set(ITrackerService, tracker);
+    instantiationService = new InstantiationService(services);
 
-    loader = new ComponentLoader(injector, tracker);
+    loader = instantiationService.createInstance(ComponentLoader);
   });
 
   describe('Component Registration', () => {

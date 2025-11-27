@@ -6,8 +6,8 @@ import type { ServiceCollection } from './service-collection';
 export type GetLeadingNonServiceArgs<TArgs extends any[]> = TArgs extends []
   ? []
   : TArgs extends [...infer TFirst, BrandedService]
-    ? GetLeadingNonServiceArgs<TFirst>
-    : TArgs;
+  ? GetLeadingNonServiceArgs<TFirst>
+  : TArgs;
 
 export interface IInstantiationService {
   readonly _serviceBrand: undefined;

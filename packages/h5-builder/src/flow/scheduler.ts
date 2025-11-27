@@ -25,6 +25,7 @@ export interface Job {
  * 负责管理应用启动过程中的任务执行顺序，以及闲时任务调度
  */
 export class JobScheduler implements IDisposable {
+  readonly _serviceBrand: undefined;
   private disposables = new DisposableStore();
   private jobs: Job[] = [];
   private isRunning = false;

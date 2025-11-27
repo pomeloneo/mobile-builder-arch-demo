@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Injector } from './bedrock/di';
+import { ServiceCollection, InstantiationService } from './bedrock/di/index.common';
+import { IHttpService, ITrackerService, IBridgeService, IPageContextService, IJobScheduler } from './services/service-identifiers';
 import { BridgeService } from './modules/bridge.service';
 import { HttpService, createHttpService } from './modules/http.service';
 import { TrackerService } from './modules/tracker.service';
@@ -446,32 +447,34 @@ const schema: ComponentSchema = {
 async function initializeApp(): Promise<BaseComponentModel> {
   console.log('[Demo] Initializing app...');
 
-  // 1. 创建全局 Injector
-  const globalInjector = new Injector(undefined, 'GlobalInjector');
+  // 1. 创建服务集合
+  const services = new ServiceCollection();
 
-  // 2. 创建并注册服务
-  const bridge = new BridgeService(true); // Debug 模式
-
-
+  // 2. 创建服务实例
+  const bridge = new BridgeService(true);
   const http = createHttpService(bridge, {
     baseURL: 'https://api.example.com',
   });
   const tracker = new TrackerService(bridge, {
-    debug: true, // Debug 模式会显示 Toast
+    debug: true,
     maxBatchSize: 10,
     flushInterval: 3000,
   });
   const context = new PageContextService();
   const scheduler = new JobScheduler();
 
-  globalInjector.registerInstance(BridgeService, bridge);
-  globalInjector.registerInstance(HttpService, http);
-  globalInjector.registerInstance(TrackerService, tracker);
-  globalInjector.registerInstance(PageContextService, context);
-  globalInjector.registerInstance(JobScheduler, scheduler);
+  // 3. 注册服务
+  services.set(IBridgeService, bridge);
+  services.set(IHttpService, http);
+  services.set(ITrackerService, tracker);
+  services.set(IPageContextService, context);
+  services.set(IJobScheduler, scheduler);
 
-  // 3. 创建 ComponentLoader
-  const loader = new ComponentLoader(globalInjector, tracker);
+  // 4. 创建 InstantiationService
+  const instantiationService = new InstantiationService(services);
+
+  // 5. 创建 ComponentLoader
+  const loader = instantiationService.createInstance(ComponentLoader) as ComponentLoader;
 
   // 4. 注册异步组件（使用 Model-View 分离加载）
   console.log('[Demo-Async] 📦 Registering async components with split loading...');

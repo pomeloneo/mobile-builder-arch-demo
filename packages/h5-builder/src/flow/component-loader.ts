@@ -1,6 +1,7 @@
-import { Injector } from '../bedrock/di';
+import { IInstantiationService } from '../bedrock/di/index.common';
 import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
-import { TrackerService } from '../modules/tracker.service';
+import { ITrackerService } from '../services/service-identifiers';
+import type { TrackerService } from '../modules/tracker.service';
 import { ErrorPlaceholderModel } from './placeholders';
 import { registerModelView } from '../components/model-renderer';
 
@@ -100,8 +101,8 @@ export class ComponentLoader {
   private registry = new ComponentRegistry();
 
   constructor(
-    private injector: Injector,
-    private tracker: TrackerService
+    @IInstantiationService private instantiationService: IInstantiationService,
+    @ITrackerService private tracker: TrackerService
   ) { }
 
   /**
@@ -160,9 +161,10 @@ export class ComponentLoader {
     }
 
     // 使用 Injector 创建实例（自动注入依赖）
-    const model = this.injector.resolveAndInstantiate<BaseComponentModel>(
+    const model: BaseComponentModel = this.instantiationService.createInstance(
       ModelClass,
-      [schema.id, schema.props]
+      schema.id,
+      schema.props
     );
 
     // 上报组件创建事件
@@ -222,15 +224,13 @@ export class ComponentLoader {
     schema: ComponentSchema,
     error: Error
   ): BaseComponentModel {
-    return this.injector.resolveAndInstantiate<ErrorPlaceholderModel>(
+    return this.instantiationService.createInstance(
       ErrorPlaceholderModel,
-      [
-        `error-${schema.id}`,
-        {
-          originalType: schema.type,
-          error: error.message,
-        },
-      ]
+      `error-${schema.id}`,
+      {
+        originalType: schema.type,
+        error: error.message,
+      }
     );
   }
 

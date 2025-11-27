@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Injector } from './bedrock/di';
+import { ServiceCollection, InstantiationService } from './bedrock/di/index.common';
+import { IHttpService, ITrackerService, IBridgeService, IPageContextService, IJobScheduler } from './services/service-identifiers';
 import { BridgeService } from './modules/bridge.service';
 import { HttpService, createHttpService } from './modules/http.service';
 import { TrackerService } from './modules/tracker.service';
@@ -463,13 +464,11 @@ const schema: ComponentSchema = {
 async function initializeApp(): Promise<BaseComponentModel> {
   console.log('[Demo] Initializing app...');
 
-  // 1. 创建全局 Injector
-  const globalInjector = new Injector(undefined, 'GlobalInjector');
+  // 1. 创建服务集合
+  const services = new ServiceCollection();
 
   // 2. 创建并注册服务
   const bridge = new BridgeService(true); // Debug 模式
-
-
 
   // 覆盖 bridge.call 方法，实现智能 Mock
   const originalCall = bridge.call.bind(bridge);
@@ -521,14 +520,18 @@ async function initializeApp(): Promise<BaseComponentModel> {
   const context = new PageContextService();
   const scheduler = new JobScheduler();
 
-  globalInjector.registerInstance(BridgeService, bridge);
-  globalInjector.registerInstance(HttpService, http);
-  globalInjector.registerInstance(TrackerService, tracker);
-  globalInjector.registerInstance(PageContextService, context);
-  globalInjector.registerInstance(JobScheduler, scheduler);
+  // 3. 注册服务到 ServiceCollection
+  services.set(IBridgeService, bridge);
+  services.set(IHttpService, http);
+  services.set(ITrackerService, tracker);
+  services.set(IPageContextService, context);
+  services.set(IJobScheduler, scheduler);
 
-  // 3. 创建 ComponentLoader
-  const loader = new ComponentLoader(globalInjector, tracker);
+  // 4. 创建 InstantiationService
+  const instantiationService = new InstantiationService(services);
+
+  // 5. 创建 ComponentLoader
+  const loader = instantiationService.createInstance(ComponentLoader) as ComponentLoader;
 
   // 4. 注册组件（使用分离加载）
   // 注意：这里为了 demo，我们使用同步 import 模拟异步加载

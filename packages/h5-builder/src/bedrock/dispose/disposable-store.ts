@@ -34,13 +34,16 @@ export class DisposableStore implements IDisposable {
       return;
     }
 
-    for (const disposable of this._toDispose) {
+    // Convert to array and reverse for LIFO disposal order
+    const disposables = Array.from(this._toDispose).reverse();
+
+    for (const disposable of disposables) {
       BRANCH_DISPOSE(this.constructor.name, disposable.constructor.name);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const errors: any[] = [];
-    for (const disposable of this._toDispose) {
+    for (const disposable of disposables) {
       try {
         disposable.dispose();
       } catch (e) {

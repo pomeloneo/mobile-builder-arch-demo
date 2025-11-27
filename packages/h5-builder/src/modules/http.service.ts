@@ -48,6 +48,7 @@ export type ErrorInterceptor = (error: Error) => Error | Promise<Error>;
  * 基于 JSBridge 的 fetch 实现，提供请求/响应拦截器、错误处理等功能
  */
 export class HttpService implements IDisposable {
+  readonly _serviceBrand: undefined;
   private disposables = new DisposableStore();
   private requestInterceptors: RequestInterceptor[] = [];
   private responseInterceptors: ResponseInterceptor[] = [];

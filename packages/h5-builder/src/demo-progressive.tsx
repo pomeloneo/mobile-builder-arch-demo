@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Injector } from './bedrock/di';
+import { ServiceCollection, InstantiationService } from './bedrock/di/index.common';
+import { IHttpService, ITrackerService, IBridgeService, IPageContextService, IJobScheduler } from './services/service-identifiers';
 import { BridgeService } from './modules/bridge.service';
 import { HttpService, createHttpService } from './modules/http.service';
 import { TrackerService } from './modules/tracker.service';
@@ -430,20 +431,28 @@ function ProgressiveDemoApp() {
 async function initializeProgressiveApp(
   onProgress: (model: BaseComponentModel | null, step: string) => void
 ): Promise<void> {
-  const globalInjector = new Injector(undefined, 'GlobalInjector');
+  // 1. 创建服务集合
+  const services = new ServiceCollection();
+
+  // 2. 创建服务实例
   const bridge = new BridgeService(true);
   const http = createHttpService(bridge, { baseURL: 'https://api.example.com' });
   const tracker = new TrackerService(bridge, { debug: true });
   const context = new PageContextService();
   const scheduler = new JobScheduler();
 
-  globalInjector.registerInstance(BridgeService, bridge);
-  globalInjector.registerInstance(HttpService, http);
-  globalInjector.registerInstance(TrackerService, tracker);
-  globalInjector.registerInstance(PageContextService, context);
-  globalInjector.registerInstance(JobScheduler, scheduler);
+  // 3. 注册服务
+  services.set(IBridgeService, bridge);
+  services.set(IHttpService, http);
+  services.set(ITrackerService, tracker);
+  services.set(IPageContextService, context);
+  services.set(IJobScheduler, scheduler);
 
-  const loader = new ComponentLoader(globalInjector, tracker);
+  // 4. 创建 InstantiationService
+  const instantiationService = new InstantiationService(services);
+
+  // 5. 创建 ComponentLoader
+  const loader: ComponentLoader = instantiationService.createInstance(ComponentLoader);
 
   // 使用新的分离加载 API
   loader.registerAsync('ProductCard', {

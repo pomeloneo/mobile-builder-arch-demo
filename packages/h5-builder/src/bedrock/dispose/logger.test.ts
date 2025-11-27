@@ -7,7 +7,7 @@ class Bar extends Disposable {
   constructor() {
     super();
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    this._register(makeSafeDisposable(() => {}));
+    this._register(makeSafeDisposable(() => { }));
   }
 }
 
@@ -32,8 +32,8 @@ describe('dispose store', () => {
     /* eslint-disable no-console */
     expect(console.log).toHaveBeenLastCalledWith([
       ['Foo', 'DisposableStore'],
+      ['DisposableStore', 'SafeDisposable'],  // LIFO: last registered, first disposed
       ['DisposableStore', 'Bar'],
-      ['DisposableStore', 'SafeDisposable'],
       ['Bar', 'DisposableStore'],
       ['DisposableStore', 'SafeDisposable'],
     ]);
@@ -56,8 +56,8 @@ describe('dispose store', () => {
     );
     expect(branchMock).toHaveBeenCalledTimes(5);
     expect(branchMock).toHaveBeenNthCalledWith(1, 'Foo', 'DisposableStore');
-    expect(branchMock).toHaveBeenNthCalledWith(2, 'DisposableStore', 'Bar');
-    expect(branchMock).toHaveBeenNthCalledWith(3, 'DisposableStore', 'SafeDisposable');
+    expect(branchMock).toHaveBeenNthCalledWith(2, 'DisposableStore', 'SafeDisposable');  // LIFO
+    expect(branchMock).toHaveBeenNthCalledWith(3, 'DisposableStore', 'Bar');
     expect(branchMock).toHaveBeenNthCalledWith(4, 'Bar', 'DisposableStore');
     expect(branchMock).toHaveBeenNthCalledWith(5, 'DisposableStore', 'SafeDisposable');
     expect(endMock).toHaveBeenCalled();

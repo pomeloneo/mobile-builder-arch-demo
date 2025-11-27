@@ -1,4 +1,5 @@
 import { observable } from 'mobx-vue-lite';
+import { IDisposable } from '../bedrock/dispose';
 
 /**
  * 用户信息
@@ -34,7 +35,8 @@ export interface RouteInfo {
  * 页面上下文服务
  * 提供页面级的共享状态，如用户信息、环境信息、路由信息等
  */
-export class PageContextService {
+export class PageContextService implements IDisposable {
+  readonly _serviceBrand: undefined;
   // 用户信息
   public userInfo: UserInfo | null = null;
 
@@ -123,6 +125,14 @@ export class PageContextService {
       query,
       hash: urlObj.hash,
     };
+  }
+
+  /**
+   * 销毁
+   */
+  dispose(): void {
+    this.userInfo = null;
+    this.routeInfo = null;
   }
 
   /**

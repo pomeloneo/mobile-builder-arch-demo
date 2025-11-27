@@ -37,6 +37,7 @@ declare global {
  * 提供统一的 JSBridge 调用接口，支持 Mock 模式用于浏览器调试
  */
 export class BridgeService implements IDisposable {
+  readonly _serviceBrand: undefined;
   private isDebug: boolean;
   private mockResponses: Map<string, any> = new Map();
 
