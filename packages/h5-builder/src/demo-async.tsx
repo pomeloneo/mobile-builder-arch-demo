@@ -13,16 +13,8 @@ import { ModelRenderer } from './components';
 import { BaseComponentModel } from './bedrock/model';
 import './demo.css';
 
-/**
- * 页面生命周期枚举
- */
-enum PageLifecycle {
-  Open = 0,      // 组件资源加载
-  Prepare = 1,   // 构建模型树
-  Ready = 2,     // 视图加载完成（暂未使用）
-  Completed = 3, // 数据初始化
-  Idle = 4,      // 闲时任务（暂未使用）
-}
+import { schema } from './mock/demo-data';
+import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob } from './jobs';
 
 /**
  * Demo 应用
@@ -93,137 +85,6 @@ function DemoApp() {
 }
 
 
-// 🎨 改进 Mock 数据生成 - 支持多种类型的请求
-const productNames = [
-  'iPhone 15 Pro Max', 'MacBook Pro 16"', 'AirPods Pro', 'iPad Air', 'Apple Watch Ultra',
-  'Sony WH-1000XM5', 'Nintendo Switch', 'PlayStation 5', 'Xbox Series X', 'Steam Deck',
-  'Canon EOS R5', 'DJI Mini 3 Pro', 'GoPro Hero 11', 'Kindle Oasis', 'Bose QuietComfort',
-  '戴森吹风机', '小米扫地机器人', '华为 Mate 60 Pro', 'OPPO Find X6', 'vivo X90 Pro',
-  '联想拯救者 Y9000P', '华硕 ROG 幻 16', '雷蛇灵刃 14', '微星绝影 GS66', '外星人 M15',
-  '罗技 MX Master 3S', 'Keychron K8', 'HHKB Professional', '索尼 A7M4', '富士 X-T5',
-];
-
-const productCategories = [
-  '手机数码', '电脑办公', '智能穿戴', '影音娱乐', '摄影摄像',
-  '游戏设备', '智能家居', '运动户外', '键鼠外设', '专业设备',
-];
-
-const productDescriptions = [
-  '全新升级，性能强劲，体验卓越',
-  '精工细作，品质保证，值得信赖',
-  '创新科技，引领潮流，彰显品味',
-  '轻薄便携，续航持久，随行无忧',
-  '专业级性能，满足你的所有需求',
-  '时尚设计，精致工艺，尽显优雅',
-  '智能体验，便捷生活，触手可及',
-  '高清画质，震撼音效，沉浸体验',
-  '人体工学设计，舒适握持，久用不累',
-  '旗舰配置，极致性能，畅快体验',
-];
-
-import { schema, textContents } from './mock/demo-data';
-
-/**
- * Job 1: 加载组件资源（Model 和 View）
- */
-class LoadComponentsJob extends AbstractJob<PageLifecycle> {
-  protected _name = 'LoadComponents';
-
-  constructor(
-    private loader: ComponentLoader,
-    private schema: ComponentSchema,
-    private onProgress: (msg: string) => void
-  ) {
-    super();
-  }
-
-  protected _executePhase(phase: PageLifecycle) {
-    if (phase !== PageLifecycle.Open) return;
-
-    const barrier = new Barrier();
-    this._setBarrier(phase, barrier);
-
-    this.onProgress('加载组件资源中...');
-    const { modelTreeReady, viewsReady } = this.loader.preloadComponents(this.schema);
-
-    Promise.all([modelTreeReady, viewsReady])
-      .then(() => {
-        this.onProgress('组件资源加载完成');
-        barrier.open();
-      })
-      .catch(err => {
-        console.error('组件资源加载失败:', err);
-        barrier.open();
-      });
-  }
-}
-
-/**
- * Job 2: 构建模型树
- */
-class BuildTreeJob extends AbstractJob<PageLifecycle> {
-  protected _name = 'BuildTree';
-  private rootModel?: BaseComponentModel;
-
-  constructor(
-    private loader: ComponentLoader,
-    private schema: ComponentSchema,
-    private onProgress: (model: BaseComponentModel | null, msg: string) => void
-  ) {
-    super();
-  }
-
-  protected _executePhase(phase: PageLifecycle) {
-    if (phase !== PageLifecycle.Prepare) return;
-
-    this.onProgress(null, '构建模型树中...');
-    this.rootModel = this.loader.buildModelTree(this.schema);
-    this.onProgress(this.rootModel, '模型树构建完成');
-  }
-
-  getRootModel() {
-    return this.rootModel;
-  }
-}
-
-/**
- * Job 3: 初始化数据（阻塞式）
- */
-class InitDataJob extends AbstractJob<PageLifecycle> {
-  protected _name = 'InitData';
-
-  constructor(
-    private getBuildTreeJob: () => BuildTreeJob,
-    private onProgress: (msg: string) => void
-  ) {
-    super();
-  }
-
-  protected _executePhase(phase: PageLifecycle) {
-    if (phase !== PageLifecycle.Completed) return;
-
-    const barrier = new Barrier();
-    this._setBarrier(phase, barrier);
-
-    const rootModel = this.getBuildTreeJob().getRootModel();
-    if (!rootModel) {
-      console.warn('rootModel 不存在，跳过数据初始化');
-      barrier.open();
-      return;
-    }
-
-    this.onProgress('初始化数据中...');
-    rootModel.init()
-      .then(() => {
-        this.onProgress('数据初始化完成');
-        barrier.open();
-      })
-      .catch(err => {
-        console.error('数据初始化失败:', err);
-        barrier.open();
-      });
-  }
-}
 
 /**
  * 创建并配置 JobScheduler
