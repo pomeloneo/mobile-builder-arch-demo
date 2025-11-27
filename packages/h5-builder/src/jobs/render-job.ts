@@ -21,7 +21,7 @@ export class RenderJob extends AbstractJob<PageLifecycle> {
   }
 
   protected _executePhase(phase: PageLifecycle) {
-    if (phase !== PageLifecycle.StartRender) return;
+    if (phase !== PageLifecycle.RenderReady) return;
 
     const rootModel = this.componentService.getRootModel();
     if (!rootModel) return;

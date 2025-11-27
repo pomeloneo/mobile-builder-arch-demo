@@ -26,12 +26,12 @@ export class InitDataJob extends AbstractJob<PageLifecycle> {
       case PageLifecycle.Open:
 
         break;
-      case PageLifecycle.LoadResouse:
+      case PageLifecycle.LoadComponentLogic:
 
         break;
       case PageLifecycle.Prepare:
         break;
-      case PageLifecycle.StartRender:
+      case PageLifecycle.RenderReady:
         break;
       case PageLifecycle.RenderCompleted:
         await this._whenCompleted();
