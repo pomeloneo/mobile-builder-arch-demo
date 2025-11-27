@@ -16,7 +16,8 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
 
   constructor(
     private onProgress: (model: BaseComponentModel | null, msg: string) => void,
-    @ISchemaService private schemaService: SchemaService
+    @ISchemaService private schemaService: SchemaService,
+    @IComponentService private componentService: ComponentService,
   ) {
     super();
   }
@@ -58,6 +59,8 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
 
     console.timeEnd('==================获取 schema 完成');
     this.onProgress(null, 'schema 获取完成');
+    // schema 获取完成后，开始预加载组件
+    this.componentService.preloadComponentsUnified(schema);
     this._schemaBarrier.open();
   }
 
