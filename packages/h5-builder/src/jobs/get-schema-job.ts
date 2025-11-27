@@ -52,8 +52,10 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
     this.onProgress(null, '获取 schema 中...');
     console.log('==================开始获取 schema');
     console.time('==================获取 schema 完成');
+    const schema = await this.schemaService.fetchSchema()
 
-    await this.schemaService.fetchSchema()
+    console.log('==================获取 schema 完成============', schema);
+
     console.timeEnd('==================获取 schema 完成');
     this.onProgress(null, 'schema 获取完成');
     this._schemaBarrier.open();

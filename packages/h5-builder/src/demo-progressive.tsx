@@ -14,6 +14,7 @@ import { schema } from './mock/demo-data';
 import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, RegisterComponentsJob, RenderJob } from './jobs';
 import './demo.css';
 import { SchemaService } from './services/schema.service';
+import { GetSchemaJob } from './jobs/get-schema-job';
 
 
 
@@ -85,6 +86,7 @@ function makeJobScheduler(
 
   // 注册 Jobs
   jobScheduler.registerJob(PageLifecycle.Open, RegisterComponentsJob);
+  jobScheduler.registerJob(PageLifecycle.Open, GetSchemaJob, onProgress);
   jobScheduler.registerJob(PageLifecycle.LoadResouse, LoadComponentsJob, schema, (msg: string) => onProgress(null, msg));
   jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob, onProgress);
   jobScheduler.registerJob(PageLifecycle.StartRender, RenderJob, onProgress);

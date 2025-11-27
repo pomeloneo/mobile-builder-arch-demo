@@ -28,9 +28,9 @@ export class BuildTreeJob extends AbstractJob<PageLifecycle> {
 
         break;
       case PageLifecycle.LoadResouse:
-        await this._whenPrepare();
         break;
       case PageLifecycle.Prepare:
+        await this._whenPrepare();
         break;
       case PageLifecycle.StartRender:
         break;

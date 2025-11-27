@@ -21,9 +21,14 @@ export class SchemaService implements IDisposable {
 
 
   async fetchSchema(): Promise<ComponentSchema> {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    this._schema = schema;
-    return schema;
+    const promise = new Promise<ComponentSchema>((resolve) => {
+      setTimeout(() => {
+        this._schema = schema;
+        resolve(schema)
+      }, 1000);
+    })
+
+    return promise;
   }
 
   dispose(): void {

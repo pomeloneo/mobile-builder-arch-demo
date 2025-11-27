@@ -574,34 +574,6 @@ export class ComponentService {
     };
   }
 
-  /**
- * 使用分离加载构建组件树
- */
-  public async buildTreeWithSplitLoading(schema: ComponentSchema): Promise<BaseComponentModel> {
-    try {
-      console.log('[ComponentLoader] Starting split loading...');
-
-      // 1. 启动双队列串行加载（立即返回，不等待）
-      const { modelTreeReady, viewsReady } = this.preloadComponents(schema);
-
-      // 2. 等待 Model 队列完成
-      await modelTreeReady;
-      console.log('[ComponentLoader] Model queue completed');
-
-      // 3. 构建 Model Tree（此时 View 还在后台加载）
-      const modelTree = this.buildModelTree(schema);
-      console.log('[ComponentLoader] Model tree built');
-
-      // 4. 等待 View 加载完成（不初始化数据，由外层控制）
-      await viewsReady;
-
-      console.log('[ComponentLoader] Split loading completed');
-      return modelTree;
-    } catch (error) {
-      console.error('[ComponentLoader] Split loading failed:', error);
-      return this.createErrorPlaceholder(schema, error as Error);
-    }
-  }
 
   /**
    * 构建 Model Tree（同步，所有 Model 已加载）
