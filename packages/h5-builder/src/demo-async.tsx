@@ -14,7 +14,7 @@ import { BaseComponentModel } from './bedrock/model';
 import './demo.css';
 
 import { schema } from './mock/demo-data';
-import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob } from './jobs';
+import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, RegisterComponentsJob } from './jobs';
 
 /**
  * Demo 应用
@@ -102,6 +102,7 @@ function makeJobScheduler(
 
   const buildTreeJob = new BuildTreeJob(loader, schema, onProgress);
 
+  jobScheduler.addJob(new RegisterComponentsJob(loader));
   jobScheduler.addJob(new LoadComponentsJob(loader, schema, (msg) => onProgress(null, msg)));
   jobScheduler.addJob(buildTreeJob);
   jobScheduler.addJob(new InitDataJob(() => buildTreeJob, (msg) => onProgress(null, msg)));
@@ -164,45 +165,7 @@ async function initializeApp(): Promise<BaseComponentModel> {
   // 3. 创建 ComponentLoader 并注册组件
   const loader = instantiationService.createInstance(ComponentLoader);
 
-  loader.registerAsync('ProductCard', {
-    model: () => import('./components/product-card').then(m => m.ProductCardModel),
-    view: () => import('./components/product-card').then(m => m.ProductCardView),
-  }, { priority: 'high', delayRange: [200, 800] });
 
-  loader.registerAsync('TextCard', {
-    model: () => import('./components/text-card').then(m => m.TextCardModel),
-    view: () => import('./components/text-card').then(m => m.TextCardView),
-  }, { priority: 'normal', delayRange: [300, 1000] });
-
-  loader.registerAsync('TabsContainer', {
-    model: () => import('./components/tabs-container').then(m => m.TabsContainerModel),
-    view: () => import('./components/tabs-container').then(m => m.TabsContainerView),
-  }, { priority: 'critical', delayRange: [100, 500] });
-
-  loader.registerAsync('ProductList', {
-    model: () => import('./components/simple-list').then(m => m.SimpleListModel),
-    view: () => import('./components/simple-list').then(m => m.SimpleListView),
-  }, { priority: 'high', delayRange: [150, 600] });
-
-  loader.registerAsync('ExperimentContainer', {
-    model: () => import('./components/experiment-container').then(m => m.ExperimentContainerModel),
-    view: () => import('./components/experiment-container').then(m => m.ExperimentContainerView),
-  }, { priority: 'normal', dependencies: ['TextCard', 'ProductCard'], delayRange: [400, 1200] });
-
-  loader.registerAsync('TimeBasedContainer', {
-    model: () => import('./components/time-based-container').then(m => m.TimeBasedContainerModel),
-    view: () => import('./components/time-based-container').then(m => m.TimeBasedContainerView),
-  }, { priority: 'high', delayRange: [300, 900] });
-
-  loader.registerAsync('GridLayoutContainer', {
-    model: () => import('./components/grid-layout-container').then(m => m.GridLayoutContainerModel),
-    view: () => import('./components/grid-layout-container').then(m => m.GridLayoutContainerView),
-  }, { priority: 'normal', delayRange: [250, 800] });
-
-  loader.registerAsync('ConditionalContainer', {
-    model: () => import('./components/conditional-container').then(m => m.ConditionalContainerModel),
-    view: () => import('./components/conditional-container').then(m => m.ConditionalContainerView),
-  }, { priority: 'normal', delayRange: [300, 1000] });
 
   // 4. 创建并驱动 JobScheduler
   const { jobScheduler, buildTreeJob } = makeJobScheduler(
