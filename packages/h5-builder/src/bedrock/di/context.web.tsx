@@ -1,5 +1,5 @@
 import { createContext, createElement, useContext, useMemo, type ReactElement } from 'react';
-import { lvAssertNotNil } from '@/assert';
+import { lvAssertNotNil } from '@/bedrock/assert';
 import type { IInstantiationService } from './instantiation-service.interface';
 import type { ServiceIdentifier, ServicesAccessor } from './base';
 
