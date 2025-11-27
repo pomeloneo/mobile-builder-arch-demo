@@ -58,7 +58,7 @@ function ProgressiveDemoApp() {
         {loading ? (
           <div className="app-loading">
             <div className="spinner"></div>
-            <p>正在构建组件树...</p>
+            <p>{status}...</p>
           </div>
         ) : (
           <div style={{ height: '720px', overflow: 'auto' }}>

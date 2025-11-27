@@ -6,8 +6,8 @@ import { BridgeService } from './services/bridge.service';
 import { HttpService } from './services/http.service';
 import { TrackerService } from './services/tracker.service';
 import { PageContextService } from './services/context.service';
-import { JobScheduler as LifecycleJobScheduler, AbstractJob } from './bedrock/launch';
-import { Barrier } from './bedrock/async/barrier';
+import { JobScheduler as LifecycleJobScheduler } from './bedrock/launch';
+
 import { ComponentService, ComponentSchema } from './services/component.service';
 import { ModelRenderer } from './components';
 import { BaseComponentModel } from './bedrock/model';
