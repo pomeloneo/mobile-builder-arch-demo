@@ -404,6 +404,8 @@ function ProgressiveDemoApp() {
 async function initializeProgressiveApp(
   onProgress: (model: BaseComponentModel | null, step: string) => void
 ): Promise<void> {
+  console.log('==========================services 开始初始化')
+  console.time('==========================services 初始化完成')
   // 1. 创建服务注册表
   const registry = new ServiceRegistry();
 
@@ -425,8 +427,17 @@ async function initializeProgressiveApp(
   // 3. 创建 InstantiationService
   const instantiationService = new InstantiationService(registry.makeCollection());
 
+  console.timeEnd('==========================services 初始化完成')
+
+
+
   // 5. 创建 ComponentLoader
   const loader: ComponentLoader = instantiationService.createInstance(ComponentLoader);
+
+
+
+  console.log('==========================组件加载器开始注册组件')
+  console.time('==========================组件加载器注册组件完成')
 
   // 使用新的分离加载 API
   loader.registerAsync('ProductCard', {
@@ -494,6 +505,8 @@ async function initializeProgressiveApp(
     delayRange: [300, 1000],
   });
 
+  console.timeEnd('==========================组件加载器注册组件完成')
+
   console.log('[Demo-Async] 🚀 Building component tree with split loading...');
 
   // 获取 Scheduler 实例
@@ -504,15 +517,33 @@ async function initializeProgressiveApp(
 
   // 1. 构建 Model Tree
   scheduler.register('build-tree', JobPriority.Prepare, async () => {
-    console.log('[ProgressiveDemo] 📋 build-tree task started');
-    onProgress(null, 'Building Model Tree...');
-    const start = performance.now();
 
-    rootModel = await loader.buildTreeWithSplitLoading(schema);
 
-    const duration = (performance.now() - start).toFixed(0);
-    console.log(`[ProgressiveDemo] ✅ Tree built in ${duration}ms`);
-    console.log(`[ProgressiveDemo] 🔍 rootModel:`, rootModel ? rootModel.id : 'null');
+
+    // 使用分离加载 API (手动控制流程)
+    onProgress(null, 'Loading component resources...');
+    console.log('==========================组件的model资源加载开始')
+    console.time('==========================组件的model资源加载完成')
+    const { modelTreeReady, viewsReady } = loader.preloadComponents(schema);
+
+    // 等待 Model 加载
+    await modelTreeReady;
+    console.timeEnd('==========================组件的model资源加载完成')
+    onProgress(null, 'Models loaded, building tree...');
+
+    console.log('==================开始构建逻辑树')
+    console.time('==================构建逻辑树完成')
+
+    // 构建树
+    rootModel = loader.buildModelTree(schema);
+    console.timeEnd('==================构建逻辑树完成')
+
+    // 等待 View 加载
+    onProgress(null, 'Loading views...');
+    await viewsReady;
+    console.timeEnd('==================组件 view 资源加载完成')
+
+
 
     // 🔥 核心：构建完立即返回 Model，不等待数据加载
     console.log('[ProgressiveDemo] 📤 Calling onProgress with rootModel...');

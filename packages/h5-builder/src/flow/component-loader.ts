@@ -532,10 +532,10 @@ export class ComponentLoader {
   }
 
   /**
-   * 双队列串行加载
+   * 双队列串行加载 (Public API)
    * 先加载所有 Model，再加载所有 View
    */
-  private loadWithDualQueue(schema: ComponentSchema): {
+  public preloadComponents(schema: ComponentSchema): {
     modelTreeReady: Promise<void>;
     viewsReady: Promise<void>;
   } {
@@ -561,7 +561,8 @@ export class ComponentLoader {
 
     // View 加载必须等待 Model 完成后才开始
     const viewPromise = modelPromise.then(() => {
-      console.log('[ComponentLoader] All models loaded, starting view loading...');
+      console.log('==================开始加载组件 view 资源')
+      console.time('==================组件 view 资源加载完成')
       return this.processQueue(viewQueue, this.VIEW_CONCURRENCY);
     });
 
@@ -579,7 +580,7 @@ export class ComponentLoader {
       console.log('[ComponentLoader] Starting split loading...');
 
       // 1. 启动双队列串行加载（立即返回，不等待）
-      const { modelTreeReady, viewsReady } = this.loadWithDualQueue(schema);
+      const { modelTreeReady, viewsReady } = this.preloadComponents(schema);
 
       // 2. 等待 Model 队列完成
       await modelTreeReady;
@@ -603,7 +604,7 @@ export class ComponentLoader {
   /**
    * 构建 Model Tree（同步，所有 Model 已加载）
    */
-  private buildModelTree(schema: ComponentSchema): BaseComponentModel {
+  public buildModelTree(schema: ComponentSchema): BaseComponentModel {
     // 此时所有 Model 已加载，可以同步构建
     return this.buildTree(schema);
   }
