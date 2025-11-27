@@ -1,7 +1,7 @@
 import { IInstantiationService } from '../bedrock/di/index.common';
 import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
 import { ITrackerService } from '../services/service-identifiers';
-import type { TrackerService } from '../modules/tracker.service';
+import type { TrackerService } from '../services/tracker.service';
 import { ErrorPlaceholderModel } from './placeholders';
 import { registerModelView } from '../components/model-renderer';
 

@@ -1,8 +1,8 @@
 import { createDecorator } from '../bedrock/di/index.common';
-import type { HttpService } from '../modules/http.service';
-import type { TrackerService } from '../modules/tracker.service';
-import type { BridgeService } from '../modules/bridge.service';
-import type { PageContextService } from '../modules/context.service';
+import type { HttpService } from './http.service';
+import type { TrackerService } from './tracker.service';
+import type { BridgeService } from './bridge.service';
+import type { PageContextService } from './context.service';
 
 /**
  * Service identifiers for dependency injection

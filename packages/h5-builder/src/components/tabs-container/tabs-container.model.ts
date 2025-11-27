@@ -1,6 +1,6 @@
 import { BaseContainerModel } from '../../bedrock/model';
 import { ITrackerService } from '../../services/service-identifiers';
-import type { TrackerService } from '../../modules/tracker.service';
+import type { TrackerService } from '../../services/tracker.service';
 import { VirtualListModel } from '../virtual-list/virtual-list.model';
 
 /**
