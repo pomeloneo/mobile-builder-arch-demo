@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { DisposableStore, IDisposable } from '../kernel/disposable';
+import { DisposableStore, IDisposable } from '../bedrock/disposable';
 
 describe('DisposableStore', () => {
   it('should add and dispose function resources', () => {

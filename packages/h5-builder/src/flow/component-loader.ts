@@ -1,5 +1,5 @@
-import { Injector } from '../kernel/di';
-import { BaseComponentModel, BaseContainerModel } from '../kernel/model';
+import { Injector } from '../bedrock/di';
+import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
 import { TrackerService } from '../modules/tracker.service';
 import { ErrorPlaceholderModel } from './placeholders';
 import { registerModelView } from '../components/model-renderer';

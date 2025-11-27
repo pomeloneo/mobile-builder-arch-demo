@@ -1,5 +1,5 @@
 import React from 'react';
-import { BaseComponentModel, BaseContainerModel } from '../kernel/model';
+import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
 import { ProductCardModel, ProductCardView } from './product-card';
 import { TabsContainerModel, TabsContainerView } from './tabs-container';
 import { ErrorPlaceholderModel, LoadingPlaceholderModel, EmptyPlaceholderModel } from '../flow/placeholders';

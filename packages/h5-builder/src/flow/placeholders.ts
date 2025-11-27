@@ -1,4 +1,4 @@
-import { BaseComponentModel } from '../kernel/model';
+import { BaseComponentModel } from '../bedrock/model';
 
 /**
  * 错误占位组件 Model

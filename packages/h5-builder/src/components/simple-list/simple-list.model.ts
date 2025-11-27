@@ -1,4 +1,4 @@
-import { BaseContainerModel } from '../../kernel/model';
+import { BaseContainerModel } from '../../bedrock/model';
 
 /**
  * 简单列表容器 Model

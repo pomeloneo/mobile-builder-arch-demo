@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Injector } from './kernel/di';
+import { Injector } from './bedrock/di';
 import { BridgeService } from './modules/bridge.service';
 import { HttpService, createHttpService } from './modules/http.service';
 import { TrackerService } from './modules/tracker.service';
@@ -26,7 +26,7 @@ import {
   GridLayoutContainerView,
   ConditionalContainerView,
 } from './components';
-import { BaseComponentModel } from './kernel/model';
+import { BaseComponentModel } from './bedrock/model';
 import './demo.css';
 
 /**

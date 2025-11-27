@@ -1,4 +1,4 @@
-import { BaseComponentModel } from '../../kernel/model';
+import { BaseComponentModel } from '../../bedrock/model';
 
 /**
  * 文本卡片 Props

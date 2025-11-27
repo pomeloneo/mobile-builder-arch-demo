@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BaseComponentModel, BaseContainerModel } from '../kernel/model';
+import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
 
 // 测试用的简单 Model
 class TestModel extends BaseComponentModel<{ value: number }> {

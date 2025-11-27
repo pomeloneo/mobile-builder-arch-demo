@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Injector, Inject } from '../kernel/di';
-import { IDisposable } from '../kernel/disposable';
+import { Injector, Inject } from '../bedrock/di';
+import { IDisposable } from '../bedrock/disposable';
 
 // 测试用的 Service
 class TestService implements IDisposable {

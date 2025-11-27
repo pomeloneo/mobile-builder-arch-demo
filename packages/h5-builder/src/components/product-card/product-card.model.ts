@@ -1,5 +1,5 @@
-import { BaseComponentModel } from '../../kernel/model';
-import { Inject } from '../../kernel/di';
+import { BaseComponentModel } from '../../bedrock/model';
+import { Inject } from '../../bedrock/di';
 import { HttpService } from '../../modules/http.service';
 import { TrackerService } from '../../modules/tracker.service';
 

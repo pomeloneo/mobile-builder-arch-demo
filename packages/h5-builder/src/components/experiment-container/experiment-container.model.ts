@@ -1,5 +1,5 @@
-import { BaseContainerModel } from '../../kernel/model';
-import { Inject } from '../../kernel/di';
+import { BaseContainerModel } from '../../bedrock/model';
+import { Inject } from '../../bedrock/di';
 import { HttpService } from '../../modules/http.service';
 
 /**

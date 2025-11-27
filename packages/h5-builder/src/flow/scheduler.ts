@@ -1,4 +1,4 @@
-import { IDisposable, DisposableStore } from '../kernel/disposable';
+import { IDisposable, DisposableStore } from '../bedrock/disposable';
 
 /**
  * 任务优先级/生命周期阶段
