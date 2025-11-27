@@ -1,5 +1,5 @@
 import { IInstantiationService } from '../instantiation-service.interface';
-import { lvSchedulerCallback } from '@/scheduler';
+import { lvSchedulerCallback } from '@/bedrock/scheduler';
 import { type ILazyServiceLoader, LazyServiceLoader } from './lazy-service';
 import { SyncDescriptor } from '../descriptor';
 import type { BrandedService } from '../base';

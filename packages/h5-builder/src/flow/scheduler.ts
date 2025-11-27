@@ -1,4 +1,4 @@
-import { IDisposable, DisposableStore } from '../bedrock/disposable';
+import { IDisposable, DisposableStore } from '../bedrock/dispose';
 
 /**
  * 任务优先级/生命周期阶段
@@ -127,12 +127,12 @@ export class JobScheduler implements IDisposable {
         }
       }, { timeout: 2000 }); // 2秒超时强制执行
 
-      this.disposables.add(() => (window as any).cancelIdleCallback(handle));
+      this.disposables.add({ dispose: () => (window as any).cancelIdleCallback(handle) });
     } else {
       // 降级方案：使用 setTimeout 模拟
       // 50ms 延迟，给主线程留出呼吸时间
       const timer = setTimeout(fn, 50);
-      this.disposables.add(() => clearTimeout(timer));
+      this.disposables.add({ dispose: () => clearTimeout(timer) });
     }
   }
 

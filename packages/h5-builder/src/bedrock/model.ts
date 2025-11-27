@@ -1,5 +1,5 @@
 import { observable } from 'mobx-vue-lite';
-import { DisposableStore, IDisposable } from './disposable';
+import { DisposableStore, IDisposable } from './dispose';
 
 /**
  * 组件 Model 基类
@@ -35,7 +35,11 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
    * this.register(() => clearInterval(timerId));
    */
   protected register<T extends IDisposable | (() => void)>(resource: T): T {
-    return this._disposables.add(resource);
+    if (typeof resource === 'function') {
+      this._disposables.add({ dispose: resource });
+      return resource as T;
+    }
+    return this._disposables.add(resource as IDisposable) as T;
   }
 
   /**

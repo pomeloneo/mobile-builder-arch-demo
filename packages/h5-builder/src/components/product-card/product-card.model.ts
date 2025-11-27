@@ -1,7 +1,7 @@
 import { BaseComponentModel } from '../../bedrock/model';
-import { Inject } from '../../bedrock/di';
-import { HttpService } from '../../modules/http.service';
-import { TrackerService } from '../../modules/tracker.service';
+import { IHttpService, ITrackerService } from '../../services/service-identifiers';
+import type { HttpService } from '../../modules/http.service';
+import type { TrackerService } from '../../modules/tracker.service';
 
 /**
  * 商品数据
@@ -33,8 +33,8 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
   constructor(
     id: string,
     props: ProductCardProps,
-    @Inject(HttpService) private http: HttpService,
-    @Inject(TrackerService) private tracker: TrackerService
+    @IHttpService private http: HttpService,
+    @ITrackerService private tracker: TrackerService
   ) {
     super(id, props);
   }

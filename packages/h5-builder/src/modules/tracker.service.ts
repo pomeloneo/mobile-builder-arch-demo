@@ -1,4 +1,4 @@
-import { IDisposable, DisposableStore } from '../bedrock/disposable';
+import { IDisposable, DisposableStore } from '../bedrock/dispose';
 import { BridgeService } from './bridge.service';
 
 /**
@@ -56,8 +56,10 @@ export class TrackerService implements IDisposable {
     // 页面卸载前发送剩余埋点
     const beforeUnloadHandler = () => this.flush();
     window.addEventListener('beforeunload', beforeUnloadHandler);
-    this.disposables.add(() => {
-      window.removeEventListener('beforeunload', beforeUnloadHandler);
+    this.disposables.add({
+      dispose: () => {
+        window.removeEventListener('beforeunload', beforeUnloadHandler);
+      }
     });
   }
 
@@ -212,7 +214,7 @@ export class TrackerService implements IDisposable {
   dispose(): void {
     // 清除定时器
     if (this.flushTimer) {
-      clearTimeout(this.flushTimer);
+      this.disposables.add({ dispose: () => clearInterval(this.flushTimer!) });
       this.flushTimer = undefined;
     }
 

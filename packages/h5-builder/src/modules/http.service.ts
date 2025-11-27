@@ -1,4 +1,4 @@
-import { IDisposable, DisposableStore } from '../bedrock/disposable';
+import { IDisposable, DisposableStore } from '../bedrock/dispose';
 import { BridgeService } from './bridge.service';
 
 /**

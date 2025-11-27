@@ -1,4 +1,4 @@
-import { IDisposable } from '../bedrock/disposable';
+import { IDisposable } from '../bedrock/dispose';
 
 /**
  * JSBridge 调用参数
