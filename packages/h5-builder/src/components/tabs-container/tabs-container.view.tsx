@@ -33,7 +33,7 @@ export const TabsContainerView: React.FC<TabsContainerViewProps> = observer(
             const itemCount = child.children?.length || 0;
             const isVirtual = model.isVirtualScrollEnabled(index);
             const defaultTitle = tabTitles[index] || `Tab ${index + 1}`;
-            const title = `${defaultTitle} (${itemCount} items${isVirtual ? ' - Virtual' : ''})`;
+            const title = `${defaultTitle}${isVirtual ? '-Virtual' : ''}`;
 
             return (
               <button
