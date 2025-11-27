@@ -584,6 +584,38 @@ export class ComponentService {
     await Promise.all(executing);
   }
 
+  /**
+   * 处理 Promise 队列（带并发控制）
+   * 对已创建的 Promise 数组进行并发控制，不需要分类收集
+   */
+  private async processPromiseQueue(
+    promises: Array<Promise<any>>,
+    concurrency: number
+  ): Promise<void> {
+    const executing: Promise<void>[] = [];
+
+    for (const promise of promises) {
+      // 包装为 void Promise 用于并发控制
+      const wrappedPromise = promise.then(() => {
+        // 从执行列表移除
+        const index = executing.indexOf(wrappedPromise);
+        if (index !== -1) {
+          executing.splice(index, 1);
+        }
+      });
+
+      executing.push(wrappedPromise);
+
+      // 并发控制
+      if (executing.length >= concurrency) {
+        await Promise.race(executing);
+      }
+    }
+
+    // 等待所有任务完成
+    await Promise.all(executing);
+  }
+
 
 
   /**
@@ -604,49 +636,37 @@ export class ComponentService {
 
     const componentNames = Array.from(uniqueTypes);
 
-    // 构建统一任务队列
-    const tasks: Array<{ type: 'model' | 'view'; componentName: string; execute: () => Promise<any> }> = [];
+    // 🔥 关键：在构建队列时就创建所有 Promise 并分类收集
+    const modelPromises = new Map<string, Promise<any>>();
+    const viewPromises = new Map<string, Promise<any>>();
+    const tasks: Array<Promise<any>> = [];
 
     // 先添加所有 Model 任务
     componentNames.forEach(name => {
-      tasks.push({
-        type: 'model',
-        componentName: name,
-        execute: () => this.loadModel(name)
-      });
+      const promise = this.loadModel(name);
+      modelPromises.set(name, promise);
+      tasks.push(promise);
     });
 
     // 再添加所有 View 任务
     componentNames.forEach(name => {
-      tasks.push({
-        type: 'view',
-        componentName: name,
-        execute: () => this.loadView(name)
-      });
+      const promise = this.loadView(name);
+      viewPromises.set(name, promise);
+      tasks.push(promise);
     });
 
-    // 分类收集 Promise
-    const result: {
-      modelPromises: Map<string, Promise<any>>;
-      viewPromises: Map<string, Promise<any>>;
-    } = {
-      modelPromises: new Map(),
-      viewPromises: new Map()
-    };
-
-    // 🔥 关键：不 await，让队列在后台执行
-    // 这样 modelTreeReady 可以在 Model 完成时立即 resolve，不用等 View
-    this.processUnifiedQueue(tasks, this.TOTAL_CONCURRENCY, result);
+    // 🔥 关键：使用 Promise 队列进行并发控制
+    this.processPromiseQueue(tasks, this.TOTAL_CONCURRENCY);
 
     // Model 全部加载完成
-    const modelTreeReady = Promise.all(Array.from(result.modelPromises.values())).then(() => {
+    const modelTreeReady = Promise.all(Array.from(modelPromises.values())).then(() => {
       console.log('✅ 所有 Model 加载完成');
     });
 
     // 所有资源加载完成后，统一建立映射关系
     const viewsReady = Promise.all([
-      ...Array.from(result.modelPromises.values()),
-      ...Array.from(result.viewPromises.values())
+      ...Array.from(modelPromises.values()),
+      ...Array.from(viewPromises.values())
     ]).then(() => {
       console.log('✅ 所有资源加载完成，开始建立映射关系');
       this.registerModelViewMappings(componentNames);
