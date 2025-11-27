@@ -277,44 +277,29 @@ export class ComponentLoader {
   registerAsync(
     componentName: string,
     config:
-      | (() => Promise<{ Model: any; View: any }>)
-      | {
+      {
         model?: () => Promise<any>;
         view?: () => Promise<any>;
         loader?: () => Promise<{ Model: any; View: any }>;
       },
     metadata?: ComponentMetadata
   ): void {
-    // 兼容旧 API: 直接传入 loader 函数
-    if (typeof config === 'function') {
-      const loader = config;
+    if (config.model) {
+      this.modelLoaders.set(componentName, config.model);
+    }
+    if (config.view) {
+      this.viewLoaders.set(componentName, config.view);
+    }
+    // 兼容统一 loader
+    if (config.loader) {
       this.modelLoaders.set(componentName, async () => {
-        const { Model } = await loader();
+        const { Model } = await config.loader!();
         return Model;
       });
       this.viewLoaders.set(componentName, async () => {
-        const { View } = await loader();
+        const { View } = await config.loader!();
         return View;
       });
-    } else {
-      // 新 API: 分离的 loader
-      if (config.model) {
-        this.modelLoaders.set(componentName, config.model);
-      }
-      if (config.view) {
-        this.viewLoaders.set(componentName, config.view);
-      }
-      // 兼容统一 loader
-      if (config.loader) {
-        this.modelLoaders.set(componentName, async () => {
-          const { Model } = await config.loader!();
-          return Model;
-        });
-        this.viewLoaders.set(componentName, async () => {
-          const { View } = await config.loader!();
-          return View;
-        });
-      }
     }
 
     if (metadata) {
@@ -329,7 +314,11 @@ export class ComponentLoader {
     components: Record<
       string,
       {
-        loader: () => Promise<{ Model: any; View: any }>;
+        loader: {
+          model?: () => Promise<any>;
+          view?: () => Promise<any>;
+          loader?: () => Promise<{ Model: any; View: any }>;
+        }
         metadata?: ComponentMetadata;
       }
     >
@@ -396,7 +385,6 @@ export class ComponentLoader {
 
       // 4. 加载 Model
       const Model = await loader();
-
       // 5. 注册到 registry (用于 buildTree)
       this.registry.register(componentName, Model);
 
@@ -452,6 +440,7 @@ export class ComponentLoader {
 
       // 5. 获取对应的 Model
       const Model = this.modelCache.get(componentName);
+
       if (!Model) {
         throw new Error(`Model not loaded: ${componentName}`);
       }
@@ -557,12 +546,19 @@ export class ComponentLoader {
       }
     });
 
-    // 并行启动两个队列
+    // 🔥 关键：先加载所有 Model，再加载 View
+    // Model 必须先于 View 加载，因为 View 注册时需要 Model 已经存在
     const modelPromise = this.processQueue(modelQueue, this.MODEL_CONCURRENCY);
+
+    // 等待所有 Model 加载完成
+    await modelPromise;
+    console.log('[ComponentLoader] All models loaded, starting view loading...');
+
+    // 然后再加载 View
     const viewPromise = this.processQueue(viewQueue, this.VIEW_CONCURRENCY);
 
     return {
-      modelTreeReady: modelPromise,
+      modelTreeReady: Promise.resolve(), // Model 已经加载完成
       viewsReady: viewPromise,
     };
   }
