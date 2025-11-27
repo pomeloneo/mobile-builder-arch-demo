@@ -33,9 +33,8 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
     Promise.all([modelTreeReady, viewsReady])
       .then(() => {
         console.timeEnd('==========================组件的model资源加载完成');
-        console.log('==================开始加载组件 view 资源');
-        console.time('==================组件 view 资源加载完成');
-        console.timeEnd('==================组件 view 资源加载完成');
+
+
         this.onProgress('组件资源加载完成');
         barrier.open();
       })
