@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { InstantiationService, ServiceRegistry, SyncDescriptor } from './bedrock/di/index.common';
-import { IHttpService, ITrackerService, IBridgeService, IPageContextService } from './services/service-identifiers';
+import { IHttpService, ITrackerService, IBridgeService, IPageContextService, IComponentService } from './services/service-identifiers';
 import { BridgeService } from './services/bridge.service';
 import { HttpService } from './services/http.service';
 import { TrackerService } from './services/tracker.service';
 import { PageContextService } from './services/context.service';
-import { JobScheduler as LifecycleJobScheduler, AbstractJob } from './bedrock/launch';
-import { Barrier } from './bedrock/async/barrier';
-import { ComponentLoader, ComponentSchema } from './flow/component-loader';
+import { ComponentService, ComponentSchema } from './services/component.service';
+import { JobScheduler as LifecycleJobScheduler } from './bedrock/launch';
 import { ModelRenderer } from './components';
 import { BaseComponentModel } from './bedrock/model';
 import { schema } from './mock/demo-data';
@@ -74,7 +73,6 @@ function ProgressiveDemoApp() {
  */
 function makeJobScheduler(
   instantiationService: InstantiationService,
-  loader: ComponentLoader,
   schema: ComponentSchema,
   onProgress: (model: BaseComponentModel | null, step: string) => void
 ) {
@@ -83,17 +81,15 @@ function makeJobScheduler(
     PageLifecycle.Open
   );
 
-  // 创建 Job 实例
-  const buildTreeJob = new BuildTreeJob(loader, schema, onProgress);
-
   // 注册 Jobs
-  jobScheduler.addJob(new RegisterComponentsJob(loader));
-  jobScheduler.addJob(new LoadComponentsJob(loader, schema, (msg) => onProgress(null, msg)));
-  jobScheduler.addJob(buildTreeJob);
-  jobScheduler.addJob(new RenderJob(buildTreeJob, onProgress));
-  jobScheduler.addJob(new InitDataJob(() => buildTreeJob, (msg) => onProgress(null, msg)));
+  jobScheduler.registerJob(PageLifecycle.Open, RegisterComponentsJob);
+  jobScheduler.registerJob(PageLifecycle.Open, LoadComponentsJob, schema, (msg: string) => onProgress(null, msg));
 
-  return { jobScheduler, buildTreeJob };
+  jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob, schema, onProgress);
+  jobScheduler.registerJob(PageLifecycle.Render, RenderJob, () => jobScheduler.getJob('BuildTree'), onProgress);
+  jobScheduler.registerJob(PageLifecycle.Completed, InitDataJob, () => jobScheduler.getJob('BuildTree'), (msg: string) => onProgress(null, msg));
+
+  return { jobScheduler, buildTreeJob: null };
 }
 
 /**
@@ -152,19 +148,14 @@ async function initializeProgressiveApp(
   registry.register(ITrackerService, new SyncDescriptor(TrackerService, [
     { debug: true }
   ]));
+  registry.register(IComponentService, ComponentService);
 
   const instantiationService = new InstantiationService(registry.makeCollection());
   console.timeEnd('==========================services 初始化完成');
 
-  // 2. 创建 ComponentLoader 并注册组件
-  const loader = instantiationService.createInstance(ComponentLoader);
-
-
-
-  // 3. 创建并驱动 JobScheduler
+  // 2. 创建并驱动 JobScheduler
   const { jobScheduler, buildTreeJob } = makeJobScheduler(
     instantiationService,
-    loader,
     schema,
     onProgress
   );

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ComponentLoader, ComponentSchema } from '../flow/component-loader';
+import { ComponentService, ComponentSchema } from '../services/component.service';
 import { ServiceCollection, InstantiationService } from '../bedrock/di/index.common';
 import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
 import { ITrackerService } from '../services/service-identifiers';
@@ -21,11 +21,11 @@ class TestContainerModel extends BaseContainerModel {
   }
 }
 
-describe('ComponentLoader', () => {
+describe('ComponentService', () => {
   let services: ServiceCollection;
   let instantiationService: InstantiationService;
   let tracker: TrackerService;
-  let loader: ComponentLoader;
+  let loader: ComponentService;
 
   beforeEach(() => {
     services = new ServiceCollection();
@@ -36,7 +36,7 @@ describe('ComponentLoader', () => {
     services.set(ITrackerService, tracker);
     instantiationService = new InstantiationService(services);
 
-    loader = instantiationService.createInstance(ComponentLoader);
+    loader = instantiationService.createInstance(ComponentService);
   });
 
   describe('Component Registration', () => {

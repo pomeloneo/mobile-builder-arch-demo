@@ -11,7 +11,7 @@ export class RenderJob extends AbstractJob<PageLifecycle> {
   protected _name = 'Render';
 
   constructor(
-    private buildTreeJob: BuildTreeJob,
+    private getBuildTreeJob: () => BuildTreeJob | undefined,
     private onProgress: (model: BaseComponentModel | null, msg: string) => void
   ) {
     super();
@@ -20,7 +20,10 @@ export class RenderJob extends AbstractJob<PageLifecycle> {
   protected _executePhase(phase: PageLifecycle) {
     if (phase !== PageLifecycle.Render) return;
 
-    const rootModel = this.buildTreeJob.getRootModel();
+    const buildTreeJob = this.getBuildTreeJob();
+    if (!buildTreeJob) return;
+
+    const rootModel = buildTreeJob.getRootModel();
     if (rootModel) {
       this.onProgress(rootModel, '模型树就绪，开始渲染');
       rootModel.activate();

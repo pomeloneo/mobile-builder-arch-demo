@@ -1,5 +1,7 @@
 import { AbstractJob } from '../bedrock/launch';
-import { ComponentLoader, ComponentSchema } from '../flow/component-loader';
+import type { ComponentService } from '../services/component.service';
+import { type ComponentSchema } from '../services/component.service';
+import { IComponentService } from '../services/service-identifiers';
 import { BaseComponentModel } from '../bedrock/model';
 import { PageLifecycle } from './types';
 
@@ -11,9 +13,9 @@ export class BuildTreeJob extends AbstractJob<PageLifecycle> {
   private rootModel?: BaseComponentModel;
 
   constructor(
-    private loader: ComponentLoader,
     private schema: ComponentSchema,
-    private onProgress: (model: BaseComponentModel | null, msg: string) => void
+    private onProgress: (model: BaseComponentModel | null, msg: string) => void,
+    @IComponentService private componentService: ComponentService
   ) {
     super();
   }
@@ -25,7 +27,7 @@ export class BuildTreeJob extends AbstractJob<PageLifecycle> {
     console.log('==================开始构建逻辑树');
     console.time('==================构建逻辑树完成');
 
-    this.rootModel = this.loader.buildModelTree(this.schema);
+    this.rootModel = this.componentService.buildModelTree(this.schema);
 
     console.timeEnd('==================构建逻辑树完成');
     this.onProgress(this.rootModel, '模型树构建完成');

@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { InstantiationService, ServiceRegistry, SyncDescriptor } from './bedrock/di/index.common';
-import { IHttpService, ITrackerService, IBridgeService, IPageContextService } from './services/service-identifiers';
+import { IHttpService, ITrackerService, IBridgeService, IPageContextService, IComponentService } from './services/service-identifiers';
 import { BridgeService } from './services/bridge.service';
 import { HttpService } from './services/http.service';
 import { TrackerService } from './services/tracker.service';
 import { PageContextService } from './services/context.service';
 import { JobScheduler as LifecycleJobScheduler, AbstractJob } from './bedrock/launch';
 import { Barrier } from './bedrock/async/barrier';
-import { ComponentLoader, ComponentSchema } from './flow/component-loader';
+import { ComponentService, ComponentSchema } from './services/component.service';
 import { ModelRenderer } from './components';
 import { BaseComponentModel } from './bedrock/model';
 import './demo.css';
@@ -91,7 +91,6 @@ function DemoApp() {
  */
 function makeJobScheduler(
   instantiationService: InstantiationService,
-  loader: ComponentLoader,
   schema: ComponentSchema,
   onProgress: (model: BaseComponentModel | null, msg: string) => void
 ) {
@@ -100,13 +99,15 @@ function makeJobScheduler(
     PageLifecycle.Open
   );
 
-  const buildTreeJob = new BuildTreeJob(loader, schema, onProgress);
+  // 注册独立的 Jobs
+  jobScheduler.registerJob(PageLifecycle.Open, RegisterComponentsJob);
+  jobScheduler.registerJob(PageLifecycle.Open, LoadComponentsJob, schema, (msg: string) => onProgress(null, msg));
 
-  jobScheduler.addJob(new RegisterComponentsJob(loader));
-  jobScheduler.addJob(new LoadComponentsJob(loader, schema, (msg) => onProgress(null, msg)));
-  jobScheduler.addJob(buildTreeJob);
-  jobScheduler.addJob(new RenderJob(buildTreeJob, (model, msg) => onProgress(model, msg)));
-  jobScheduler.addJob(new InitDataJob(() => buildTreeJob, (msg) => onProgress(null, msg)));
+  const buildTreeJob = new BuildTreeJob(schema, onProgress, null as any); // 临时创建以获取引用
+  jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob, schema, onProgress);
+
+  // 对于需要 BuildTreeJob 引用的 Jobs，在 prepare 后才能添加
+  return { jobScheduler, buildTreeJob: null };
 
   return { jobScheduler, buildTreeJob };
 }
@@ -153,6 +154,7 @@ async function initializeApp(): Promise<BaseComponentModel> {
   registry.register(ITrackerService, new SyncDescriptor(TrackerService, [
     { debug: true, maxBatchSize: 10, flushInterval: 3000 }
   ]));
+  registry.register(IComponentService, ComponentService);
 
   const instantiationService = new InstantiationService(registry.makeCollection());
 
@@ -161,22 +163,16 @@ async function initializeApp(): Promise<BaseComponentModel> {
   context.setEnvInfo(context.detectEnv());
   context.setRouteInfo(context.parseRouteFromURL());
 
-  // 3. 创建 ComponentLoader 并注册组件
-  const loader = instantiationService.createInstance(ComponentLoader);
-
-
-
-  // 4. 创建并驱动 JobScheduler
+  // 3. 创建并驱动 JobScheduler
   const { jobScheduler, buildTreeJob } = makeJobScheduler(
     instantiationService,
-    loader,
     schema,
-    (model, msg) => console.log('[Demo-Async]', msg)
+    (model: BaseComponentModel | null, msg: string) => console.log('[Demo-Async]', msg)
   );
 
   await driveJobScheduler(jobScheduler, (model, msg) => console.log('[Demo-Async]', msg));
 
-  const rootModel = buildTreeJob.getRootModel();
+  const rootModel = (jobScheduler.getJob('BuildTree') as BuildTreeJob)?.getRootModel();
   if (!rootModel) {
     throw new Error('Failed to build root model');
   }

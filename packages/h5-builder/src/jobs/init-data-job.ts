@@ -10,7 +10,7 @@ export class InitDataJob extends AbstractJob<PageLifecycle> {
   protected _name = 'InitData';
 
   constructor(
-    private getBuildTreeJob: () => BuildTreeJob,
+    private getBuildTreeJob: () => BuildTreeJob | undefined,
     private onProgress: (msg: string) => void
   ) {
     super();
@@ -22,7 +22,8 @@ export class InitDataJob extends AbstractJob<PageLifecycle> {
     const barrier = new Barrier();
     this._setBarrier(phase, barrier);
 
-    const rootModel = this.getBuildTreeJob().getRootModel();
+    const buildTreeJob = this.getBuildTreeJob();
+    const rootModel = buildTreeJob?.getRootModel();
     if (!rootModel) {
       console.warn('rootModel 不存在，跳过数据初始化');
       barrier.open();

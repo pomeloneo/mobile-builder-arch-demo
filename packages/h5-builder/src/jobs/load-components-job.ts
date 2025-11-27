@@ -1,6 +1,8 @@
 import { AbstractJob } from '../bedrock/launch';
 import { Barrier } from '../bedrock/async/barrier';
-import { ComponentLoader, ComponentSchema } from '../flow/component-loader';
+import type { ComponentService } from '../services/component.service';
+import { type ComponentSchema } from '../services/component.service';
+import { IComponentService } from '../services/service-identifiers';
 import { PageLifecycle } from './types';
 
 /**
@@ -10,9 +12,9 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
   protected _name = 'LoadComponents';
 
   constructor(
-    private loader: ComponentLoader,
     private schema: ComponentSchema,
-    private onProgress: (msg: string) => void
+    private onProgress: (msg: string) => void,
+    @IComponentService private componentService: ComponentService
   ) {
     super();
   }
@@ -27,7 +29,7 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
     console.log('==========================组件的model资源加载开始');
     console.time('==========================组件的model资源加载完成');
 
-    const { modelTreeReady, viewsReady } = this.loader.preloadComponents(this.schema);
+    const { modelTreeReady, viewsReady } = this.componentService.preloadComponents(this.schema);
 
     // 等待 Model 和 View 都加载完成
     Promise.all([modelTreeReady, viewsReady])

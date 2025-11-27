@@ -54,6 +54,10 @@ export class JobScheduler<T, K extends T = T> {
     this._jobPools.set(job.name, job);
   }
 
+  getJob<J extends AbstractJob<T, K>>(name: string): J | undefined {
+    return this._jobPools.get(name) as J;
+  }
+
   removeJob(jobName: string) {
     this._jobPools.delete(jobName);
   }
