@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { InstantiationService, ServiceRegistry, SyncDescriptor } from './bedrock/di/index.common';
-import { IHttpService, ITrackerService, IBridgeService, IPageContextService, IJobScheduler } from './services/service-identifiers';
+import { IHttpService, ITrackerService, IBridgeService, IPageContextService } from './services/service-identifiers';
 import { BridgeService } from './modules/bridge.service';
 import { HttpService } from './modules/http.service';
 import { TrackerService } from './modules/tracker.service';
 import { PageContextService } from './modules/context.service';
 import { JobScheduler as LifecycleJobScheduler, AbstractJob } from './bedrock/launch';
-import { JobScheduler as SimpleJobScheduler } from './flow/scheduler';
 import { Barrier } from './bedrock/async/barrier';
 import { ComponentLoader, ComponentSchema } from './flow/component-loader';
 import { ModelRenderer } from './components';
@@ -608,7 +607,6 @@ async function initializeProgressiveApp(
   const registry = new ServiceRegistry();
   registry.register(IBridgeService, new SyncDescriptor(BridgeService, [true]));
   registry.register(IPageContextService, PageContextService);
-  registry.register(IJobScheduler, SimpleJobScheduler); // 旧的 JobScheduler 供组件使用
   registry.register(IHttpService, new SyncDescriptor(HttpService, [
     { baseURL: 'https://api.example.com' }
   ]));

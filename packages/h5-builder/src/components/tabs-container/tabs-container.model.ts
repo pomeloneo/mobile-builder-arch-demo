@@ -1,9 +1,7 @@
-import { BaseContainerModel} from '../../bedrock/model';
-import { ITrackerService, IJobScheduler} from '../../services/service-identifiers';
-import type { TrackerService} from '../../modules/tracker.service';
-import type { JobScheduler} from '../../flow/scheduler';
-import { VirtualListModel} from '../virtual-list/virtual-list.model';
-import { JobPriority} from '../../flow/scheduler';
+import { BaseContainerModel } from '../../bedrock/model';
+import { ITrackerService } from '../../services/service-identifiers';
+import type { TrackerService } from '../../modules/tracker.service';
+import { VirtualListModel } from '../virtual-list/virtual-list.model';
 
 /**
  * Tabs 容器 Props
@@ -16,7 +14,7 @@ export interface TabsContainerProps {
     itemHeight?: number;      // 每项高度（默认 120）
     containerHeight?: number; // 容器高度（默认 600）
     overscan?: number;        // 预渲染项数（默认 3）
- };
+  };
 }
 
 /**
@@ -44,8 +42,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
   constructor(
     id: string,
     props: TabsContainerProps,
-    @ITrackerService private tracker: TrackerService,
-    @IJobScheduler private scheduler: JobScheduler
+    @ITrackerService private tracker: TrackerService
   ) {
     super(id, props);
     this.activeIndex = props.defaultIndex ?? 0;
@@ -56,7 +53,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
     this.ITEM_HEIGHT = vsConfig.itemHeight ?? 120;
     this.CONTAINER_HEIGHT = vsConfig.containerHeight ?? 600;
     this.OVERSCAN = vsConfig.overscan ?? 3;
- }
+  }
 
   /**
    * 初始化：只初始化第一个 Tab，并检测是否需要虚拟滚动
@@ -72,7 +69,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
     if (this.children.length === 0) {
       console.warn(`[TabsContainer:${this.id}] No children to initialize`);
       return;
-   }
+    }
 
     // 检测所有 Tab 是否需要虚拟滚动
     this.detectAndEnableVirtualScroll();
@@ -82,7 +79,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
     if (firstTab) {
       await firstTab.init();
       firstTab.activate();
-   }
+    }
 
     // 闲时预热其他 Tab
     this.schedulePrewarm();
@@ -92,8 +89,8 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
       totalTabs: this.children.length,
       activeIndex: this.activeIndex,
       virtualScrollEnabled: this.virtualLists.size > 0,
-   });
- }
+    });
+  }
 
   /**
    * 检测并启用虚拟滚动
@@ -107,12 +104,12 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
       // 如果强制禁用，跳过
       if (forceDisabled) {
         return;
-     }
+      }
 
       // 检查是否是容器组件
       if (!(tab instanceof BaseContainerModel)) {
         return;
-     }
+      }
 
       // 检查子组件数量
       const childCount = tab.children.length;
@@ -123,9 +120,9 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
         console.log(
           `[TabsContainer:${this.id}] Virtual scroll enabled for tab ${index}(${childCount} items)`
         );
-     }
-   });
- }
+      }
+    });
+  }
 
   /**
    * 为指定 Tab 启用虚拟滚动
@@ -136,7 +133,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
       estimatedItemHeight: this.ITEM_HEIGHT, // 使用估算高度，而不是固定高度
       containerHeight: this.CONTAINER_HEIGHT,
       overscan: this.OVERSCAN,
-   });
+    });
 
     // 设置数据（使用 Tab 的子组件）
     virtualList.setItems(tab.children);
@@ -148,22 +145,22 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
     this.register(() => {
       virtualList.dispose();
       this.virtualLists.delete(index);
-   });
- }
+    });
+  }
 
   /**
    * 判断某个 Tab 是否启用了虚拟滚动
    */
   isVirtualScrollEnabled(index: number): boolean {
     return this.virtualLists.has(index);
- }
+  }
 
   /**
    * 获取虚拟列表
    */
   getVirtualList(index: number): VirtualListModel | undefined {
     return this.virtualLists.get(index);
- }
+  }
 
   /**
    * 切换 Tab
@@ -171,12 +168,12 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
   async switchTab(index: number): Promise<void> {
     if (index === this.activeIndex) {
       return;
-   }
+    }
 
     if (index < 0 || index >= this.children.length) {
       console.warn(`[TabsContainer:${this.id}] Invalid tab index: ${index} `);
       return;
-   }
+    }
 
     const oldTab = this.children[this.activeIndex];
     const newTab = this.children[index];
@@ -185,7 +182,7 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
     if (!newTab.isInited) {
       console.log(`[TabsContainer:${this.id}] Lazy loading tab ${index} `);
       await newTab.init();
-   }
+    }
 
     // 生命周期管理
     oldTab.deactivate();
@@ -199,8 +196,8 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
       from: previousIndex,
       to: index,
       virtualScrollEnabled: this.isVirtualScrollEnabled(index),
-   });
- }
+    });
+  }
 
   /**
    * 闲时预热其他 Tab
@@ -210,20 +207,30 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
     const tabsToPrewarm = this.children.filter((_, index) => index !== this.activeIndex);
 
     tabsToPrewarm.forEach((tab, relativeIndex) => {
-      this.scheduler.scheduleIdleTask(async () => {
+      const actualIndex = relativeIndex >= this.activeIndex ? relativeIndex + 1 : relativeIndex;
+
+      // 使用 requestIdleCallback 或 setTimeout 实现闲时预热
+      const scheduleTask = (callback: () => void) => {
+        if (typeof requestIdleCallback !== 'undefined') {
+          requestIdleCallback(callback);
+        } else {
+          setTimeout(callback, 100);
+        }
+      };
+
+      scheduleTask(async () => {
         if (!tab.isInited) {
-          const actualIndex = relativeIndex >= this.activeIndex ? relativeIndex + 1 : relativeIndex;
-          console.log(`[TabsContainer:${this.id}] Prewarming tab ${actualIndex} `);
+          console.log(`[TabsContainer:${this.id}] Prewarming tab ${actualIndex}`);
           await tab.init();
-       }
-     });
-   });
- }
+        }
+      });
+    });
+  }
 
   /**
    * 获取当前激活的 Tab
    */
   get activeTab() {
     return this.children[this.activeIndex];
- }
+  }
 }

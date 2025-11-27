@@ -3,7 +3,6 @@ import type { HttpService } from '../modules/http.service';
 import type { TrackerService } from '../modules/tracker.service';
 import type { BridgeService } from '../modules/bridge.service';
 import type { PageContextService } from '../modules/context.service';
-import type { JobScheduler } from '../flow/scheduler';
 
 /**
  * Service identifiers for dependency injection
@@ -14,4 +13,3 @@ export const IHttpService = createDecorator<HttpService>('httpService');
 export const ITrackerService = createDecorator<TrackerService>('trackerService');
 export const IBridgeService = createDecorator<BridgeService>('bridgeService');
 export const IPageContextService = createDecorator<PageContextService>('pageContextService');
-export const IJobScheduler = createDecorator<JobScheduler>('jobScheduler');
