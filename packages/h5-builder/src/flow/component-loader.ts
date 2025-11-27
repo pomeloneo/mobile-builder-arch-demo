@@ -498,38 +498,47 @@ export class ComponentLoader {
 
   /**
    * 处理队列（带并发控制）
+   * 使用 Promise.race 实现 "完成一个，补充一个"
    */
   private async processQueue(
     queue: Array<() => Promise<void>>,
     concurrency: number
   ): Promise<void> {
+    // 正在执行的任务列表
     const executing: Promise<void>[] = [];
 
+    // 遍历所有任务
     for (const task of queue) {
+      // 1. 创建任务 Promise
+      // 任务完成后，从 executing 列表中移除自己
       const promise = task().then(() => {
-        executing.splice(executing.indexOf(promise), 1);
-      }).catch((error) => {
-        // 错误已在 loadModel/loadView 中处理，这里只需移除
-        executing.splice(executing.indexOf(promise), 1);
+        const index = executing.indexOf(promise);
+        if (index !== -1) {
+          executing.splice(index, 1);
+        }
       });
 
+      // 2. 加入执行列表
       executing.push(promise);
 
+      // 3. 如果达到并发限制，等待任意一个任务完成
       if (executing.length >= concurrency) {
         await Promise.race(executing);
       }
     }
 
+    // 4. 等待剩余所有任务完成
     await Promise.all(executing);
   }
 
   /**
-   * 双队列并行加载
+   * 双队列串行加载
+   * 先加载所有 Model，再加载所有 View
    */
-  private async loadWithDualQueue(schema: ComponentSchema): Promise<{
+  private loadWithDualQueue(schema: ComponentSchema): {
     modelTreeReady: Promise<void>;
     viewsReady: Promise<void>;
-  }> {
+  } {
     const components = this.collectComponents(schema);
 
     // 构建加载队列
@@ -550,36 +559,27 @@ export class ComponentLoader {
     // Model 必须先于 View 加载，因为 View 注册时需要 Model 已经存在
     const modelPromise = this.processQueue(modelQueue, this.MODEL_CONCURRENCY);
 
-    // 等待所有 Model 加载完成
-    await modelPromise;
-    console.log('[ComponentLoader] All models loaded, starting view loading...');
-
-    // 然后再加载 View
-    const viewPromise = this.processQueue(viewQueue, this.VIEW_CONCURRENCY);
+    // View 加载必须等待 Model 完成后才开始
+    const viewPromise = modelPromise.then(() => {
+      console.log('[ComponentLoader] All models loaded, starting view loading...');
+      return this.processQueue(viewQueue, this.VIEW_CONCURRENCY);
+    });
 
     return {
-      modelTreeReady: Promise.resolve(), // Model 已经加载完成
+      modelTreeReady: modelPromise,
       viewsReady: viewPromise,
     };
   }
 
   /**
-   * 构建 Model Tree（同步，所有 Model 已加载）
-   */
-  private buildModelTree(schema: ComponentSchema): BaseComponentModel {
-    // 此时所有 Model 已加载，可以同步构建
-    return this.buildTree(schema);
-  }
-
-  /**
-   * 使用分离加载构建组件树
-   */
+ * 使用分离加载构建组件树
+ */
   async buildTreeWithSplitLoading(schema: ComponentSchema): Promise<BaseComponentModel> {
     try {
       console.log('[ComponentLoader] Starting split loading...');
 
-      // 1. 启动双队列并行加载
-      const { modelTreeReady, viewsReady } = await this.loadWithDualQueue(schema);
+      // 1. 启动双队列串行加载（立即返回，不等待）
+      const { modelTreeReady, viewsReady } = this.loadWithDualQueue(schema);
 
       // 2. 等待 Model 队列完成
       await modelTreeReady;
@@ -599,6 +599,16 @@ export class ComponentLoader {
       return this.createErrorPlaceholder(schema, error as Error);
     }
   }
+
+  /**
+   * 构建 Model Tree（同步，所有 Model 已加载）
+   */
+  private buildModelTree(schema: ComponentSchema): BaseComponentModel {
+    // 此时所有 Model 已加载，可以同步构建
+    return this.buildTree(schema);
+  }
+
+
 
 
 }
