@@ -12,7 +12,7 @@ import { ComponentLoader, ComponentSchema } from './flow/component-loader';
 import { ModelRenderer } from './components';
 import { BaseComponentModel } from './bedrock/model';
 import { schema } from './mock/demo-data';
-import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, RegisterComponentsJob } from './jobs';
+import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, RegisterComponentsJob, RenderJob } from './jobs';
 import './demo.css';
 
 
@@ -90,6 +90,7 @@ function makeJobScheduler(
   jobScheduler.addJob(new RegisterComponentsJob(loader));
   jobScheduler.addJob(new LoadComponentsJob(loader, schema, (msg) => onProgress(null, msg)));
   jobScheduler.addJob(buildTreeJob);
+  jobScheduler.addJob(new RenderJob(buildTreeJob, onProgress));
   jobScheduler.addJob(new InitDataJob(() => buildTreeJob, (msg) => onProgress(null, msg)));
 
   return { jobScheduler, buildTreeJob };
@@ -100,7 +101,6 @@ function makeJobScheduler(
  */
 async function driveJobScheduler(
   jobScheduler: LifecycleJobScheduler<PageLifecycle>,
-  buildTreeJob: BuildTreeJob,
   onProgress: (model: BaseComponentModel | null, step: string) => void
 ) {
   // Open: 加载组件资源
@@ -117,12 +117,9 @@ async function driveJobScheduler(
   await jobScheduler.wait(PageLifecycle.Prepare);
   console.timeEnd('==========================Prepare 阶段完成');
 
-  // 立即返回 rootModel 进行渲染
-  const rootModel = buildTreeJob.getRootModel();
-  if (rootModel) {
-    onProgress(rootModel, '模型树就绪，开始渲染');
-    rootModel.activate();
-  }
+  // Render: 渲染
+  jobScheduler.prepare(PageLifecycle.Render);
+  await jobScheduler.wait(PageLifecycle.Render);
 
   // Completed: 数据初始化（后台）
   console.log('==========================Completed 阶段开始');
@@ -172,7 +169,7 @@ async function initializeProgressiveApp(
     onProgress
   );
 
-  await driveJobScheduler(jobScheduler, buildTreeJob, onProgress);
+  await driveJobScheduler(jobScheduler, onProgress);
 }
 
 // 挂载

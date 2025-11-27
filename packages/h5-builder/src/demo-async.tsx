@@ -14,7 +14,7 @@ import { BaseComponentModel } from './bedrock/model';
 import './demo.css';
 
 import { schema } from './mock/demo-data';
-import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, RegisterComponentsJob } from './jobs';
+import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, RegisterComponentsJob, RenderJob } from './jobs';
 
 /**
  * Demo 应用
@@ -105,6 +105,7 @@ function makeJobScheduler(
   jobScheduler.addJob(new RegisterComponentsJob(loader));
   jobScheduler.addJob(new LoadComponentsJob(loader, schema, (msg) => onProgress(null, msg)));
   jobScheduler.addJob(buildTreeJob);
+  jobScheduler.addJob(new RenderJob(buildTreeJob, (model, msg) => onProgress(model, msg)));
   jobScheduler.addJob(new InitDataJob(() => buildTreeJob, (msg) => onProgress(null, msg)));
 
   return { jobScheduler, buildTreeJob };
@@ -115,7 +116,6 @@ function makeJobScheduler(
  */
 async function driveJobScheduler(
   jobScheduler: LifecycleJobScheduler<PageLifecycle>,
-  buildTreeJob: BuildTreeJob,
   onProgress: (model: BaseComponentModel | null, msg: string) => void
 ) {
   // Open: 加载组件资源
@@ -126,16 +126,15 @@ async function driveJobScheduler(
   jobScheduler.prepare(PageLifecycle.Prepare);
   await jobScheduler.wait(PageLifecycle.Prepare);
 
+  // Render: 渲染
+  jobScheduler.prepare(PageLifecycle.Render);
+  await jobScheduler.wait(PageLifecycle.Render);
+
   // Completed: 数据初始化（阻塞式）
   jobScheduler.prepare(PageLifecycle.Completed);
   await jobScheduler.wait(PageLifecycle.Completed);
 
-  // 返回 rootModel 并激活
-  const rootModel = buildTreeJob.getRootModel();
-  if (rootModel) {
-    onProgress(rootModel, '应用初始化完成');
-    rootModel.activate();
-  }
+
 
   console.log('性能统计:', jobScheduler.getCost());
 }
@@ -175,7 +174,7 @@ async function initializeApp(): Promise<BaseComponentModel> {
     (model, msg) => console.log('[Demo-Async]', msg)
   );
 
-  await driveJobScheduler(jobScheduler, buildTreeJob, (model, msg) => console.log('[Demo-Async]', msg));
+  await driveJobScheduler(jobScheduler, (model, msg) => console.log('[Demo-Async]', msg));
 
   const rootModel = buildTreeJob.getRootModel();
   if (!rootModel) {
