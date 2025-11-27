@@ -270,8 +270,9 @@ export class ComponentService {
   private strategies: any[] = [];
 
   // 并发控制
-  private readonly MODEL_CONCURRENCY = 5;  // Model 并发数
-  private readonly VIEW_CONCURRENCY = 3;   // View 并发数
+  private readonly MODEL_CONCURRENCY = 5;  // Model 并发数（双队列模式）
+  private readonly VIEW_CONCURRENCY = 3;   // View 并发数（双队列模式）
+  private readonly TOTAL_CONCURRENCY = 6;  // 统一队列总并发数
 
   /**
    * 注册异步组件（支持分离加载）
@@ -414,6 +415,7 @@ export class ComponentService {
 
   /**
    * 加载 View（内部使用）
+   * 只负责拉取 View 资源，不建立映射关系
    */
   private async loadView(componentName: string): Promise<any> {
     // 1. 检查缓存
@@ -437,33 +439,19 @@ export class ComponentService {
         await new Promise(resolve => setTimeout(resolve, delay));
       }
 
-      // 4. 加载 View
+      // 4. 加载 View（只负责拉取资源）
       const View = await loader();
 
-      // 5. 获取对应的 Model
-      const Model = this.modelCache.get(componentName);
-
-      if (!Model) {
-        throw new Error(`Model not loaded: ${componentName}`);
-      }
-
-      // 6. 注册 Model-View 映射
-      registerModelView(Model, View);
-
-      // 7. 缓存
+      // 5. 缓存（不建立映射关系）
       this.viewCache.set(componentName, View);
 
       return View;
     } catch (error) {
       console.error(`[ComponentLoader] View load failed: ${componentName}`, error);
 
-      // 注册空 View，不阻塞其他组件
-      const Model = this.modelCache.get(componentName);
-      if (Model) {
-        const EmptyView = this.createEmptyView();
-        registerModelView(Model, EmptyView);
-        this.viewCache.set(componentName, EmptyView);
-      }
+      // 缓存空 View
+      const EmptyView = this.createEmptyView();
+      this.viewCache.set(componentName, EmptyView);
 
       // 上报错误
       this.tracker.track('VIEW_LOAD_FAILED', {
@@ -471,7 +459,7 @@ export class ComponentService {
         error: (error as Error).message,
       });
 
-      return null;
+      return EmptyView;
     }
   }
 
@@ -496,6 +484,26 @@ export class ComponentService {
    */
   private createEmptyView(): any {
     return () => null; // 静默失败，不渲染任何内容
+  }
+
+  /**
+   * 统一建立 Model-View 映射关系
+   */
+  private registerModelViewMappings(componentNames: string[]): void {
+    componentNames.forEach(name => {
+      const Model = this.modelCache.get(name);
+      const View = this.viewCache.get(name);
+
+      if (Model && View) {
+        registerModelView(Model, View);
+        console.log(`[ComponentLoader] ✅ Registered mapping: ${name}`);
+      } else {
+        console.warn(`[ComponentLoader] ⚠️  Cannot register mapping for ${name}:`, {
+          hasModel: !!Model,
+          hasView: !!View
+        });
+      }
+    });
   }
 
   /**
@@ -534,43 +542,120 @@ export class ComponentService {
   }
 
   /**
-   * 双队列串行加载 (Public API)
-   * 先加载所有 Model，再加载所有 View
+   * 处理统一队列（带并发控制和分类收集）
+   * Model 和 View 任务在同一队列，但分别收集 Promise
    */
-  public preloadComponents(schema: ComponentSchema): {
+  private async processUnifiedQueue(
+    tasks: Array<{ type: 'model' | 'view'; componentName: string; execute: () => Promise<any> }>,
+    concurrency: number,
+    result: { modelPromises: Map<string, Promise<any>>; viewPromises: Map<string, Promise<any>> }
+  ): Promise<void> {
+    const executing: Promise<void>[] = [];
+
+    for (const task of tasks) {
+      // 🔥 关键：启动任务时就收集 Promise
+      const loaderPromise = task.execute();
+
+      // 根据任务类型，将 loader Promise 存入对应容器
+      if (task.type === 'model') {
+        result.modelPromises.set(task.componentName, loaderPromise);
+      } else {
+        result.viewPromises.set(task.componentName, loaderPromise);
+      }
+
+      // 包装为 void Promise 用于并发控制
+      const promise = loaderPromise.then(() => {
+        // 从执行列表移除
+        const index = executing.indexOf(promise);
+        if (index !== -1) {
+          executing.splice(index, 1);
+        }
+      });
+
+      executing.push(promise);
+
+      // 并发控制
+      if (executing.length >= concurrency) {
+        await Promise.race(executing);
+      }
+    }
+
+    // 等待所有任务完成
+    await Promise.all(executing);
+  }
+
+
+
+  /**
+   * 统一队列并发加载 (Public API)
+   * Model 和 View 在同一队列，Model 排在前面，按总并发度统一调度
+   */
+  public preloadComponentsUnified(schema: ComponentSchema): {
     modelTreeReady: Promise<void>;
     viewsReady: Promise<void>;
   } {
     const components = this.collectComponents(schema);
 
-    // 构建加载队列
-    const modelQueue: Array<() => Promise<void>> = [];
-    const viewQueue: Array<() => Promise<void>> = [];
-
     // 去重：只保留唯一的组件类型
     const uniqueTypes = new Set<string>();
     components.forEach(comp => {
-      if (!uniqueTypes.has(comp.type)) {
-        uniqueTypes.add(comp.type);
-        modelQueue.push(() => this.loadModel(comp.type));
-        viewQueue.push(() => this.loadView(comp.type));
-      }
+      uniqueTypes.add(comp.type);
     });
 
-    // 🔥 关键：先加载所有 Model，再加载 View
-    // Model 必须先于 View 加载，因为 View 注册时需要 Model 已经存在
-    const modelPromise = this.processQueue(modelQueue, this.MODEL_CONCURRENCY);
+    const componentNames = Array.from(uniqueTypes);
 
-    // View 加载必须等待 Model 完成后才开始
-    const viewPromise = modelPromise.then(() => {
-      console.log('==================开始加载组件 view 资源')
-      console.time('==================组件 view 资源加载完成')
-      return this.processQueue(viewQueue, this.VIEW_CONCURRENCY);
+    // 构建统一任务队列
+    const tasks: Array<{ type: 'model' | 'view'; componentName: string; execute: () => Promise<any> }> = [];
+
+    // 先添加所有 Model 任务
+    componentNames.forEach(name => {
+      tasks.push({
+        type: 'model',
+        componentName: name,
+        execute: () => this.loadModel(name)
+      });
+    });
+
+    // 再添加所有 View 任务
+    componentNames.forEach(name => {
+      tasks.push({
+        type: 'view',
+        componentName: name,
+        execute: () => this.loadView(name)
+      });
+    });
+
+    // 分类收集 Promise
+    const result: {
+      modelPromises: Map<string, Promise<any>>;
+      viewPromises: Map<string, Promise<any>>;
+    } = {
+      modelPromises: new Map(),
+      viewPromises: new Map()
+    };
+
+    // 🔥 关键：不 await，让队列在后台执行
+    // 这样 modelTreeReady 可以在 Model 完成时立即 resolve，不用等 View
+    this.processUnifiedQueue(tasks, this.TOTAL_CONCURRENCY, result);
+
+    // Model 全部加载完成
+    const modelTreeReady = Promise.all(Array.from(result.modelPromises.values())).then(() => {
+      console.log('✅ 所有 Model 加载完成');
+    });
+
+    // 所有资源加载完成后，统一建立映射关系
+    const viewsReady = Promise.all([
+      ...Array.from(result.modelPromises.values()),
+      ...Array.from(result.viewPromises.values())
+    ]).then(() => {
+      console.log('✅ 所有资源加载完成，开始建立映射关系');
+      this.registerModelViewMappings(componentNames);
+      console.log('✅ 映射关系建立完成');
     });
 
     return {
-      modelTreeReady: modelPromise,
-      viewsReady: viewPromise,
+      modelTreeReady,
+      viewsReady
     };
   }
 

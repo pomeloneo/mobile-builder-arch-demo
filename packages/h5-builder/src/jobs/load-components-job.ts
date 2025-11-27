@@ -27,10 +27,11 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
     this._setBarrier(PageLifecycle.LoadResouse, this._loadResouseBarrier);
 
     this.onProgress('加载组件资源中...');
-    console.log('==========================组件的model资源加载开始');
-    console.time('==========================组件的model资源加载完成');
+    console.log('[LoadComponentsJob] Starting component loading...');
+    console.time('[LoadComponentsJob] Total loading time');
 
-    const { modelTreeReady, viewsReady } = this.componentService.preloadComponents(this.schema);
+    // 🔥 使用统一队列并发加载策略
+    const { modelTreeReady, viewsReady } = this.componentService.preloadComponentsUnified(this.schema);
 
     // 等待 Model 和 View 都加载完成
     Promise.all([modelTreeReady, viewsReady])
