@@ -89,7 +89,7 @@ function makeJobScheduler(
   jobScheduler.registerJob(PageLifecycle.Open, GetSchemaJob, onProgress);
   jobScheduler.registerJob(PageLifecycle.LoadComponentLogic, LoadComponentsJob, schema, (msg: string) => onProgress(null, msg));
   jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob, onProgress);
-  jobScheduler.registerJob(PageLifecycle.StartRender, RenderJob, onProgress);
+  jobScheduler.registerJob(PageLifecycle.RenderReady, RenderJob, onProgress);
   jobScheduler.registerJob(PageLifecycle.RenderCompleted, InitDataJob, (msg: string) => onProgress(null, msg));
 
   return jobScheduler
@@ -125,8 +125,8 @@ async function driveJobScheduler(
   console.timeEnd('==========================Prepare 阶段完成');
 
   // Render: 渲染
-  jobScheduler.prepare(PageLifecycle.StartRender);
-  await jobScheduler.wait(PageLifecycle.StartRender);
+  jobScheduler.prepare(PageLifecycle.RenderReady);
+  await jobScheduler.wait(PageLifecycle.RenderReady);
 
   // Completed: 数据初始化（后台）
   console.log('==========================Completed 阶段开始');
