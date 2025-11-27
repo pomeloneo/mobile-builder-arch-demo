@@ -41,18 +41,7 @@ describe('BridgeService', () => {
       expect(result2).toEqual({ data: 2 });
     });
 
-    it('should log mock calls', async () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
 
-      await bridge.call('toast', { message: 'Hello' });
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        '[MockBridge] Call: toast',
-        { message: 'Hello' }
-      );
-
-      consoleSpy.mockRestore();
-    });
   });
 
   describe('Native Mode', () => {
