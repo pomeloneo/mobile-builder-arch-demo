@@ -10,7 +10,7 @@ import { ComponentService } from './services/component.service';
 import { JobScheduler } from './bedrock/launch';
 import { ModelRenderer } from './components';
 import { BaseComponentModel } from './bedrock/model';
-import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, ActivateTreeJob, EnsureViewReadyJob, TriggerRenderJob } from './jobs';
+import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitFirstScreenDataJob, ActivateTreeJob, EnsureViewReadyJob, TriggerRenderJob } from './jobs';
 import { SchemaService } from './services/schema.service';
 import { GetSchemaJob } from './jobs/get-schema-job';
 import { debounce } from './bedrock/function/debounce';
@@ -81,7 +81,7 @@ function makeJobScheduler(
   jobScheduler.registerJob(PageLifecycle.Render, TriggerRenderJob, setModelTree);
   jobScheduler.registerJob(PageLifecycle.Render, ActivateTreeJob);
   // Completed 阶段：数据初始化
-  jobScheduler.registerJob(PageLifecycle.Completed, InitDataJob);
+  jobScheduler.registerJob(PageLifecycle.Completed, InitFirstScreenDataJob);
 
   return jobScheduler;
 }

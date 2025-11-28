@@ -8,7 +8,7 @@ import type { ComponentService } from '../services/component.service';
 /**
  * Job 3: 初始化数据（后台异步）
  */
-export class InitDataJob extends AbstractJob<PageLifecycle> {
+export class InitFirstScreenDataJob extends AbstractJob<PageLifecycle> {
   protected _name = 'InitData';
 
   private _renderCompletedBarrier = new Barrier();
