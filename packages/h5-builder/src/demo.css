@@ -12,7 +12,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f5f5f5;
+  background: #121212;
+  /* Dark background */
+  color: #e0e0e0;
+  /* Light text */
 }
 
 .app {
@@ -22,11 +25,12 @@ body {
 }
 
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d3436 100%);
+  /* Dark gradient */
   color: white;
   padding: 2rem 1.5rem;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   position: relative;
   z-index: 10;
 }
@@ -36,7 +40,7 @@ body {
   margin-bottom: 0.25rem;
   font-weight: 800;
   letter-spacing: -0.5px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .app-header h2 {
@@ -62,11 +66,12 @@ body {
 }
 
 .app-footer {
-  background: #333;
-  color: white;
+  background: #1a1a1a;
+  color: #888;
   padding: 1rem;
   text-align: center;
   font-size: 0.875rem;
+  border-top: 1px solid #333;
 }
 
 .app-loading,
@@ -76,21 +81,23 @@ body {
   justify-content: center;
   min-height: 100vh;
   font-size: 1.25rem;
-  color: #666;
+  color: #888;
 }
 
 /* Tabs 容器样式 */
 .tabs-container {
-  background: white;
+  background: #1e1e1e;
+  /* Dark container */
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  border: 1px solid #333;
 }
 
 .tabs-header {
   display: flex;
-  border-bottom: 2px solid #f0f0f0;
-  background: #fafafa;
+  border-bottom: 2px solid #333;
+  background: #252525;
 }
 
 .tab-button {
@@ -101,14 +108,14 @@ body {
   cursor: pointer;
   font-size: 1rem;
   font-weight: 500;
-  color: #666;
+  color: #888;
   transition: all 0.3s ease;
   position: relative;
 }
 
 .tab-button:hover {
-  background: #f5f5f5;
-  color: #333;
+  background: #2d2d2d;
+  color: #e0e0e0;
 }
 
 .tab-button.active {
@@ -175,16 +182,17 @@ body {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #333;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: white;
+  background: #2d2d2d;
+  /* Dark card */
   margin-bottom: 1rem;
 }
 
 .product-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   transform: translateY(-2px);
   border-color: #667eea;
 }
@@ -195,7 +203,7 @@ body {
   height: 120px;
   border-radius: 6px;
   overflow: hidden;
-  background: #f5f5f5;
+  background: #333;
 }
 
 .product-image img {
@@ -214,13 +222,15 @@ body {
 .product-name {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #333;
+  color: #e0e0e0;
+  /* Light text */
   margin-bottom: 0.5rem;
 }
 
 .product-description {
   font-size: 0.875rem;
-  color: #666;
+  color: #a0a0a0;
+  /* Dimmed text */
   line-height: 1.5;
   margin-bottom: 0.5rem;
 }
@@ -228,7 +238,8 @@ body {
 .product-price {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #e74c3c;
+  color: #ff6b6b;
+  /* Brighter red for dark mode */
 }
 
 /* Loading 状态 */
@@ -236,13 +247,14 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 120px;
-  color: #999;
+  color: #666;
 }
 
 .skeleton {
   width: 120px;
   height: 120px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #333 25%, #444 50%, #333 75%);
+  /* Dark skeleton */
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 6px;
@@ -264,23 +276,23 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 120px;
-  color: #e74c3c;
-  border-color: #e74c3c;
+  color: #ff6b6b;
+  border-color: #ff6b6b;
 }
 
 .product-card.error button {
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
-  border: 1px solid #e74c3c;
-  background: white;
-  color: #e74c3c;
+  border: 1px solid #ff6b6b;
+  background: transparent;
+  color: #ff6b6b;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .product-card.error button:hover {
-  background: #e74c3c;
+  background: #ff6b6b;
   color: white;
 }
 
@@ -291,16 +303,16 @@ body {
 .unknown-component {
   padding: 2rem;
   text-align: center;
-  color: #999;
-  border: 2px dashed #e0e0e0;
+  color: #666;
+  border: 2px dashed #444;
   border-radius: 8px;
-  background: #fafafa;
+  background: #252525;
 }
 
 .error-placeholder {
-  color: #e74c3c;
-  border-color: #e74c3c;
-  background: #fff5f5;
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
 }
 
 /* 状态徽章样式 */
@@ -381,4 +393,33 @@ body {
   background: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 文本卡片样式 */
+.text-card {
+  padding: 12px 16px;
+  background-color: #2d2d2d;
+  /* Dark card background */
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #333;
+}
+
+.text-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: bold;
+  color: #e0e0e0;
+  /* Light title */
+}
+
+.text-card p {
+  margin: 0;
+  font-size: 12px;
+  color: #a0a0a0;
+  /* Dimmed content */
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
 }

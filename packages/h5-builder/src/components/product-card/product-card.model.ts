@@ -67,13 +67,24 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
     // const delay = 10;
     await new Promise(resolve => setTimeout(resolve, delay));
 
+    const descriptions = [
+      '这是一款超棒的产品，性能强劲，设计时尚。',
+      '限时特惠！现在购买享受超值折扣，不容错过。',
+      '用户评价极高，销量遥遥领先，品质有保证。',
+      '采用最新科技打造，为您带来前所未有的体验。',
+      '简约而不简单，细节之处见真章，值得拥有。',
+      '经典款式，永不过时，搭配任何场景都合适。',
+      '环保材质，绿色健康，呵护您和家人的生活。'
+    ];
+    const randomDesc = descriptions[Math.floor(Math.random() * descriptions.length)];
+
     // 模拟 API 响应
     const mockData: ProductData = {
       id: this.props.productId,
       name: `商品 ${this.props.productId}`,
       price: Math.floor(Math.random() * 10000) / 100,
       image: `https://p16-oec-general-useast5.ttcdn-us.com/tos-useast5-i-omjb5zjo8w-tx/ba781dbf25134621b7b05b7919cacee8~tplv-fhlh96nyum-crop-webp:360:360.webp?dr=12190&from=1578644683&idc=useast5&ps=933b5bde&shcp=b4b98b7c&shp=5e1834cb&t=555f072d`,
-      description: '这是一个模拟的商品描述，展示了异步数据加载的能力。',
+      description: `这是一个模拟的商品描述，展示了异步数据加载的能力。${randomDesc}`,
     };
 
     // 模拟随机错误
