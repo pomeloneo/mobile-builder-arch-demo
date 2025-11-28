@@ -104,88 +104,92 @@ async function driveJobScheduler(
 
   // Open: 初始化
   console.log('==========================Open 阶段开始==========');
-  console.time('==========================Open 阶段完成');
+  console.time('==========================Open 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Open);
   debouncedFunc(PageLifecycle.Open);
   await jobScheduler.wait(PageLifecycle.Open);
 
   console.log('==========================Open 阶段完成==========');
-  console.timeEnd('==========================Open 阶段完成');
+  console.timeEnd('==========================Open 阶段耗时');
 
   // LoadResouse: 加载组件资源
   console.log('==========================LoadResouse 阶段开始==========');
-  console.time('==========================LoadResouse 阶段完成');
+  console.time('==========================LoadResouse 阶段耗时');
   jobScheduler.prepare(PageLifecycle.LoadComponentLogic);
   debouncedFunc(PageLifecycle.LoadComponentLogic);
   await jobScheduler.wait(PageLifecycle.LoadComponentLogic);
 
   console.log('==========================LoadResouse 阶段完成==========');
-  console.timeEnd('==========================LoadResouse 阶段完成');
+  console.timeEnd('==========================LoadResouse 阶段耗时');
 
   // Prepare: 构建模型树
   console.log('==========================Prepare 阶段开始===========');
-  console.time('==========================Prepare 阶段完成');
+  console.time('==========================Prepare 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Prepare);
   debouncedFunc(PageLifecycle.Prepare);
   await jobScheduler.wait(PageLifecycle.Prepare);
 
-  console.timeEnd('==========================Prepare 阶段完成');
+
   console.log('==========================Prepare 阶段完成==========');
+  console.timeEnd('==========================Prepare 阶段耗时');
 
   // RenderReady: 准备完成
   console.log('==========================RenderReady 阶段开始===========');
-  console.time('==========================RenderReady 阶段完成');
+  console.time('==========================RenderReady 阶段耗时');
   jobScheduler.prepare(PageLifecycle.RenderReady);
   debouncedFunc(PageLifecycle.RenderReady);
   await jobScheduler.wait(PageLifecycle.RenderReady);
-  console.timeEnd('==========================RenderReady 阶段完成');
+
   console.log('==========================RenderReady 阶段完成==========');
+  console.timeEnd('==========================RenderReady 阶段耗时');
 
 
   // 🔥 Render: 触发渲染 + 激活组件树
   console.log('==========================Render 阶段开始=======');
-  console.time('==========================Render 阶段完成');
+  console.time('==========================Render 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Render);
   debouncedFunc(PageLifecycle.Render);
   await jobScheduler.wait(PageLifecycle.Render);  // TriggerRenderJob（触发渲染）和 ActivateTreeJob（激活）在这里执行
 
-  console.timeEnd('==========================Render 阶段完成');
+
   console.log('==========================Render 阶段==========');
+  console.timeEnd('==========================Render 阶段耗时');
 
 
   // Completed: 数据初始化（后台）
   console.log('==========================Completed 阶段开始==========');
-  console.time('==========================Completed 阶段完成');
+  console.time('==========================Completed 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Completed);
   debouncedFunc(PageLifecycle.Completed);
   await jobScheduler.wait(PageLifecycle.Completed);
 
-  console.timeEnd('==========================Completed 阶段完成');
+
   console.log('==========================Completed 阶段完成======');
+  console.timeEnd('==========================Completed 阶段耗时');
 
   // 打印性能数据
   console.log('性能统计:', jobScheduler.getCost());
 
   console.log('==========================Idle 阶段开始==========');
-  console.time('==========================Idle 阶段完成');
+  console.time('==========================Idle 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Idle);
   debouncedFunc(PageLifecycle.Idle);
   await jobScheduler.wait(PageLifecycle.Idle);
 
   console.log('==========================Idle 阶段完成==========');
-  console.timeEnd('==========================Idle 阶段完成');
+  console.timeEnd('==========================Idle 阶段耗时');
 
   console.log('==========================应用初始化完成==========');
-  console.timeEnd('==========================应用初始化完成==========');
+  console.timeEnd('==========================应用初始化耗时==========');
 
 }
 
 
 function makeContainerService() {
   console.log('==========================应用初始化开始==========');
-  console.time('==========================应用初始化完成==========');
+  console.time('==========================应用初始化耗时==========');
   console.log('==========================services 开始初始化===========');
-  console.time('==========================services 初始化完成');
+  console.time('==========================services 初始化耗时');
 
   const registry = new ServiceRegistry();
   registry.register(IBridgeService, new SyncDescriptor(BridgeService, [true]));
@@ -200,8 +204,9 @@ function makeContainerService() {
   registry.register(IComponentService, ComponentService);
 
   const instantiationService = new InstantiationService(registry.makeCollection());
-  console.timeEnd('==========================services 初始化完成');
+
   console.log('==========================services 初始化完成==========');
+  console.timeEnd('==========================services 初始化耗时');
   return instantiationService
 }
 
