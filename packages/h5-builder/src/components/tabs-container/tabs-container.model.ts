@@ -200,31 +200,64 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
   }
 
   /**
-   * 闲时预热其他 Tab
+   * 渐进式预热其他 Tab
+   * 策略：
+   * 1. 优先预热相邻的 Tab（左右各一个）- 延迟 500ms
+   * 2. 再预热其他 Tab - 延迟 2000ms
+   * 3. 超时兜底 - 5秒后强制预热所有未初始化的 Tab
    */
   private schedulePrewarm(): void {
-    // 跳过已经初始化的第一个 Tab
-    const tabsToPrewarm = this.children.filter((_, index) => index !== this.activeIndex);
+    const currentIndex = this.activeIndex;
+    const totalTabs = this.children.length;
 
-    tabsToPrewarm.forEach((tab, relativeIndex) => {
-      const actualIndex = relativeIndex >= this.activeIndex ? relativeIndex + 1 : relativeIndex;
+    // 🔥 优先级 1：相邻的 Tab（左右各一个）
+    const adjacentIndices = [
+      currentIndex - 1,  // 左边
+      currentIndex + 1   // 右边
+    ].filter(i => i >= 0 && i < totalTabs);
 
-      // 使用 requestIdleCallback 或 setTimeout 实现闲时预热
-      const scheduleTask = (callback: () => void) => {
-        if (typeof requestIdleCallback !== 'undefined') {
-          requestIdleCallback(callback);
-        } else {
-          setTimeout(callback, 100);
-        }
-      };
+    // 🔥 优先级 2：其他 Tab
+    const otherIndices = this.children
+      .map((_, i) => i)
+      .filter(i => i !== currentIndex && !adjacentIndices.includes(i));
 
-      scheduleTask(async () => {
-        if (!tab.isInited) {
-          console.log(`[TabsContainer:${this.id}] Prewarming tab ${actualIndex}`);
-          await tab.init();
+    // 先预热相邻的（延迟 500ms 起，每个间隔 200ms）
+    adjacentIndices.forEach((index, priority) => {
+      this.prewarmTab(index, 500 + priority * 200);
+    });
+
+    // 再预热其他的（延迟 2000ms 起，每个间隔 500ms）
+    otherIndices.forEach((index, priority) => {
+      this.prewarmTab(index, 2000 + priority * 500);
+    });
+
+    // 🔥 超时兜底：5秒后强制预热所有未初始化的 Tab
+    setTimeout(() => {
+      this.children.forEach((tab, index) => {
+        if (index !== currentIndex && !tab.isInited) {
+          console.log(`[TabsContainer:${this.id}] Timeout fallback: prewarming tab ${index}`);
+          tab.init().catch(err => {
+            console.error(`[TabsContainer:${this.id}] Prewarm failed for tab ${index}:`, err);
+          });
         }
       });
-    });
+    }, 5000);
+  }
+
+  /**
+   * 预热单个 Tab
+   */
+  private prewarmTab(index: number, delay: number): void {
+    const tab = this.children[index];
+
+    setTimeout(() => {
+      if (!tab.isInited) {
+        console.log(`[TabsContainer:${this.id}] Prewarming tab ${index} (delay: ${delay}ms)`);
+        tab.init().catch(err => {
+          console.error(`[TabsContainer:${this.id}] Prewarm failed for tab ${index}:`, err);
+        });
+      }
+    }, delay);
   }
 
   /**
