@@ -23,6 +23,13 @@ import './demo.css';
  */
 function ProgressiveDemoApp() {
   const { modelTree, lifecycle, panic, refresh } = useLaunch()
+
+
+  useEffect(() => {
+    if (modelTree) {
+      console.log('===================document.querySelector', document.querySelector('.tabs-container'))
+    }
+  }, [modelTree])
   if (panic) {
     return (
       <>
@@ -93,9 +100,6 @@ async function driveJobScheduler(
     setLifecycle(c);
   }, 10);
 
-  // const debouncedFunc = (c: PageLifecycle) => {
-  //   setLifecycle(c);
-  // }
 
 
   // Open: 初始化
@@ -180,7 +184,8 @@ function makeContainerService() {
 function useLaunch() {
   const [lifecycle, setLifecycle] = useState(PageLifecycle.Open);
   const [panic, setPanic] = useState(false);
-  const instantiationService = useRef(makeContainerService());
+  const [_instantiationService] = useState(makeContainerService)
+  const instantiationService = useRef(_instantiationService);
   const jobScheduler = useRef<JobScheduler<PageLifecycle> | null>(null);
   const [modelTree, setModelTree] = useState<BaseComponentModel | null>(null);
 
