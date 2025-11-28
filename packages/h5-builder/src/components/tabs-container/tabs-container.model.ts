@@ -76,8 +76,9 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
 
     // 初始化第一个 Tab（正确 await，让 Promise 链完整）
     const firstTab = this.children[this.activeIndex];
+    const initPromise = firstTab.init();
     if (firstTab) {
-      await firstTab.init();
+      await initPromise;
       firstTab.activate();
     }
 
@@ -90,6 +91,8 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
       activeIndex: this.activeIndex,
       virtualScrollEnabled: this.virtualLists.size > 0,
     });
+
+    return initPromise
   }
 
   /**

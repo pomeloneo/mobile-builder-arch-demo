@@ -48,8 +48,11 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
 
   private async _whenLoadComponentLogic() {
     this._setBarrier(PageLifecycle.LoadComponentLogic, this._loadResouseBarrier);
+    console.log('==========================正在获取组件 model 资源中===========');
+
     // 🔥 使用统一队列并发加载策略
     await this.componentService.getModelTreeReady()
+    console.log('==========================组件 model 资源获取完成===========');
     // 此时组件 model 资源全部加载完成，可以开始构建 model tree
     this._loadResouseBarrier.open();
   }
