@@ -1,14 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { HttpService, createHttpService } from '../services/http.service';
 import { BridgeService } from '../services/bridge.service';
+import { TrackerService } from '../services/tracker.service';
+import { ServiceCollection, InstantiationService } from '../bedrock/di/index.common';
+import { IBridgeService, ITrackerService } from '../services/service-identifiers';
 
 describe('HttpService', () => {
+  let services: ServiceCollection;
+  let instantiationService: InstantiationService;
   let bridge: BridgeService;
+  let tracker: TrackerService;
   let http: HttpService;
 
   beforeEach(() => {
+    services = new ServiceCollection();
+
     bridge = new BridgeService(true);
-    http = new HttpService(bridge);
+    services.set(IBridgeService, bridge);
+
+    instantiationService = new InstantiationService(services);
+
+    tracker = instantiationService.createInstance(TrackerService, { debug: false });
+    services.set(ITrackerService, tracker);
+
+    http = instantiationService.createInstance(HttpService, undefined);
   });
 
   describe('Basic Requests', () => {

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentService, ComponentSchema } from '../services/component.service';
 import { ServiceCollection, InstantiationService } from '../bedrock/di/index.common';
 import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
-import { ITrackerService } from '../services/service-identifiers';
+import { ITrackerService, IBridgeService } from '../services/service-identifiers';
 import { TrackerService } from '../services/tracker.service';
 import { BridgeService } from '../services/bridge.service';
 import { ErrorPlaceholderModel } from '../flow/placeholders';
@@ -31,10 +31,12 @@ describe('ComponentService', () => {
     services = new ServiceCollection();
 
     const bridge = new BridgeService(true);
-    tracker = new TrackerService(bridge, { debug: false });
+    services.set(IBridgeService, bridge);
 
-    services.set(ITrackerService, tracker);
     instantiationService = new InstantiationService(services);
+
+    tracker = instantiationService.createInstance(TrackerService, { debug: false });
+    services.set(ITrackerService, tracker);
 
     loader = instantiationService.createInstance(ComponentService);
   });

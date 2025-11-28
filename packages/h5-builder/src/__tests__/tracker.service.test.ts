@@ -18,7 +18,7 @@ describe('TrackerService', () => {
 
   describe('Basic Tracking', () => {
     it('should enqueue events in production mode', () => {
-      tracker = new TrackerService(bridge, { debug: false });
+      tracker = new TrackerService({ debug: false }, bridge);
 
       tracker.track('TEST_EVENT', { foo: 'bar' });
 
@@ -26,7 +26,7 @@ describe('TrackerService', () => {
     });
 
     it('should send events immediately in debug mode', async () => {
-      tracker = new TrackerService(bridge, { debug: true });
+      tracker = new TrackerService({ debug: true }, bridge);
 
       const bridgeSpy = vi.spyOn(bridge, 'call');
 
@@ -42,11 +42,11 @@ describe('TrackerService', () => {
 
   describe('Batch Sending', () => {
     beforeEach(() => {
-      tracker = new TrackerService(bridge, {
+      tracker = new TrackerService({
         debug: false,
         maxBatchSize: 3,
         flushInterval: 1000,
-      });
+      }, bridge);
     });
 
     it('should flush when queue reaches max size', async () => {
@@ -85,11 +85,11 @@ describe('TrackerService', () => {
 
   describe('Persistence', () => {
     it('should persist queue to localStorage', () => {
-      tracker = new TrackerService(bridge, {
+      tracker = new TrackerService({
         debug: false,
         enablePersistence: true,
         storageKey: 'test_tracker_queue',
-      });
+      }, bridge);
 
       tracker.track('EVENT_1', { data: 'test' });
 
@@ -109,21 +109,21 @@ describe('TrackerService', () => {
       ];
       localStorage.setItem('test_tracker_queue', JSON.stringify(events));
 
-      tracker = new TrackerService(bridge, {
+      tracker = new TrackerService({
         debug: false,
         enablePersistence: true,
         storageKey: 'test_tracker_queue',
-      });
+      }, bridge);
 
       expect(tracker.queueSize).toBe(2);
     });
 
     it('should clear persisted queue', () => {
-      tracker = new TrackerService(bridge, {
+      tracker = new TrackerService({
         debug: false,
         enablePersistence: true,
         storageKey: 'test_tracker_queue',
-      });
+      }, bridge);
 
       tracker.track('EVENT_1');
       tracker.clear();
@@ -135,10 +135,10 @@ describe('TrackerService', () => {
 
   describe('Error Handling', () => {
     beforeEach(() => {
-      tracker = new TrackerService(bridge, {
+      tracker = new TrackerService({
         debug: false,
         maxBatchSize: 2,
-      });
+      }, bridge);
     });
 
     it('should re-enqueue events on flush failure', async () => {
@@ -156,7 +156,7 @@ describe('TrackerService', () => {
 
   describe('Disposal', () => {
     it('should flush remaining events on dispose', async () => {
-      tracker = new TrackerService(bridge, { debug: false });
+      tracker = new TrackerService({ debug: false }, bridge);
 
       const bridgeSpy = vi.spyOn(bridge, 'call');
 
@@ -169,7 +169,7 @@ describe('TrackerService', () => {
     });
 
     it('should clear flush timer on dispose', () => {
-      tracker = new TrackerService(bridge, { debug: false });
+      tracker = new TrackerService({ debug: false }, bridge);
 
       tracker.track('EVENT_1');
 
@@ -187,7 +187,7 @@ describe('TrackerService', () => {
     let helpers: TrackerHelpers;
 
     beforeEach(() => {
-      tracker = new TrackerService(bridge, { debug: false });
+      tracker = new TrackerService({ debug: false }, bridge);
       helpers = new TrackerHelpers(tracker);
     });
 
