@@ -13,5 +13,5 @@ export enum PageLifecycle {
   // 因为现在是渐进式渲染方案，如果要首屏直出，这个任务换到 renderReady 阶段就行了
   Completed = "视图数据填充阶段",
   // 空闲阶段，处理闲时任务
-  Idle = "空闲阶段",
+  Idle = "处于空闲空闲空闲空闲空闲阶段",
 }

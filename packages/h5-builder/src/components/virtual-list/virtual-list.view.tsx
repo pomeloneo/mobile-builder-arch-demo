@@ -62,9 +62,6 @@ const VirtualListItem: React.FC<VirtualListItemProps> = observer((props: Virtual
     <div
       ref={itemRef}
       className="virtual-list-item"
-      style={{
-        position: 'relative', // 使用相对定位，流式布局
-      }}
     >
       {renderItem(item, index)}
     </div>
