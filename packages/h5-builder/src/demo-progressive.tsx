@@ -25,13 +25,6 @@ function ProgressiveDemoApp() {
   const { modelTree, lifecycle, panic, refresh } = useLaunch()
 
 
-  useEffect(() => {
-    if (modelTree) {
-      setTimeout(() => {
-        console.log('===================document.querySelector', document.querySelector('.tabs-container'))
-      }, 0);
-    }
-  }, [modelTree])
   if (panic) {
     return (
       <>
@@ -40,9 +33,7 @@ function ProgressiveDemoApp() {
       </>
     );
   }
-  if (lifecycle === PageLifecycle.RenderReady || lifecycle === PageLifecycle.Open || lifecycle === PageLifecycle.Prepare || lifecycle === PageLifecycle.LoadComponentLogic) {
-    return <div>渲染前准备阶段：{lifecycle}</div>;
-  }
+
   return (
     <div className="app">
       <header className="app-header" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
