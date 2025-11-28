@@ -36,7 +36,7 @@ function ProgressiveDemoApp() {
   return (
     <div className="app">
       <header className="app-header" style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d3436 100%)' }}>
-        <h1>搭建 C 端落地页新架构 Demo</h1>
+        <h3>搭建 C 端落地页新架构 Demo</h3>
         <h2>新架构主要特点：</h2>
         <ul className="features-list">
           <li>基于 DI</li>

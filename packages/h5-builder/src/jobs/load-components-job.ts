@@ -53,6 +53,7 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
     // 🔥 使用统一队列并发加载策略
     await this.componentService.getModelTreeReady()
     console.log('==========================组件 model 资源获取完成===========');
+    console.timeEnd('==================远端拉取所有组件相关资源完成 - Model');
     // 此时组件 model 资源全部加载完成，可以开始构建 model tree
     this._loadResouseBarrier.open();
   }

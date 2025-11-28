@@ -46,6 +46,7 @@ export class EnsureViewReadyJob extends AbstractJob<PageLifecycle> {
   private async _whenRenderReady() {
     this._setBarrier(PageLifecycle.RenderReady, this._loadResouseBarrier);
     await this.componentService.getViewsReady()
+    console.timeEnd('==================远端拉取所有组件相关资源完成 - View');
     this._loadResouseBarrier.open()
   }
 }

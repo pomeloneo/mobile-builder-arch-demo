@@ -59,6 +59,8 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
     console.timeEnd('==================远端拉取 schema 完成');
 
     // schema 获取完成后，开始预加载组件
+    console.time('==================远端拉取所有组件相关资源完成 - Model');
+    console.time('==================远端拉取所有组件相关资源完成 - View');
     this.componentService.preloadComponentsUnified(schema);
     this._schemaBarrier.open();
   }
