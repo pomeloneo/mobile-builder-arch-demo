@@ -14,7 +14,7 @@ import { BaseComponentModel } from './bedrock/model';
 import './demo.css';
 
 import { schema } from './mock/demo-data';
-import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, RenderJob } from './jobs';
+import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, ActivateTreeJob } from './jobs';
 import { GetSchemaJob } from './jobs/get-schema-job';
 import { SchemaService } from './services/schema.service';
 
@@ -105,7 +105,7 @@ function makeJobScheduler(
   jobScheduler.registerJob(PageLifecycle.Open, GetSchemaJob);
   jobScheduler.registerJob(PageLifecycle.LoadComponentLogic, LoadComponentsJob);
   jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob);
-  jobScheduler.registerJob(PageLifecycle.RenderReady, RenderJob);
+  jobScheduler.registerJob(PageLifecycle.RenderReady, ActivateTreeJob);
   jobScheduler.registerJob(PageLifecycle.Render, InitDataJob);
 
   return jobScheduler

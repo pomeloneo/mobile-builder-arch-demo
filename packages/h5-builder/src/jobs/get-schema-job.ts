@@ -29,7 +29,6 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
         await this._whenOpen();
         break;
       case PageLifecycle.LoadComponentLogic:
-
         break;
       case PageLifecycle.Prepare:
         break;
@@ -48,13 +47,14 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
 
   private async _whenOpen() {
     this._setBarrier(PageLifecycle.Open, this._schemaBarrier)
-    console.log('==================开始远端拉取 schema');
+    console.log('==================开始远端拉取 schema============');
     console.time('==================远端拉取 schema 完成');
     const schema = await this.schemaService.fetchSchema()
+    console.log('==================远端拉取 schema 完成============', schema);
     // 此处是 mock，应该要依赖 schema 内容，所以需要在此处执行
     this._registerComponentLoader()
 
-    console.log('==================远端拉取 schema 完成============', schema);
+
 
     console.timeEnd('==================远端拉取 schema 完成');
 
@@ -65,7 +65,7 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
 
 
   private _registerComponentLoader() {
-    console.log('==========================组件加载器开始注册组件');
+    console.log('==========================组件加载器开始注册组件==================');
     console.time('==========================组件加载器注册组件完成');
 
     this.componentService.registerAsync('ProductCard', {
@@ -107,6 +107,7 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
       model: () => import('../components/conditional-container').then(m => m.ConditionalContainerModel),
       view: () => import('../components/conditional-container').then(m => m.ConditionalContainerView),
     }, { priority: 'normal', delayRange: [300, 1000] });
+    console.log('==========================组件加载器注册组件完成=====================');
 
     console.timeEnd('==========================组件加载器注册组件完成');
 

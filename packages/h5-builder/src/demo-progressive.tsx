@@ -10,7 +10,7 @@ import { ComponentService } from './services/component.service';
 import { JobScheduler } from './bedrock/launch';
 import { ModelRenderer } from './components';
 import { BaseComponentModel } from './bedrock/model';
-import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, RenderJob, EnsureViewReadyJob } from './jobs';
+import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, ActivateTreeJob, EnsureViewReadyJob, TriggerRenderJob } from './jobs';
 import { SchemaService } from './services/schema.service';
 import { GetSchemaJob } from './jobs/get-schema-job';
 import { debounce } from './bedrock/function/debounce';
@@ -58,6 +58,7 @@ function ProgressiveDemoApp() {
  */
 function makeJobScheduler(
   instantiationService: InstantiationService,
+  setModelTree: (model: BaseComponentModel | null) => void
 ) {
   const jobScheduler = instantiationService.createInstance(
     JobScheduler<PageLifecycle>,
@@ -69,10 +70,15 @@ function makeJobScheduler(
   jobScheduler.registerJob(PageLifecycle.LoadComponentLogic, LoadComponentsJob);
   jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob);
   jobScheduler.registerJob(PageLifecycle.RenderReady, EnsureViewReadyJob);
-  // TODO: 这个任务是不是没有，或者位置不对？
-  jobScheduler.registerJob(PageLifecycle.RenderReady, RenderJob);
-  jobScheduler.registerJob(PageLifecycle.Render, InitDataJob);
-  return jobScheduler
+
+  // 🔥 Render 阶段：触发渲染 + 激活组件树
+  jobScheduler.registerJob(PageLifecycle.Render, TriggerRenderJob, setModelTree);
+  jobScheduler.registerJob(PageLifecycle.Render, ActivateTreeJob);
+
+  // Completed 阶段：数据初始化
+  jobScheduler.registerJob(PageLifecycle.Completed, InitDataJob);
+
+  return jobScheduler;
 }
 
 /**
@@ -81,8 +87,6 @@ function makeJobScheduler(
 async function driveJobScheduler(
   jobScheduler: JobScheduler<PageLifecycle>,
   setLifecycle: (cycle: PageLifecycle) => void,
-  setModelTree: (model: BaseComponentModel | null) => void,
-  instantiationService: IInstantiationService
 ) {
 
   const debouncedFunc = debounce((c: PageLifecycle) => {
@@ -118,17 +122,16 @@ async function driveJobScheduler(
   debouncedFunc(PageLifecycle.Prepare);
   console.timeEnd('==========================Prepare 阶段完成');
 
-  // Render: 渲染
+  // RenderReady: 准备完成
   jobScheduler.prepare(PageLifecycle.RenderReady);
   await jobScheduler.wait(PageLifecycle.RenderReady);
   debouncedFunc(PageLifecycle.RenderReady);
-  setModelTree(instantiationService.invokeFunction((accessor) => accessor.get(IComponentService).getModelTree()));
 
-  // Completed: 数据初始化（后台）
+  // 🔥 Render: 触发渲染 + 激活组件树
   console.log('==========================Render 阶段开始');
   console.time('==========================Render 阶段完成');
   jobScheduler.prepare(PageLifecycle.Render);
-  await jobScheduler.wait(PageLifecycle.Render);
+  await jobScheduler.wait(PageLifecycle.Render);  // TriggerRenderJob（触发渲染）和 ActivateTreeJob（激活）在这里执行
   debouncedFunc(PageLifecycle.Render);
   console.timeEnd('==========================Render 阶段完成');
 
@@ -182,12 +185,12 @@ function useLaunch() {
   const [modelTree, setModelTree] = useState<BaseComponentModel | null>(null);
 
   useEffect(() => {
-    jobScheduler.current = makeJobScheduler(instantiationService.current);
+    jobScheduler.current = makeJobScheduler(instantiationService.current, setModelTree);
   }, []);
 
   const bootstrap = useCallback(() => {
     'background-only';
-    driveJobScheduler(jobScheduler.current!, setLifecycle, setModelTree, instantiationService.current).catch((err) => {
+    driveJobScheduler(jobScheduler.current!, setLifecycle).catch((err) => {
       console.error('Page init failure:', err);
       setPanic(true);
     });
@@ -200,7 +203,7 @@ function useLaunch() {
   const refresh = useCallback(() => {
     'background-only';
     // 重新构造jobScheduler
-    jobScheduler.current = makeJobScheduler(instantiationService.current);
+    jobScheduler.current = makeJobScheduler(instantiationService.current, setModelTree);
     bootstrap();
     setPanic(false);
   }, [setPanic]);

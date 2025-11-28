@@ -45,27 +45,20 @@ export class InitDataJob extends AbstractJob<PageLifecycle> {
 
   }
 
-  private _whenCompleted() {
+  private async _whenCompleted() {
 
     this._setBarrier(PageLifecycle.Render, this._renderCompletedBarrier);
 
     const rootModel = this.componentService.getModelTree();
     if (!rootModel) {
-      console.warn('rootModel 不存在，跳过数据初始化');
+      console.warn('rootModel 不存在');
       this._renderCompletedBarrier.open();
       return;
     }
-    console.log('==========================数据初始化开始');
-    console.time('==========================数据初始化完成');
-    rootModel.init()
-      .then(() => {
-        console.timeEnd('==========================数据初始化完成');
-
-        this._renderCompletedBarrier.open();
-      })
-      .catch(err => {
-        console.error('数据初始化失败:', err);
-        this._renderCompletedBarrier.open();
-      });
+    console.log('==========================首屏接口相关数据拉取开始');
+    console.time('==========================首屏接口相关数据拉取完成');
+    await rootModel.init()
+    this._renderCompletedBarrier.open();
+    console.timeEnd('==========================首屏接口相关数据拉取完成');
   }
 }

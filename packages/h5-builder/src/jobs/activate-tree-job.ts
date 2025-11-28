@@ -6,11 +6,14 @@ import type { ComponentService } from '../services/component.service';
 import { IComponentService } from '@/services';
 
 /**
- * Job: 渲染
- * 负责将构建好的模型树渲染到页面
+ * Job: 激活组件树
+ * 负责在页面渲染完成后，激活所有组件（上报埋点、启动定时器等）
+ * 
+ * ⚠️ 注意：此时页面已经渲染完成，用户已经可以看到内容
+ * 这个 Job 只是触发副作用，不负责实际的 DOM 渲染
  */
-export class RenderJob extends AbstractJob<PageLifecycle> {
-  protected _name = 'Render';
+export class ActivateTreeJob extends AbstractJob<PageLifecycle> {
+  protected _name = 'ActivateTree';
 
   constructor(
     @IComponentService private componentService: ComponentService
@@ -32,7 +35,7 @@ export class RenderJob extends AbstractJob<PageLifecycle> {
 
         break;
       case PageLifecycle.Render:
-        this._whenRender();
+        this._whenActivate();
         break;
       case PageLifecycle.Idle:
         break;
@@ -41,10 +44,12 @@ export class RenderJob extends AbstractJob<PageLifecycle> {
     }
   }
 
-  private async _whenRender() {
+  private async _whenActivate() {
     const modelTree = this.componentService.getModelTree();
     if (!modelTree) return;
 
+    // 激活整个组件树（上报埋点、启动定时器等）
     modelTree.activate();
   }
 }
+

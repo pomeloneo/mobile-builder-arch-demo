@@ -1,0 +1,43 @@
+import { AbstractJob } from '../bedrock/launch';
+import { PageLifecycle } from './lifecycle';
+
+import type { ComponentService } from '../services/component.service';
+import { IComponentService } from '@/services';
+import { BaseComponentModel } from '../bedrock/model';
+
+/**
+ * Job: 触发渲染
+ * 负责在 Render 阶段触发 React 渲染
+ * 
+ * 通过构造函数注入的回调函数来触发外部的 setModelTree
+ */
+export class TriggerRenderJob extends AbstractJob<PageLifecycle> {
+  protected _name = 'TriggerRender';
+
+  constructor(
+    private setModelTree: (model: BaseComponentModel | null) => void,  // 🔥 注入回调
+    @IComponentService private componentService: ComponentService,
+
+  ) {
+    super();
+  }
+
+  protected _executePhase(phase: PageLifecycle) {
+    switch (phase) {
+      case PageLifecycle.Render:
+        this._triggerRender();
+        break;
+      default:
+        break;
+    }
+  }
+
+  private _triggerRender() {
+    const modelTree = this.componentService.getModelTree();
+
+    console.log('[TriggerRenderJob] 触发渲染，modelTree:', modelTree?.id);
+
+    // 🔥 在 Job 内部触发渲染
+    this.setModelTree(modelTree);
+  }
+}

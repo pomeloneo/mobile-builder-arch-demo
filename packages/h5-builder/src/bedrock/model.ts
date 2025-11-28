@@ -69,7 +69,7 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
 
     this.isInited = true;
     console.log(`[Model:${this.id}] Initializing`);
-    await this.onInit();
+    return await this.onInit();
   }
 
   /**
@@ -81,7 +81,6 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
     }
 
     this.isActive = true;
-    // console.log(`[Model:${this.id}] Activated`);
     this.onActive();
   }
 
@@ -94,7 +93,6 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
     }
 
     this.isActive = false;
-    console.log(`[Model:${this.id}] Deactivated`);
     this.onInactive();
   }
 
@@ -167,10 +165,8 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
  * 
  * 子类可以覆写这些方法来实现自定义逻辑（记得调用 super）
  */
-export abstract class BaseContainerModel<P = any, C extends BaseComponentModel = BaseComponentModel>
-  extends BaseComponentModel<P> {
+export abstract class BaseContainerModel<P = any, C extends BaseComponentModel = BaseComponentModel> extends BaseComponentModel<P> {
   public children: C[] = [];
-
   /**
    * 添加子 Model
    */
