@@ -24,7 +24,6 @@ import './demo.css';
 function ProgressiveDemoApp() {
   const { modelTree, lifecycle, panic, refresh } = useLaunch()
 
-
   if (panic) {
     return (
       <>
@@ -36,11 +35,19 @@ function ProgressiveDemoApp() {
 
   return (
     <div className="app">
-      <header className="app-header" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-        <h1>Demo - 渐进式渲染</h1>
-        <p>Model Tree 构建即渲染 · 数据后台加载</p>
+      <header className="app-header" style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d3436 100%)' }}>
+        <h1>搭建 C 端落地页新架构 Demo</h1>
+        <h2>新架构主要特点：</h2>
+        <ul className="features-list">
+          <li>基于 DI</li>
+          <li>流式启动 & Job 调度</li>
+          <li>逻辑驱动</li>
+          <li>组件逻辑 UI 和 逻辑模型分离模式</li>
+          <li>优先构建逻辑树</li>
+          <li>渐进式渲染</li>
+        </ul>
         <div className="status-badge">
-          当前所处阶段: {lifecycle}
+          <h3>当前应用生命周期: <span className="rainbow-text">{lifecycle}</span></h3>
         </div>
       </header>
       <main className="app-main">
@@ -70,11 +77,9 @@ function makeJobScheduler(
   jobScheduler.registerJob(PageLifecycle.LoadComponentLogic, LoadComponentsJob);
   jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob);
   jobScheduler.registerJob(PageLifecycle.RenderReady, EnsureViewReadyJob);
-
   // 🔥 Render 阶段：触发渲染 + 激活组件树
   jobScheduler.registerJob(PageLifecycle.Render, TriggerRenderJob, setModelTree);
   jobScheduler.registerJob(PageLifecycle.Render, ActivateTreeJob);
-
   // Completed 阶段：数据初始化
   jobScheduler.registerJob(PageLifecycle.Completed, InitDataJob);
 
@@ -89,18 +94,22 @@ async function driveJobScheduler(
   setLifecycle: (cycle: PageLifecycle) => void,
 ) {
 
-  const debouncedFunc = debounce((c: PageLifecycle) => {
-    setLifecycle(c);
-  }, 10);
+  // const debouncedFunc = debounce((c: PageLifecycle) => {
+  //   setLifecycle(c);
+  // }, 10);
 
+  const debouncedFunc = (c: PageLifecycle) => setLifecycle(c);
 
+  console.log('==========================应用初始化开始==========');
+  console.time('==========================应用初始化完成==========');
 
   // Open: 初始化
   console.log('==========================Open 阶段开始==========');
   console.time('==========================Open 阶段完成');
   jobScheduler.prepare(PageLifecycle.Open);
-  await jobScheduler.wait(PageLifecycle.Open);
   debouncedFunc(PageLifecycle.Open);
+  await jobScheduler.wait(PageLifecycle.Open);
+
   console.log('==========================Open 阶段完成==========');
   console.timeEnd('==========================Open 阶段完成');
 
@@ -108,8 +117,9 @@ async function driveJobScheduler(
   console.log('==========================LoadResouse 阶段开始==========');
   console.time('==========================LoadResouse 阶段完成');
   jobScheduler.prepare(PageLifecycle.LoadComponentLogic);
-  await jobScheduler.wait(PageLifecycle.LoadComponentLogic);
   debouncedFunc(PageLifecycle.LoadComponentLogic);
+  await jobScheduler.wait(PageLifecycle.LoadComponentLogic);
+
   console.log('==========================LoadResouse 阶段完成==========');
   console.timeEnd('==========================LoadResouse 阶段完成');
 
@@ -117,22 +127,29 @@ async function driveJobScheduler(
   console.log('==========================Prepare 阶段开始===========');
   console.time('==========================Prepare 阶段完成');
   jobScheduler.prepare(PageLifecycle.Prepare);
-  await jobScheduler.wait(PageLifecycle.Prepare);
   debouncedFunc(PageLifecycle.Prepare);
+  await jobScheduler.wait(PageLifecycle.Prepare);
+
   console.timeEnd('==========================Prepare 阶段完成');
   console.log('==========================Prepare 阶段完成==========');
 
   // RenderReady: 准备完成
+  console.log('==========================RenderReady 阶段开始===========');
+  console.time('==========================RenderReady 阶段完成');
   jobScheduler.prepare(PageLifecycle.RenderReady);
-  await jobScheduler.wait(PageLifecycle.RenderReady);
   debouncedFunc(PageLifecycle.RenderReady);
+  await jobScheduler.wait(PageLifecycle.RenderReady);
+  console.timeEnd('==========================RenderReady 阶段完成');
+  console.log('==========================RenderReady 阶段完成==========');
+
 
   // 🔥 Render: 触发渲染 + 激活组件树
   console.log('==========================Render 阶段开始=======');
   console.time('==========================Render 阶段完成');
   jobScheduler.prepare(PageLifecycle.Render);
-  await jobScheduler.wait(PageLifecycle.Render);  // TriggerRenderJob（触发渲染）和 ActivateTreeJob（激活）在这里执行
   debouncedFunc(PageLifecycle.Render);
+  await jobScheduler.wait(PageLifecycle.Render);  // TriggerRenderJob（触发渲染）和 ActivateTreeJob（激活）在这里执行
+
   console.timeEnd('==========================Render 阶段完成');
   console.log('==========================Render 阶段==========');
 
@@ -148,18 +165,27 @@ async function driveJobScheduler(
 
   // 打印性能数据
   console.log('性能统计:', jobScheduler.getCost());
+
   console.log('==========================Idle 阶段开始==========');
+  console.time('==========================Idle 阶段完成');
   jobScheduler.prepare(PageLifecycle.Idle);
   await jobScheduler.wait(PageLifecycle.Idle);
   debouncedFunc(PageLifecycle.Idle);
   console.log('==========================Idle 阶段完成==========');
+  console.timeEnd('==========================Idle 阶段完成');
+
+
+
+
+  console.log('==========================应用初始化完成==========');
+  console.timeEnd('==========================应用初始化完成==========');
 
 }
 
 
 function makeContainerService() {
   // 1. 初始化服务
-  console.log('==========================services 开始初始化');
+  console.log('==========================services 开始初始化===========');
   console.time('==========================services 初始化完成');
 
   const registry = new ServiceRegistry();
@@ -176,6 +202,7 @@ function makeContainerService() {
 
   const instantiationService = new InstantiationService(registry.makeCollection());
   console.timeEnd('==========================services 初始化完成');
+  console.log('==========================services 初始化完成==========');
   return instantiationService
 }
 

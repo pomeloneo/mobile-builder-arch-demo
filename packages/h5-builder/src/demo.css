@@ -24,14 +24,28 @@ body {
 .app-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 2rem;
+  padding: 3rem 2rem;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 10;
 }
 
 .app-header h1 {
-  font-size: 2rem;
+  font-size: 2.5rem;
   margin-bottom: 0.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.app-header h2 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.8;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
 }
 
 .app-header p {
@@ -287,4 +301,70 @@ body {
   color: #e74c3c;
   border-color: #e74c3c;
   background: #fff5f5;
+}
+
+/* 状态徽章样式 */
+.status-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: white;
+  /* Default text color */
+}
+
+.rainbow-text {
+  /* Rainbow Gradient Text */
+  background-image: linear-gradient(to right,
+      hsl(0, 70%, 60%),
+      hsl(60, 70%, 60%),
+      hsl(120, 70%, 60%),
+      hsl(180, 70%, 60%),
+      hsl(240, 70%, 60%),
+      hsl(300, 70%, 60%),
+      hsl(0, 70%, 60%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 200% auto;
+  animation: rainbow-flow 5s linear infinite;
+}
+
+@keyframes rainbow-flow {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* 特性列表样式 */
+.features-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 auto 2rem;
+  max-width: 800px;
+}
+
+.features-list li {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.95);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(4px);
+}
+
+.features-list li:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

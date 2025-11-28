@@ -76,7 +76,7 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
     this.componentService.registerAsync('TextCard', {
       model: () => import('../components/text-card').then(m => m.TextCardModel),
       view: () => import('../components/text-card').then(m => m.TextCardView),
-    }, { priority: 'normal', delayRange: [4200, 5000] });
+    }, { priority: 'normal', delayRange: [2200, 3000] });
 
     this.componentService.registerAsync('TabsContainer', {
       model: () => import('../components/tabs-container').then(m => m.TabsContainerModel),
