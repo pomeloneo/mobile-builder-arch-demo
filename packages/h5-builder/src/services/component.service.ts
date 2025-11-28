@@ -2,7 +2,7 @@ import { IInstantiationService } from '../bedrock/di/index.common';
 import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
 import { ITrackerService } from './service-identifiers';
 import type { TrackerService } from './tracker.service';
-import { ErrorPlaceholderModel } from '../flow/placeholders';
+import { ErrorPlaceholderModel } from '../placeholder';
 import { registerModelView } from '../components/model-renderer';
 
 /**

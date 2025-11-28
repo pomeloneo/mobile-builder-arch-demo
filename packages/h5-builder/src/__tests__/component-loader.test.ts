@@ -5,7 +5,7 @@ import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
 import { ITrackerService, IBridgeService } from '../services/service-identifiers';
 import { TrackerService } from '../services/tracker.service';
 import { BridgeService } from '../services/bridge.service';
-import { ErrorPlaceholderModel } from '../flow/placeholders';
+import { ErrorPlaceholderModel } from '../placeholder';
 
 // 测试用的简单组件
 class TestCardModel extends BaseComponentModel<{ title: string }> {
