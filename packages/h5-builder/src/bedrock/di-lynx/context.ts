@@ -1,6 +1,6 @@
 import { createContext, createElement, useContext, useMemo } from '@byted-lynx/react';
-import type { IInstantiationService, ServiceIdentifier, ServicesAccessor } from '@/di';
-import { lvAssertNotNil } from '@/assert';
+import type { IInstantiationService, ServiceIdentifier, ServicesAccessor } from '@/bedrock/di';
+import { lvAssertNotNil } from '@/bedrock/assert';
 
 interface IProps {
   instantiationService: IInstantiationService;

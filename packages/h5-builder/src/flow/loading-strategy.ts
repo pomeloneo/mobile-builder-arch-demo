@@ -1,4 +1,4 @@
-import { ComponentSchema } from './component-loader';
+import { ComponentSchema } from '../services/component.service';
 
 /**
  * 加载上下文

@@ -60,9 +60,9 @@ function shouldInvoke(context: InvokeContext, time: number): boolean {
 
   return Boolean(
     context.lastCallTime === 0 ||
-      timeSinceLastCall >= context.wait ||
-      timeSinceLastCall < 0 ||
-      (context.maxWait && timeSinceLastInvoke >= context.maxWait),
+    timeSinceLastCall >= context.wait ||
+    timeSinceLastCall < 0 ||
+    (context.maxWait && timeSinceLastInvoke >= context.maxWait),
   );
 }
 

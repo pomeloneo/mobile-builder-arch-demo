@@ -1,4 +1,4 @@
-import type { IDisposable } from '@/dispose';
+import type { IDisposable } from '@/bedrock/dispose';
 
 // mock的文件，请勿直接引用
 

@@ -1,6 +1,4 @@
 import { BaseContainerModel } from '../../bedrock/model';
-import { Inject } from '../../bedrock/di';
-import { HttpService } from '../../modules/http.service';
 
 /**
  * 实验容器 Props

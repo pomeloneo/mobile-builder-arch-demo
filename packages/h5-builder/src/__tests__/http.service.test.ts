@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { HttpService, createHttpService } from '../modules/http.service';
-import { BridgeService } from '../modules/bridge.service';
+import { HttpService, createHttpService } from '../services/http.service';
+import { BridgeService } from '../services/bridge.service';
 
 describe('HttpService', () => {
   let bridge: BridgeService;

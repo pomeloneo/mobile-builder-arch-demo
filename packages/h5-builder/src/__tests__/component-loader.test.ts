@@ -3,8 +3,8 @@ import { ComponentService, ComponentSchema } from '../services/component.service
 import { ServiceCollection, InstantiationService } from '../bedrock/di/index.common';
 import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
 import { ITrackerService } from '../services/service-identifiers';
-import { TrackerService } from '../modules/tracker.service';
-import { BridgeService } from '../modules/bridge.service';
+import { TrackerService } from '../services/tracker.service';
+import { BridgeService } from '../services/bridge.service';
 import { ErrorPlaceholderModel } from '../flow/placeholders';
 
 // 测试用的简单组件

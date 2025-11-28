@@ -1,5 +1,5 @@
 import type { Event } from './emitter';
-import type { IDisposable } from '@/dispose';
+import type { IDisposable } from '@/bedrock/dispose';
 
 // 辅助能力：只监听某个事件一次
 export function listenOnce<TArgs extends any[]>(event: Event<TArgs>): Event<TArgs> {

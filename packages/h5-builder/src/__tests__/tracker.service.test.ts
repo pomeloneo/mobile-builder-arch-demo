@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { TrackerService, TrackerHelpers } from '../modules/tracker.service';
-import { BridgeService } from '../modules/bridge.service';
+import { TrackerService, TrackerHelpers } from '../services/tracker.service';
+import { BridgeService } from '../services/bridge.service';
 
 describe('TrackerService', () => {
   let bridge: BridgeService;

@@ -1,5 +1,5 @@
 import type { Event } from './emitter';
-import type { IDisposable } from '@/dispose';
+import type { IDisposable } from '@/bedrock/dispose';
 
 // 辅助能力：监听事件，直到事件满足某种状况为止，此时触发 listener callback 并停止监听
 // 类似 MobX 的 `when`

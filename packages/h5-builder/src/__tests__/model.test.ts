@@ -9,7 +9,8 @@ class TestModel extends BaseComponentModel<{ value: number }> {
   public activeCalled = false;
   public inactiveCalled = false;
 
-  protected onInit(): void {
+  protected async onInit(): Promise<void> {
+    this.props.value++;
     this.initCalled = true;
     this.data = `Initialized with value: ${this.props.value}`;
   }
@@ -29,7 +30,8 @@ class TestModel extends BaseComponentModel<{ value: number }> {
 
 // 测试用的容器 Model
 class TestContainerModel extends BaseContainerModel<any, TestModel> {
-  protected onInit(): void {
+  protected async onInit(): Promise<void> {
+    // 容器初始化
     // 创建一些子 Model
     const child1 = new TestModel('child-1', { value: 1 });
     const child2 = new TestModel('child-2', { value: 2 });
@@ -53,7 +55,8 @@ describe('BaseComponentModel', () => {
       model.init();
       expect(model.isInited).toBe(true);
       expect(model.initCalled).toBe(true);
-      expect(model.data).toBe('Initialized with value: 42');
+      expect(model.data).toBe('Initialized with value: 43'); // Value is incremented
+      expect(model.props.value).toBe(43); // Value is incremented
 
       // 再次调用不应该重复初始化
       const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => { });
@@ -135,7 +138,7 @@ describe('BaseComponentModel', () => {
       class TimerModel extends BaseComponentModel {
         public ticks = 0;
 
-        protected onInit(): void {
+        protected async onInit(): Promise<void> {
           const timerId = setInterval(() => {
             this.ticks++;
           }, 1000);
