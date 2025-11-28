@@ -3,7 +3,7 @@ import type { ComponentService } from '../services/component.service';
 import { type ComponentSchema } from '../services/component.service';
 import { IComponentService, ISchemaService } from '../services/service-identifiers';
 import { BaseComponentModel } from '../bedrock/model';
-import { PageLifecycle } from './types';
+import { PageLifecycle } from './lifecycle';
 import type { SchemaService } from '@/services/schema.service';
 import { Barrier } from '../bedrock/async/barrier';
 
@@ -16,7 +16,7 @@ export class EnsureViewReadyJob extends AbstractJob<PageLifecycle> {
   private _loadResouseBarrier: Barrier = new Barrier();
 
   constructor(
-    private onProgress: (model: BaseComponentModel | null, msg: string) => void,
+
     @IComponentService private componentService: ComponentService,
   ) {
     super();
@@ -26,17 +26,15 @@ export class EnsureViewReadyJob extends AbstractJob<PageLifecycle> {
 
     switch (phase) {
       case PageLifecycle.Open:
-
         break;
       case PageLifecycle.LoadComponentLogic:
         break;
       case PageLifecycle.Prepare:
-
         break;
       case PageLifecycle.RenderReady:
         await this._whenRenderReady();
         break;
-      case PageLifecycle.RenderCompleted:
+      case PageLifecycle.Render:
         break;
       case PageLifecycle.Idle:
         break;

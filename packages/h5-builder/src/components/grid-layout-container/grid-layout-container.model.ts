@@ -25,7 +25,7 @@ export class GridLayoutContainerModel extends BaseContainerModel<GridLayoutConta
   protected async onInit(): Promise<void> {
     // 初始化所有子组件
     for (const child of this.children) {
-      await child.init();
+      child.init();
     }
   }
 

@@ -1,7 +1,7 @@
 import { BaseComponentModel } from '../../bedrock/model';
 import { IHttpService, ITrackerService } from '../../services/service-identifiers';
-import type { HttpService } from '../../modules/http.service';
-import type { TrackerService } from '../../modules/tracker.service';
+import type { HttpService } from '../../services/http.service';
+import type { TrackerService } from '../../services/tracker.service';
 
 /**
  * 商品数据
@@ -63,7 +63,7 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
    */
   async fetchData(): Promise<void> {
     // 模拟 API 请求延迟 (500ms - 1500ms)
-    const delay = 500 + Math.random() * 1000;
+    const delay = 2500 + Math.random() * 1000;
     // const delay = 10;
     await new Promise(resolve => setTimeout(resolve, delay));
 

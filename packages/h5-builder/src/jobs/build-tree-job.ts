@@ -3,7 +3,7 @@ import type { ComponentService } from '../services/component.service';
 import { type ComponentSchema } from '../services/component.service';
 import { IComponentService, ISchemaService } from '../services/service-identifiers';
 import { BaseComponentModel } from '../bedrock/model';
-import { PageLifecycle } from './types';
+import { PageLifecycle } from './lifecycle';
 import type { SchemaService } from '@/services/schema.service';
 
 /**
@@ -14,7 +14,7 @@ export class BuildTreeJob extends AbstractJob<PageLifecycle> {
   private rootModel?: BaseComponentModel;
 
   constructor(
-    private onProgress: (model: BaseComponentModel | null, msg: string) => void,
+
     @IComponentService private componentService: ComponentService,
     @ISchemaService private schemaService: SchemaService
   ) {
@@ -34,7 +34,7 @@ export class BuildTreeJob extends AbstractJob<PageLifecycle> {
         break;
       case PageLifecycle.RenderReady:
         break;
-      case PageLifecycle.RenderCompleted:
+      case PageLifecycle.Render:
         break;
       case PageLifecycle.Idle:
         break;
@@ -44,17 +44,15 @@ export class BuildTreeJob extends AbstractJob<PageLifecycle> {
   }
 
   private async _whenPrepare() {
-    this.onProgress(null, '构建模型树中...');
-    console.log('==================开始构建逻辑树');
-    console.time('==================构建逻辑树完成');
+
+
     const schema = this.schemaService.getSchema()
     if (!schema) {
       throw new Error('Schema not found');
     }
-
+    console.log('==================开始构建逻辑树');
+    console.time('==================构建逻辑树完成');
     this.rootModel = this.componentService.buildModelTree(schema);
-
     console.timeEnd('==================构建逻辑树完成');
-    this.onProgress(this.rootModel, '模型树构建完成');
   }
 }

@@ -1,6 +1,6 @@
 import { AbstractJob } from '../bedrock/launch';
 import { BaseComponentModel } from '../bedrock/model';
-import { PageLifecycle } from './types';
+import { PageLifecycle } from './lifecycle';
 
 import type { ComponentService } from '../services/component.service';
 import { IComponentService } from '@/services';
@@ -13,22 +13,38 @@ export class RenderJob extends AbstractJob<PageLifecycle> {
   protected _name = 'Render';
 
   constructor(
-
-    private onProgress: (model: BaseComponentModel | null, msg: string) => void,
     @IComponentService private componentService: ComponentService
   ) {
     super();
   }
 
   protected _executePhase(phase: PageLifecycle) {
-    if (phase !== PageLifecycle.RenderReady) return;
 
-    const rootModel = this.componentService.getRootModel();
-    if (!rootModel) return;
+    switch (phase) {
+      case PageLifecycle.Open:
+        break;
+      case PageLifecycle.LoadComponentLogic:
 
-    if (rootModel) {
-      this.onProgress(rootModel, '模型树就绪，开始渲染');
-      rootModel.activate();
+        break;
+      case PageLifecycle.Prepare:
+        break;
+      case PageLifecycle.RenderReady:
+
+        break;
+      case PageLifecycle.Render:
+        this._whenRender();
+        break;
+      case PageLifecycle.Idle:
+        break;
+      default:
+        break;
     }
+  }
+
+  private async _whenRender() {
+    const modelTree = this.componentService.getModelTree();
+    if (!modelTree) return;
+
+    modelTree.activate();
   }
 }

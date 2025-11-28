@@ -100,7 +100,7 @@ export class ComponentRegistry {
 export class ComponentService {
   readonly _serviceBrand: undefined;
   private registry = new ComponentRegistry();
-  private _rootModel: BaseComponentModel | null = null;
+  private _modelTree: BaseComponentModel | null = null;
 
   // 缓存加载结果，确保只加载一次
   private _loadingResult: {
@@ -723,12 +723,12 @@ export class ComponentService {
    */
   public buildModelTree(schema: ComponentSchema): BaseComponentModel {
     // 此时所有 Model 已加载，可以同步构建
-    this._rootModel = this.buildTree(schema);
-    return this._rootModel;
+    this._modelTree = this.buildTree(schema);
+    return this._modelTree;
   }
 
-  public getRootModel(): BaseComponentModel | null {
-    return this._rootModel;
+  public getModelTree(): BaseComponentModel | null {
+    return this._modelTree;
   }
 
 }

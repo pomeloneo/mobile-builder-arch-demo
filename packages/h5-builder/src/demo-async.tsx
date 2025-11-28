@@ -14,7 +14,7 @@ import { BaseComponentModel } from './bedrock/model';
 import './demo.css';
 
 import { schema } from './mock/demo-data';
-import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, RegisterComponentsJob, RenderJob } from './jobs';
+import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitDataJob, RenderJob } from './jobs';
 import { GetSchemaJob } from './jobs/get-schema-job';
 import { SchemaService } from './services/schema.service';
 
@@ -102,12 +102,11 @@ function makeJobScheduler(
   );
 
   // 注册 Jobs
-  jobScheduler.registerJob(PageLifecycle.Open, RegisterComponentsJob);
-  jobScheduler.registerJob(PageLifecycle.Open, GetSchemaJob, onProgress);
-  jobScheduler.registerJob(PageLifecycle.LoadComponentLogic, LoadComponentsJob, schema, (msg: string) => onProgress(null, msg));
-  jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob, onProgress);
-  jobScheduler.registerJob(PageLifecycle.RenderReady, RenderJob, onProgress);
-  jobScheduler.registerJob(PageLifecycle.RenderCompleted, InitDataJob, (msg: string) => onProgress(null, msg));
+  jobScheduler.registerJob(PageLifecycle.Open, GetSchemaJob);
+  jobScheduler.registerJob(PageLifecycle.LoadComponentLogic, LoadComponentsJob);
+  jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob);
+  jobScheduler.registerJob(PageLifecycle.RenderReady, RenderJob);
+  jobScheduler.registerJob(PageLifecycle.Render, InitDataJob);
 
   return jobScheduler
 }
@@ -148,8 +147,8 @@ async function driveJobScheduler(
   // Completed: 数据初始化（后台）
   console.log('==========================Completed 阶段开始');
   console.time('==========================Completed 阶段完成');
-  jobScheduler.prepare(PageLifecycle.RenderCompleted);
-  await jobScheduler.wait(PageLifecycle.RenderCompleted);
+  jobScheduler.prepare(PageLifecycle.Render);
+  await jobScheduler.wait(PageLifecycle.Render);
   console.timeEnd('==========================Completed 阶段完成');
 
   // 打印性能数据
@@ -192,7 +191,7 @@ async function initializeApp(): Promise<BaseComponentModel | null> {
   );
 
   await driveJobScheduler(jobScheduler, (model, msg) => console.log('[Demo-Async]', msg));
-  return instantiationService.invokeFunction((accessor) => accessor.get(IComponentService).getRootModel())
+  return instantiationService.invokeFunction((accessor) => accessor.get(IComponentService).getModelTree())
 }
 
 // 启动应用

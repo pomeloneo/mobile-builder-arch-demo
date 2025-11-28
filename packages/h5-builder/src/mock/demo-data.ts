@@ -1,4 +1,4 @@
-import { ComponentSchema } from '../flow/component-loader';
+import { ComponentSchema } from '../services/component.service';
 
 export const textContents = [
   '这是一段简短的文本内容。',
