@@ -100,8 +100,7 @@ async function driveJobScheduler(
 
   const debouncedFunc = (c: PageLifecycle) => setLifecycle(c);
 
-  console.log('==========================应用初始化开始==========');
-  console.time('==========================应用初始化完成==========');
+
 
   // Open: 初始化
   console.log('==========================Open 阶段开始==========');
@@ -158,8 +157,9 @@ async function driveJobScheduler(
   console.log('==========================Completed 阶段开始==========');
   console.time('==========================Completed 阶段完成');
   jobScheduler.prepare(PageLifecycle.Completed);
-  await jobScheduler.wait(PageLifecycle.Completed);
   debouncedFunc(PageLifecycle.Completed);
+  await jobScheduler.wait(PageLifecycle.Completed);
+
   console.timeEnd('==========================Completed 阶段完成');
   console.log('==========================Completed 阶段完成======');
 
@@ -169,13 +169,11 @@ async function driveJobScheduler(
   console.log('==========================Idle 阶段开始==========');
   console.time('==========================Idle 阶段完成');
   jobScheduler.prepare(PageLifecycle.Idle);
-  await jobScheduler.wait(PageLifecycle.Idle);
   debouncedFunc(PageLifecycle.Idle);
+  await jobScheduler.wait(PageLifecycle.Idle);
+
   console.log('==========================Idle 阶段完成==========');
   console.timeEnd('==========================Idle 阶段完成');
-
-
-
 
   console.log('==========================应用初始化完成==========');
   console.timeEnd('==========================应用初始化完成==========');
@@ -184,7 +182,8 @@ async function driveJobScheduler(
 
 
 function makeContainerService() {
-  // 1. 初始化服务
+  console.log('==========================应用初始化开始==========');
+  console.time('==========================应用初始化完成==========');
   console.log('==========================services 开始初始化===========');
   console.time('==========================services 初始化完成');
 

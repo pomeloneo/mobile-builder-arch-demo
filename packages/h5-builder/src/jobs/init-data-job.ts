@@ -47,7 +47,7 @@ export class InitDataJob extends AbstractJob<PageLifecycle> {
 
   private async _whenCompleted() {
 
-    this._setBarrier(PageLifecycle.Render, this._renderCompletedBarrier);
+    this._setBarrier(PageLifecycle.Completed, this._renderCompletedBarrier);
 
     const rootModel = this.componentService.getModelTree();
     if (!rootModel) {
@@ -59,7 +59,8 @@ export class InitDataJob extends AbstractJob<PageLifecycle> {
     console.time('==========================首屏接口相关数据拉取完成');
     await rootModel.init()
     console.log('==========================首屏接口相关数据拉取完成=============');
-    this._renderCompletedBarrier.open();
     console.timeEnd('==========================首屏接口相关数据拉取完成');
+    this._renderCompletedBarrier.open();
+
   }
 }
