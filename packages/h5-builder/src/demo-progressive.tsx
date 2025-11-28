@@ -27,7 +27,9 @@ function ProgressiveDemoApp() {
 
   useEffect(() => {
     if (modelTree) {
-      console.log('===================document.querySelector', document.querySelector('.tabs-container'))
+      setTimeout(() => {
+        console.log('===================document.querySelector', document.querySelector('.tabs-container'))
+      }, 0);
     }
   }, [modelTree])
   if (panic) {
@@ -103,28 +105,31 @@ async function driveJobScheduler(
 
 
   // Open: 初始化
-  console.log('==========================Open 阶段开始');
+  console.log('==========================Open 阶段开始==========');
   console.time('==========================Open 阶段完成');
   jobScheduler.prepare(PageLifecycle.Open);
   await jobScheduler.wait(PageLifecycle.Open);
   debouncedFunc(PageLifecycle.Open);
+  console.log('==========================Open 阶段完成==========');
   console.timeEnd('==========================Open 阶段完成');
 
   // LoadResouse: 加载组件资源
-  console.log('==========================LoadResouse 阶段开始');
+  console.log('==========================LoadResouse 阶段开始==========');
   console.time('==========================LoadResouse 阶段完成');
   jobScheduler.prepare(PageLifecycle.LoadComponentLogic);
   await jobScheduler.wait(PageLifecycle.LoadComponentLogic);
   debouncedFunc(PageLifecycle.LoadComponentLogic);
+  console.log('==========================LoadResouse 阶段完成==========');
   console.timeEnd('==========================LoadResouse 阶段完成');
 
   // Prepare: 构建模型树
-  console.log('==========================Prepare 阶段开始');
+  console.log('==========================Prepare 阶段开始===========');
   console.time('==========================Prepare 阶段完成');
   jobScheduler.prepare(PageLifecycle.Prepare);
   await jobScheduler.wait(PageLifecycle.Prepare);
   debouncedFunc(PageLifecycle.Prepare);
   console.timeEnd('==========================Prepare 阶段完成');
+  console.log('==========================Prepare 阶段完成==========');
 
   // RenderReady: 准备完成
   jobScheduler.prepare(PageLifecycle.RenderReady);
@@ -132,27 +137,31 @@ async function driveJobScheduler(
   debouncedFunc(PageLifecycle.RenderReady);
 
   // 🔥 Render: 触发渲染 + 激活组件树
-  console.log('==========================Render 阶段开始');
+  console.log('==========================Render 阶段开始=======');
   console.time('==========================Render 阶段完成');
   jobScheduler.prepare(PageLifecycle.Render);
   await jobScheduler.wait(PageLifecycle.Render);  // TriggerRenderJob（触发渲染）和 ActivateTreeJob（激活）在这里执行
   debouncedFunc(PageLifecycle.Render);
   console.timeEnd('==========================Render 阶段完成');
+  console.log('==========================Render 阶段==========');
 
 
   // Completed: 数据初始化（后台）
-  console.log('==========================Completed 阶段开始');
+  console.log('==========================Completed 阶段开始==========');
   console.time('==========================Completed 阶段完成');
   jobScheduler.prepare(PageLifecycle.Completed);
   await jobScheduler.wait(PageLifecycle.Completed);
   debouncedFunc(PageLifecycle.Completed);
   console.timeEnd('==========================Completed 阶段完成');
+  console.log('==========================Completed 阶段完成======');
 
   // 打印性能数据
   console.log('性能统计:', jobScheduler.getCost());
+  console.log('==========================Idle 阶段开始==========');
   jobScheduler.prepare(PageLifecycle.Idle);
   await jobScheduler.wait(PageLifecycle.Idle);
   debouncedFunc(PageLifecycle.Idle);
+  console.log('==========================Idle 阶段完成==========');
 
 }
 
