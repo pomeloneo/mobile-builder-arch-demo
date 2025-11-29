@@ -20,35 +20,43 @@
 
 ### 整体架构图
 
-```mermaid
-graph TB
-    subgraph "应用层 Application Layer"
-        App[App 启动入口]
-        Lifecycle[生命周期管理]
-    end
-    
-    subgraph "基础设施层 Bedrock Layer"
-        DI[依赖注入容器<br/>InstantiationService]
-        Scheduler[任务调度器<br/>JobScheduler]
-        Model[Model 基类<br/>BaseComponentModel]
-    end
-    
-    subgraph "业务层 Business Layer"
-        Services[服务层<br/>ComponentService<br/>HttpService<br/>TrackerService]
-        Jobs[Job 层<br/>GetSchemaJob<br/>LoadComponentsJob<br/>BuildTreeJob]
-        Components[组件层<br/>Model + View]
-    end
-    
-    App --> Lifecycle
-    Lifecycle --> Scheduler
-    Scheduler --> Jobs
-    Jobs --> Services
-    Services --> DI
-    Components --> Model
-    Components --> Services
-    DI -.注入依赖.-> Services
-    DI -.注入依赖.-> Jobs
-    DI -.注入依赖.-> Components
+```plantuml
+@startuml
+skinparam rectangle {
+    BackgroundColor<<app>> LightSkyBlue
+    BackgroundColor<<bedrock>> LightGreen
+    BackgroundColor<<business>> LightYellow
+}
+
+package "应用层 Application Layer" <<app>> {
+    rectangle "App 启动入口" as App
+    rectangle "生命周期管理" as Lifecycle
+}
+
+package "基础设施层 Bedrock Layer" <<bedrock>> {
+    rectangle "依赖注入容器\nInstantiationService" as DI
+    rectangle "任务调度器\nJobScheduler" as Scheduler
+    rectangle "Model 基类\nBaseComponentModel" as Model
+}
+
+package "业务层 Business Layer" <<business>> {
+    rectangle "服务层\nComponentService\nHttpService\nTrackerService" as Services
+    rectangle "Job 层\nGetSchemaJob\nLoadComponentsJob\nBuildTreeJob" as Jobs
+    rectangle "组件层\nModel + View" as Components
+}
+
+App --> Lifecycle
+Lifecycle --> Scheduler
+Scheduler --> Jobs
+Jobs --> Services
+Services --> DI
+Components --> Model
+Components --> Services
+DI ..> Services : 注入依赖
+DI ..> Jobs : 注入依赖
+DI ..> Components : 注入依赖
+
+@enduml
 ```
 
 ### 目录结构
@@ -254,44 +262,46 @@ export enum PageLifecycle {
 
 #### 2.2 生命周期驱动流程
 
-```mermaid
-sequenceDiagram
-    participant App
-    participant Scheduler as JobScheduler
-    participant Jobs as Jobs
-    participant Services as Services
-    
-    App->>Scheduler: prepare(Open)
-    Scheduler->>Jobs: 执行 Open 阶段的 Jobs
-    Jobs->>Services: 拉取 Schema
-    Jobs->>Services: 注册组件加载器
-    Scheduler->>App: wait(Open) 完成
-    
-    App->>Scheduler: prepare(LoadComponentLogic)
-    Scheduler->>Jobs: 执行 LoadComponentLogic 阶段
-    Jobs->>Services: 并发加载 Model 资源
-    Scheduler->>App: wait(LoadComponentLogic) 完成
-    
-    App->>Scheduler: prepare(Prepare)
-    Scheduler->>Jobs: 执行 Prepare 阶段
-    Jobs->>Services: 构建 Model Tree
-    Jobs->>Services: 并发加载 View 资源
-    Scheduler->>App: wait(Prepare) 完成
-    
-    App->>Scheduler: prepare(RenderReady)
-    Scheduler->>Jobs: 等待所有 View 资源加载完成
-    Scheduler->>App: wait(RenderReady) 完成
-    
-    App->>Scheduler: prepare(Render)
-    Scheduler->>Jobs: 触发渲染 + 激活组件树
-    Scheduler->>App: wait(Render) 完成
-    
-    App->>Scheduler: prepare(Completed)
-    Scheduler->>Jobs: 初始化首屏数据
-    Scheduler->>App: wait(Completed) 完成
-    
-    App->>Scheduler: prepare(Idle)
-    Scheduler->>Jobs: 执行闲时任务
+```plantuml
+@startuml
+participant App
+participant "JobScheduler" as Scheduler
+participant Jobs
+participant Services
+
+App -> Scheduler: prepare(Open)
+Scheduler -> Jobs: 执行 Open 阶段的 Jobs
+Jobs -> Services: 拉取 Schema
+Jobs -> Services: 注册组件加载器
+Scheduler --> App: wait(Open) 完成
+
+App -> Scheduler: prepare(LoadComponentLogic)
+Scheduler -> Jobs: 执行 LoadComponentLogic 阶段
+Jobs -> Services: 并发加载 Model 资源
+Scheduler --> App: wait(LoadComponentLogic) 完成
+
+App -> Scheduler: prepare(Prepare)
+Scheduler -> Jobs: 执行 Prepare 阶段
+Jobs -> Services: 构建 Model Tree
+Jobs -> Services: 并发加载 View 资源
+Scheduler --> App: wait(Prepare) 完成
+
+App -> Scheduler: prepare(RenderReady)
+Scheduler -> Jobs: 等待所有 View 资源加载完成
+Scheduler --> App: wait(RenderReady) 完成
+
+App -> Scheduler: prepare(Render)
+Scheduler -> Jobs: 触发渲染 + 激活组件树
+Scheduler --> App: wait(Render) 完成
+
+App -> Scheduler: prepare(Completed)
+Scheduler -> Jobs: 初始化首屏数据
+Scheduler --> App: wait(Completed) 完成
+
+App -> Scheduler: prepare(Idle)
+Scheduler -> Jobs: 执行闲时任务
+
+@enduml
 ```
 
 #### 2.3 Job 调度器（JobScheduler）
@@ -513,22 +523,29 @@ class BaseComponentModel {
 
 ##### 传统渲染流程
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant App
-    participant Loader
-    participant React
-    
-    User->>App: 访问页面
-    App->>Loader: 加载所有组件资源
-    Note over Loader: 串行或并行加载<br/>所有 JS/CSS
-    Loader-->>App: 所有资源加载完成
-    App->>React: 构建组件树
-    React->>React: 初始化组件
-    React->>React: 执行 useEffect
-    React->>User: 首次渲染完成
-    Note over User: 用户看到页面
+```plantuml
+@startuml
+participant User
+participant App
+participant Loader
+participant React
+
+User -> App: 访问页面
+App -> Loader: 加载所有组件资源
+note over Loader
+  串行或并行加载
+  所有 JS/CSS
+end note
+Loader --> App: 所有资源加载完成
+App -> React: 构建组件树
+React -> React: 初始化组件
+React -> React: 执行 useEffect
+React -> User: 首次渲染完成
+note over User
+  用户看到页面
+end note
+
+@enduml
 ```
 
 **传统渲染的性能优化手段**：
@@ -585,72 +602,77 @@ function ProductList() {
 
 ##### 渐进式渲染流程
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant App
-    participant Scheduler as JobScheduler
-    participant Loader as ComponentService
-    participant React
-    
-    User->>App: 访问页面
-    
-    rect rgb(200, 220, 250)
-    Note over App,Scheduler: Open 阶段
-    App->>Scheduler: prepare(Open)
-    Scheduler->>Loader: 拉取 Schema
-    Scheduler->>Loader: 注册组件加载器
-    Scheduler-->>App: wait(Open) 完成
-    end
-    
-    rect rgb(200, 250, 220)
-    Note over App,Loader: LoadComponentLogic 阶段
-    App->>Scheduler: prepare(LoadComponentLogic)
-    Scheduler->>Loader: 并发加载 Model 资源
-    Note over Loader: 按优先级排序<br/>critical > high > normal > low
-    Loader-->>Scheduler: 所有 Model 加载完成
-    Scheduler-->>App: wait(LoadComponentLogic) 完成
-    end
-    
-    rect rgb(250, 220, 250)
-    Note over App,Loader: Prepare 阶段
-    App->>Scheduler: prepare(Prepare)
-    Scheduler->>Loader: 构建 Model Tree
-    Note over Loader: 纯逻辑树，不包含 UI
-    par 并发加载 View
-        Loader->>Loader: 异步加载 View 资源
-    end
-    Loader-->>Scheduler: Model Tree 构建完成
-    Scheduler-->>App: wait(Prepare) 完成
-    end
-    
-    rect rgb(250, 240, 200)
-    Note over App,Loader: RenderReady 阶段
-    App->>Scheduler: prepare(RenderReady)
-    Scheduler->>Loader: 等待所有 View 加载完成
-    Loader-->>Scheduler: 所有 View 加载完成
-    Scheduler-->>App: wait(RenderReady) 完成
-    end
-    
-    rect rgb(250, 200, 200)
-    Note over App,React: Render 阶段
-    App->>Scheduler: prepare(Render)
-    Scheduler->>React: setModelTree(modelTree)
-    React->>User: 渲染骨架屏
-    Note over User: 用户看到页面结构
-    Scheduler->>Loader: 激活组件树
-    Scheduler-->>App: wait(Render) 完成
-    end
-    
-    rect rgb(200, 250, 250)
-    Note over App,Loader: Completed 阶段
-    App->>Scheduler: prepare(Completed)
-    Scheduler->>Loader: 初始化首屏数据
-    Note over Loader: 组件开始加载数据
-    React->>User: 数据填充完成
-    Note over User: 用户看到完整内容
-    Scheduler-->>App: wait(Completed) 完成
-    end
+```plantuml
+@startuml
+participant User
+participant App
+participant "JobScheduler" as Scheduler
+participant "ComponentService" as Loader
+participant React
+
+User -> App: 访问页面
+
+group Open 阶段 #LightBlue
+  App -> Scheduler: prepare(Open)
+  Scheduler -> Loader: 拉取 Schema
+  Scheduler -> Loader: 注册组件加载器
+  Scheduler --> App: wait(Open) 完成
+end
+
+group LoadComponentLogic 阶段 #LightGreen
+  App -> Scheduler: prepare(LoadComponentLogic)
+  Scheduler -> Loader: 并发加载 Model 资源
+  note over Loader
+    按优先级排序
+    critical > high > normal > low
+  end note
+  Loader --> Scheduler: 所有 Model 加载完成
+  Scheduler --> App: wait(LoadComponentLogic) 完成
+end
+
+group Prepare 阶段 #Lavender
+  App -> Scheduler: prepare(Prepare)
+  Scheduler -> Loader: 构建 Model Tree
+  note over Loader
+    纯逻辑树，不包含 UI
+  end note
+  Loader -> Loader: 异步加载 View 资源
+  Loader --> Scheduler: Model Tree 构建完成
+  Scheduler --> App: wait(Prepare) 完成
+end
+
+group RenderReady 阶段 #LightYellow
+  App -> Scheduler: prepare(RenderReady)
+  Scheduler -> Loader: 等待所有 View 加载完成
+  Loader --> Scheduler: 所有 View 加载完成
+  Scheduler --> App: wait(RenderReady) 完成
+end
+
+group Render 阶段 #LightCoral
+  App -> Scheduler: prepare(Render)
+  Scheduler -> React: setModelTree(modelTree)
+  React -> User: 渲染骨架屏
+  note over User
+    用户看到页面结构
+  end note
+  Scheduler -> Loader: 激活组件树
+  Scheduler --> App: wait(Render) 完成
+end
+
+group Completed 阶段 #LightCyan
+  App -> Scheduler: prepare(Completed)
+  Scheduler -> Loader: 初始化首屏数据
+  note over Loader
+    组件开始加载数据
+  end note
+  React -> User: 数据填充完成
+  note over User
+    用户看到完整内容
+  end note
+  Scheduler --> App: wait(Completed) 完成
+end
+
+@enduml
 ```
 
 **渐进式渲染的优势**：
