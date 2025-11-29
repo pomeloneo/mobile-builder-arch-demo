@@ -9,17 +9,15 @@ import { registerModelView } from '../components/model-renderer';
  * 组件元数据
  */
 export interface ComponentMetadata {
-  // 加载优先级
+  // 加载优先级：控制组件加载顺序
+  // critical: 最高优先级，立即加载（如核心容器）
+  // high: 高优先级，优先加载（如首屏组件）
+  // normal: 普通优先级，正常加载（默认值）
+  // low: 低优先级，延后加载（如非首屏组件）
   priority?: 'critical' | 'high' | 'normal' | 'low';
 
-  // 是否预加载
-  preload?: boolean;
-
-  // 加载延迟范围（ms）
+  // 加载延迟范围（ms）：模拟网络延迟，用于测试
   delayRange?: [number, number];
-
-  // 是否可以延迟加载
-  lazy?: boolean;
 }
 
 /**
@@ -623,7 +621,7 @@ export class ComponentService {
 
   /**
    * 统一队列并发加载 (Public API)
-   * Model 和 View 在同一队列，Model 排在前面，按总并发度统一调度
+   * Model 和 View 在同一队列，按优先级排序后加载
    * 🔥 只会执行一次，后续调用返回缓存结果
    */
   public preloadComponentsUnified(schema: ComponentSchema): {
@@ -646,20 +644,23 @@ export class ComponentService {
 
     const componentNames = Array.from(uniqueTypes);
 
+    // 🔥 新增：根据优先级排序组件
+    const sortedComponentNames = this.sortComponentsByPriority(componentNames);
+
     // 🔥 关键：在构建队列时就创建所有 Promise 并分类收集
     const modelPromises = new Map<string, Promise<any>>();
     const viewPromises = new Map<string, Promise<any>>();
     const tasks: Array<Promise<any>> = [];
 
-    // 先添加所有 Model 任务
-    componentNames.forEach(name => {
+    // 先添加所有 Model 任务（按优先级顺序）
+    sortedComponentNames.forEach(name => {
       const promise = this.loadModel(name);
       modelPromises.set(name, promise);
       tasks.push(promise);
     });
 
-    // 再添加所有 View 任务
-    componentNames.forEach(name => {
+    // 再添加所有 View 任务（按优先级顺序）
+    sortedComponentNames.forEach(name => {
       const promise = this.loadView(name);
       viewPromises.set(name, promise);
       tasks.push(promise);
@@ -690,6 +691,32 @@ export class ComponentService {
     };
 
     return this._loadingResult;
+  }
+
+  /**
+   * 根据优先级排序组件
+   * 优先级顺序：critical > high > normal > low
+   */
+  private sortComponentsByPriority(componentNames: string[]): string[] {
+    // 定义优先级权重
+    const priorityWeight: Record<string, number> = {
+      'critical': 0,
+      'high': 1,
+      'normal': 2,
+      'low': 3,
+    };
+
+    return componentNames.sort((a, b) => {
+      const metaA = this.metadata.get(a);
+      const metaB = this.metadata.get(b);
+
+      // 获取优先级，默认为 'normal'
+      const priorityA = metaA?.priority || 'normal';
+      const priorityB = metaB?.priority || 'normal';
+
+      // 按权重排序（数字越小优先级越高）
+      return priorityWeight[priorityA] - priorityWeight[priorityB];
+    });
   }
 
   /**
