@@ -93,7 +93,7 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
     this.componentService.registerAsync('ExperimentContainer', {
       model: () => import('../components/experiment-container').then(m => m.ExperimentContainerModel),
       view: () => import('../components/experiment-container').then(m => m.ExperimentContainerView),
-    }, { priority: 'normal', dependencies: ['TextCard', 'ProductCard'], delayRange: [400, 1200] });
+    }, { priority: 'normal', delayRange: [400, 1200] });
 
     this.componentService.registerAsync('TimeBasedContainer', {
       model: () => import('../components/time-based-container').then(m => m.TimeBasedContainerModel),

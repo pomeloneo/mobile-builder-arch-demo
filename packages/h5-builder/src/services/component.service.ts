@@ -12,9 +12,6 @@ export interface ComponentMetadata {
   // 加载优先级
   priority?: 'critical' | 'high' | 'normal' | 'low';
 
-  // 依赖的其他组件
-  dependencies?: string[];
-
   // 是否预加载
   preload?: boolean;
 
