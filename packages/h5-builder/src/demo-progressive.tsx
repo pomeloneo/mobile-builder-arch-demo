@@ -103,80 +103,80 @@ async function driveJobScheduler(
 
 
   // Open: 初始化
-  console.log('==========================Open 阶段开始==========');
+  console.log('%c==========================Open 阶段开始==========', 'color: #3498db; font-weight: bold;');
   console.time('==========================Open 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Open);
   debouncedFunc(PageLifecycle.Open);
   await jobScheduler.wait(PageLifecycle.Open);
 
-  console.log('==========================Open 阶段完成==========');
+  console.log('%c==========================Open 阶段完成==========', 'color: #3498db; font-weight: bold;');
   console.timeEnd('==========================Open 阶段耗时');
 
   // LoadResouse: 加载组件资源
-  console.log('==========================LoadResouse 阶段开始==========');
+  console.log('%c==========================LoadResouse 阶段开始==========', 'color: #27ae60; font-weight: bold;');
   console.time('==========================LoadResouse 阶段耗时');
   jobScheduler.prepare(PageLifecycle.LoadComponentLogic);
   debouncedFunc(PageLifecycle.LoadComponentLogic);
   await jobScheduler.wait(PageLifecycle.LoadComponentLogic);
 
-  console.log('==========================LoadResouse 阶段完成==========');
+  console.log('%c==========================LoadResouse 阶段完成==========', 'color: #27ae60; font-weight: bold;');
   console.timeEnd('==========================LoadResouse 阶段耗时');
 
   // Prepare: 构建模型树
-  console.log('==========================Prepare 阶段开始===========');
+  console.log('%c==========================Prepare 阶段开始===========', 'color: #9b59b6; font-weight: bold;');
   console.time('==========================Prepare 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Prepare);
   debouncedFunc(PageLifecycle.Prepare);
   await jobScheduler.wait(PageLifecycle.Prepare);
 
 
-  console.log('==========================Prepare 阶段完成==========');
+  console.log('%c==========================Prepare 阶段完成==========', 'color: #9b59b6; font-weight: bold;');
   console.timeEnd('==========================Prepare 阶段耗时');
 
   // RenderReady: 准备完成
-  console.log('==========================RenderReady 阶段开始===========');
+  console.log('%c==========================RenderReady 阶段开始===========', 'color: #e67e22; font-weight: bold;');
   console.time('==========================RenderReady 阶段耗时');
   jobScheduler.prepare(PageLifecycle.RenderReady);
   debouncedFunc(PageLifecycle.RenderReady);
   await jobScheduler.wait(PageLifecycle.RenderReady);
 
-  console.log('==========================RenderReady 阶段完成==========');
+  console.log('%c==========================RenderReady 阶段完成==========', 'color: #e67e22; font-weight: bold;');
   console.timeEnd('==========================RenderReady 阶段耗时');
 
 
   // 🔥 Render: 触发渲染 + 激活组件树
-  console.log('==========================Render 阶段开始=======');
+  console.log('%c==========================Render 阶段开始=======', 'color: #e74c3c; font-weight: bold;');
   console.time('==========================Render 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Render);
   debouncedFunc(PageLifecycle.Render);
   await jobScheduler.wait(PageLifecycle.Render);  // TriggerRenderJob（触发渲染）和 ActivateTreeJob（激活）在这里执行
 
 
-  console.log('==========================Render 阶段==========');
+  console.log('%c==========================Render 阶段==========', 'color: #e74c3c; font-weight: bold;');
   console.timeEnd('==========================Render 阶段耗时');
 
 
   // Completed: 数据初始化（后台）
-  console.log('==========================Completed 阶段开始==========');
+  console.log('%c==========================Completed 阶段开始==========', 'color: #1abc9c; font-weight: bold;');
   console.time('==========================Completed 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Completed);
   debouncedFunc(PageLifecycle.Completed);
   await jobScheduler.wait(PageLifecycle.Completed);
 
 
-  console.log('==========================Completed 阶段完成======');
+  console.log('%c==========================Completed 阶段完成======', 'color: #1abc9c; font-weight: bold;');
   console.timeEnd('==========================Completed 阶段耗时');
 
   // 打印性能数据
-  console.log('性能统计:', jobScheduler.getCost());
+  console.log('%c性能统计:', 'color: #f39c12; font-weight: bold;', jobScheduler.getCost());
 
-  console.log('==========================Idle 阶段开始==========');
+  console.log('%c==========================Idle 阶段开始==========', 'color: #7cebf3ff; font-weight: bold;');
   console.time('==========================Idle 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Idle);
   debouncedFunc(PageLifecycle.Idle);
   await jobScheduler.wait(PageLifecycle.Idle);
 
-  console.log('==========================Idle 阶段完成==========');
+  console.log('%c==========================Idle 阶段完成==========', 'color: #7cebf3ff; font-weight: bold;');
   console.timeEnd('==========================Idle 阶段耗时');
 
   console.log('==========================应用初始化完成==========');
