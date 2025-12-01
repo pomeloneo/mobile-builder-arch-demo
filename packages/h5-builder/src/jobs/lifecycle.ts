@@ -2,7 +2,7 @@ export enum PageLifecycle {
   // 页面打开，一般在此处理处理最前置任务，比如获取页面 schema
   Open = "页面打开，正在拉取 schema 中... & 并注册组件资源加载器",
   // 加载组件逻辑Model JS 资源
-  LoadComponentLogic = "加载组件逻辑 Model JS 资源中...",
+  LoadComponentLogic = "加载组件逻辑 Model JS 资源中 & 开始预加载可以预加载的组件数据...",
   // 构建模型树（也就是逻辑树)、同时加载组件视图
   Prepare = "构建模型树（也就是逻辑树)、同时登台组件视图加载中...",
   // 模型树和视图资源全部准备完成
