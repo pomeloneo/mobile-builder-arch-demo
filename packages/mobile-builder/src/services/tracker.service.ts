@@ -1,6 +1,6 @@
 import { IDisposable, DisposableStore } from '../bedrock/dispose';
 import { BridgeService } from './bridge.service';
-import { IBridgeService } from '../services/service-identifiers';
+import { IBridgeService } from './service-identifiers';
 
 /**
  * 埋点事件

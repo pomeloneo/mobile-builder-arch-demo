@@ -6,7 +6,7 @@
         "build": "pnpm -r build",
         "lint": "eslint packages/*/src/**/* --ext .js,.ts,.tsx",
         "prettier": "prettier --write **/*.{js,ts,md}",
-        "demo-h5": "pnpm -r demo-h5",
+        "demo-mobile": "pnpm -r demo-mobile",
         "demo-mobx-lite": "pnpm -r demo-mobx-lite"
     },
     "devDependencies": {

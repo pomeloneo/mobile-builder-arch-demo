@@ -1,14 +1,14 @@
 {
-  "name": "@mobx-monorepo/h5-builder",
+  "name": "@mobx-monorepo/mobile-builder",
   "version": "0.1.0",
-  "description": "H5 e-commerce builder framework with DI and reactive state management",
+  "description": "Mobile e-commerce builder framework with DI and reactive state management",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "demo-h5": "vite"
+    "demo-mobile": "vite"
   },
   "keywords": [
     "h5-builder",
