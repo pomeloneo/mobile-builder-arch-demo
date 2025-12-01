@@ -7,7 +7,6 @@ export const textContents = [
   '这是一段非常长的文本内容，包含了大量的详细信息和描述。这段文本可以用来测试组件在不同高度下的渲染效果，以及虚拟滚动在处理大量不同高度组件时的性能表现。我们希望通过这个测试来验证虚拟滚动的稳定性和可靠性。',
 ];
 
-// 6. 定义 Schema - 展示动态高度虚拟滚动 + 嵌套容器
 export const schema: ComponentSchema = {
   type: 'TabsContainer',
   id: 'main-tabs',
