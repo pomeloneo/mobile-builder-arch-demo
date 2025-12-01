@@ -231,9 +231,12 @@ function useLaunch() {
   const bootstrap = useCallback(() => {
     'background-only';
     console.log('====================开始驱动生命周期调度=====')
+    console.time('====================驱动生命周期调度总耗时=====')
     driveJobScheduler(jobScheduler.current!, setLifecycle).catch((err) => {
       console.error('Page init failure:', err);
       setPanic(true);
+    }).finally(() => {
+      console.timeEnd('====================驱动生命周期调度总耗时=====')
     });
   }, [setPanic]);
 
