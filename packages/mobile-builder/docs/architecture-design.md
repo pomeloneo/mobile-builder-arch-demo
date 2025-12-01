@@ -2055,7 +2055,3 @@ class ChildModel extends BaseComponentModel {
 - Demo 入口: [demo-progressive.tsx](file:///Users/neo/github/mobx/packages/h5-builder/src/demo-progressive.tsx)
 
 ---
-
-**文档版本**: v1.0  
-**最后更新**: 2025-11-29  
-**作者**: Antigravity AI
