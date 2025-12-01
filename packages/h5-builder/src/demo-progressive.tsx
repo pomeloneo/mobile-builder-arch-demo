@@ -230,7 +230,7 @@ function useLaunch() {
 
   const bootstrap = useCallback(() => {
     'background-only';
-    console.log('====================DI 容器及基础 service 初始化完成，开始驱动生命周期调度=====')
+    console.log('====================开始驱动生命周期调度=====')
     driveJobScheduler(jobScheduler.current!, setLifecycle).catch((err) => {
       console.error('Page init failure:', err);
       setPanic(true);
