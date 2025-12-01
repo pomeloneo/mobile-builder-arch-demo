@@ -5,11 +5,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "demo": "vite"
+    "demo-h5": "vite"
   },
   "keywords": [
     "h5-builder",

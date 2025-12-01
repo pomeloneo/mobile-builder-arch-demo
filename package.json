@@ -5,7 +5,9 @@
         "test": "pnpm -r test",
         "build": "pnpm -r build",
         "lint": "eslint packages/*/src/**/* --ext .js,.ts,.tsx",
-        "prettier": "prettier --write **/*.{js,ts,md}"
+        "prettier": "prettier --write **/*.{js,ts,md}",
+        "demo-h5": "pnpm -r demo-h5",
+        "demo-mobx-lite": "pnpm -r demo-mobx-lite"
     },
     "devDependencies": {
         "@changesets/changelog-github": "^0.2.7",
