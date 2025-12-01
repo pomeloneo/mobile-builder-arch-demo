@@ -134,11 +134,15 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
    */
   private enableVirtualScrollForTab(tab: BaseContainerModel, index: number): void {
     // 创建虚拟列表（使用动态高度模式）
+    // TODO：需要讨论这里应该如何优化，使用依赖注入的方式，还是直接依赖 model 即可
+    // 关键点:
+    // 1、此处是纯 ui 逻辑，基本和业务逻辑无关
+    // 2、model 依赖 model，业务中是否有此类场景
     const virtualList = new VirtualListModel(`${this.id} -tab - ${index} -virtual`, {
       estimatedItemHeight: this.ITEM_HEIGHT, // 使用估算高度，而不是固定高度
       containerHeight: this.CONTAINER_HEIGHT,
       overscan: this.OVERSCAN,
-    });
+    }, this.prefetchService);
 
     // 设置数据（使用 Tab 的子组件）
     virtualList.setItems(tab.children);

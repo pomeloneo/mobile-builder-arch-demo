@@ -9,7 +9,7 @@ import { PageContextService } from './services/context.service';
 import { ComponentService } from './services/component.service';
 import { JobScheduler } from './bedrock/launch';
 import { ModelRenderer } from './components';
-import { BaseComponentModel } from './bedrock/model';
+import { BaseComponentModel } from './bedrock/model/model';
 import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitFirstScreenDataJob, ActivateTreeJob, EnsureViewReadyJob, TriggerRenderJob } from './jobs';
 import { SchemaService } from './services/schema.service';
 import { PrefetchService } from './services/prefetch.service';

@@ -1,4 +1,6 @@
 import { BaseComponentModel } from '../../bedrock/model/model';
+import type { PrefetchService } from '../../services/prefetch.service';
+import { IPrefetchService } from '../../services/service-identifiers';
 
 /**
  * 虚拟列表 Props
@@ -40,8 +42,8 @@ export class VirtualListModel extends BaseComponentModel<VirtualListProps> {
     return this.props.itemHeight ?? this.props.estimatedItemHeight ?? 120;
   }
 
-  constructor(id: string, props: VirtualListProps) {
-    super(id, props);
+  constructor(id: string, props: VirtualListProps, @IPrefetchService prefetchService: PrefetchService) {
+    super(id, props, prefetchService);
   }
 
   protected async onInit(): Promise<void> {
