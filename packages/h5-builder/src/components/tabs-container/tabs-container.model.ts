@@ -1,6 +1,7 @@
 import { BaseContainerModel } from '../../bedrock/model';
-import { ITrackerService } from '../../services/service-identifiers';
+import { ITrackerService, IPrefetchService } from '../../services/service-identifiers';
 import type { TrackerService } from '../../services/tracker.service';
+import type { PrefetchService } from '../../services/prefetch.service';
 import { VirtualListModel } from '../virtual-list/virtual-list.model';
 
 /**
@@ -42,9 +43,10 @@ export class TabsContainerModel extends BaseContainerModel<TabsContainerProps> {
   constructor(
     id: string,
     props: TabsContainerProps,
-    @ITrackerService private tracker: TrackerService
+    @ITrackerService private tracker: TrackerService,
+    @IPrefetchService prefetchService: PrefetchService  // 🔥 新增
   ) {
-    super(id, props);
+    super(id, props, prefetchService);  // 🔥 传递给基类
     this.activeIndex = props.defaultIndex ?? 0;
 
     // 初始化虚拟滚动配置

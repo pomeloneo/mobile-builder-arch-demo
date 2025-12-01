@@ -36,8 +36,12 @@ export class TriggerRenderJob extends AbstractJob<PageLifecycle> {
     const modelTree = this.componentService.getModelTree();
 
     console.log('[TriggerRenderJob] 触发渲染，modelTree:', modelTree?.id);
+    console.log('==============首屏内容开始渲染============')
+    console.time('==============首屏内容渲染完成============')
 
     // 🔥 在 Job 内部触发渲染
     this.setModelTree(modelTree);
+    console.log('==========================首屏可以交互了==========');
+    console.timeEnd('==========================首屏 TTI 完成时间==========');
   }
 }

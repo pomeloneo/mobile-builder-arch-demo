@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { IInstantiationService, InstantiationService, ServiceRegistry, SyncDescriptor } from './bedrock/di/index.common';
-import { IHttpService, ITrackerService, IBridgeService, IPageContextService, IComponentService, ISchemaService } from './services/service-identifiers';
+import { IHttpService, ITrackerService, IBridgeService, IPageContextService, IComponentService, ISchemaService, IPrefetchService } from './services/service-identifiers';
 import { BridgeService } from './services/bridge.service';
 import { HttpService } from './services/http.service';
 import { TrackerService } from './services/tracker.service';
@@ -12,6 +12,7 @@ import { ModelRenderer } from './components';
 import { BaseComponentModel } from './bedrock/model';
 import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitFirstScreenDataJob, ActivateTreeJob, EnsureViewReadyJob, TriggerRenderJob } from './jobs';
 import { SchemaService } from './services/schema.service';
+import { PrefetchService } from './services/prefetch.service';
 import { GetSchemaJob } from './jobs/get-schema-job';
 import { debounce } from './bedrock/function/debounce';
 import './demo.css';
@@ -102,7 +103,7 @@ async function driveJobScheduler(
 
 
 
-  // Open: 初始化
+  // Open: 初始化 加载组件资源 & 预请求首屏数据
   console.log('%c==========================Open 阶段开始==========', 'color: #3498db; font-weight: bold;');
   console.time('==========================Open 阶段耗时');
   jobScheduler.prepare(PageLifecycle.Open);
@@ -112,7 +113,7 @@ async function driveJobScheduler(
   console.log('%c==========================Open 阶段完成==========', 'color: #3498db; font-weight: bold;');
   console.timeEnd('==========================Open 阶段耗时');
 
-  // LoadResouse: 加载组件资源
+  // LoadResouse: 保证组件资源 model 加载完成
   console.log('%c==========================LoadResouse 阶段开始==========', 'color: #27ae60; font-weight: bold;');
   console.time('==========================LoadResouse 阶段耗时');
   jobScheduler.prepare(PageLifecycle.LoadComponentLogic);
@@ -146,26 +147,26 @@ async function driveJobScheduler(
 
   // 🔥 Render: 触发渲染 + 激活组件树
   console.log('%c==========================Render 阶段开始=======', 'color: #e74c3c; font-weight: bold;');
-  console.time('==========================Render 阶段耗时');
+  console.time('==========================Render 阶段完成耗时');
   jobScheduler.prepare(PageLifecycle.Render);
   debouncedFunc(PageLifecycle.Render);
   await jobScheduler.wait(PageLifecycle.Render);  // TriggerRenderJob（触发渲染）和 ActivateTreeJob（激活）在这里执行
 
 
-  console.log('%c==========================Render 阶段==========', 'color: #e74c3c; font-weight: bold;');
-  console.timeEnd('==========================Render 阶段耗时');
+  console.log('%c==========================Render 阶段完成==========', 'color: #e74c3c; font-weight: bold;');
+  console.timeEnd('==========================Render 阶段完成耗时');
 
 
   // Completed: 数据初始化（后台）
   console.log('%c==========================Completed 阶段开始==========', 'color: #1abc9c; font-weight: bold;');
-  console.time('==========================Completed 阶段耗时');
+  console.time('==========================Completed 阶段完成耗时');
   jobScheduler.prepare(PageLifecycle.Completed);
   debouncedFunc(PageLifecycle.Completed);
   await jobScheduler.wait(PageLifecycle.Completed);
 
 
   console.log('%c==========================Completed 阶段完成======', 'color: #1abc9c; font-weight: bold;');
-  console.timeEnd('==========================Completed 阶段耗时');
+  console.timeEnd('==========================Completed 阶段完成耗时');
 
   // 打印性能数据
   console.log('%c性能统计:', 'color: #f39c12; font-weight: bold;', jobScheduler.getCost());
@@ -180,7 +181,7 @@ async function driveJobScheduler(
   console.timeEnd('==========================Idle 阶段耗时');
 
   console.log('==========================应用初始化完成==========');
-  console.timeEnd('==========================应用初始化耗时==========');
+  console.timeEnd('==========================应用完全可以 TTI 的完成时间==========');
 
 }
 
@@ -188,6 +189,8 @@ async function driveJobScheduler(
 function makeContainerService() {
   console.log('==========================应用初始化开始==========');
   console.time('==========================应用初始化耗时==========');
+  console.time('==========================首屏 TTI 完成时间==========');
+  console.time('==========================应用完全可以 TTI 的完成时间==========');
   console.log('==========================services 开始初始化===========');
   console.time('==========================services 初始化耗时');
 
@@ -202,6 +205,7 @@ function makeContainerService() {
     { debug: true }
   ]));
   registry.register(IComponentService, ComponentService);
+  registry.register(IPrefetchService, PrefetchService);
 
   const instantiationService = new InstantiationService(registry.makeCollection());
 

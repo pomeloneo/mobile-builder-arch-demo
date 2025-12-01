@@ -1,4 +1,6 @@
 import { BaseContainerModel } from '../../bedrock/model';
+import { IPrefetchService } from '../../services/service-identifiers';
+import type { PrefetchService } from '../../services/prefetch.service';
 
 /**
  * 网格布局容器 Props
@@ -18,8 +20,12 @@ export interface GridLayoutContainerProps {
  * - 功能入口矩阵
  */
 export class GridLayoutContainerModel extends BaseContainerModel<GridLayoutContainerProps> {
-  constructor(id: string, props: GridLayoutContainerProps) {
-    super(id, props);
+  constructor(
+    id: string,
+    props: GridLayoutContainerProps,
+    @IPrefetchService prefetchService: PrefetchService
+  ) {
+    super(id, props, prefetchService);
   }
 
   protected async onInit(): Promise<void> {

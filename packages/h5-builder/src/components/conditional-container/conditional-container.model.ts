@@ -1,4 +1,6 @@
 import { BaseContainerModel } from '../../bedrock/model';
+import { IPrefetchService } from '../../services/service-identifiers';
+import type { PrefetchService } from '../../services/prefetch.service';
 
 /**
  * 条件渲染容器 Props
@@ -22,8 +24,12 @@ export class ConditionalContainerModel extends BaseContainerModel<ConditionalCon
   // 是否满足条件
   public shouldRender: boolean = false;
 
-  constructor(id: string, props: ConditionalContainerProps) {
-    super(id, props);
+  constructor(
+    id: string,
+    props: ConditionalContainerProps,
+    @IPrefetchService prefetchService: PrefetchService
+  ) {
+    super(id, props, prefetchService);
   }
 
   protected async onInit(): Promise<void> {

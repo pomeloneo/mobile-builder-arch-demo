@@ -1,6 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
 
+// 🔥 Mock PrefetchService
+const mockPrefetchService = {
+  getData: vi.fn(() => null),
+  hasPrefetchData: vi.fn(() => false),
+  startPrefetch: vi.fn(),
+  waitForPrefetchComplete: vi.fn(() => Promise.resolve()),
+};
+
 // 测试用的简单 Model
 class TestModel extends BaseComponentModel<{ value: number }> {
   public data: string | null = null;
@@ -33,8 +41,8 @@ class TestContainerModel extends BaseContainerModel<any, TestModel> {
   protected async onInit(): Promise<void> {
     // 容器初始化
     // 创建一些子 Model
-    const child1 = new TestModel('child-1', { value: 1 });
-    const child2 = new TestModel('child-2', { value: 2 });
+    const child1 = new TestModel('child-1', { value: 1 }, mockPrefetchService as any);
+    const child2 = new TestModel('child-2', { value: 2 }, mockPrefetchService as any);
 
     this.addChild(child1);
     this.addChild(child2);
@@ -45,7 +53,7 @@ describe('BaseComponentModel', () => {
   let model: TestModel;
 
   beforeEach(() => {
-    model = new TestModel('test-model', { value: 42 });
+    model = new TestModel('test-model', { value: 42 }, mockPrefetchService as any);
   });
 
   describe('Initialization', () => {
@@ -147,7 +155,7 @@ describe('BaseComponentModel', () => {
         }
       }
 
-      const timerModel = new TimerModel('timer', {});
+      const timerModel = new TimerModel('timer', {}, mockPrefetchService as any);
       timerModel.init();
 
       vi.advanceTimersByTime(3000);
@@ -181,7 +189,7 @@ describe('BaseContainerModel', () => {
   let container: TestContainerModel;
 
   beforeEach(() => {
-    container = new TestContainerModel('container', {});
+    container = new TestContainerModel('container', {}, mockPrefetchService as any);
   });
 
   describe('Children Management', () => {

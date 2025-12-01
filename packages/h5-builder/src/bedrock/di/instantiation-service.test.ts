@@ -335,3 +335,152 @@ describe('get service success', () => {
     expect(getService(instantiationService, IFoo)).toBe(foo);
   });
 });
+
+/**
+ * 测试类继承场景下的依赖注入行为
+ * 
+ * 这个测试套件验证了一个重要的设计约束：
+ * 当基类构造函数声明了依赖注入参数时，子类必须显式声明并传递这些参数。
+ * 
+ * DI 系统不会自动将基类的依赖传递给子类，原因：
+ * 1. TypeScript 类型系统要求子类在 super() 调用时传递所有基类参数
+ * 2. @Decorator 装饰器只在当前类的构造函数上存储依赖信息，不会递归到基类
+ * 3. getServiceDependencies(ctor) 只读取当前类的依赖，确保依赖关系明确可追踪
+ */
+describe('class inheritance with DI', () => {
+  beforeEach(() => {
+    serviceRegistry = new ServiceRegistry();
+  });
+
+  it('child class must explicitly declare and pass base class dependencies', () => {
+    // 定义一个测试服务
+    const ITestService = createDecorator<TestService>('TestService');
+
+    class TestService {
+      _serviceBrand: undefined;
+      name = 'TestService';
+    }
+    serviceRegistry.register(ITestService, TestService);
+
+    // 基类 - 在构造函数中声明依赖
+    class BaseClass {
+      constructor(
+        public id: string,
+        @ITestService public testService: TestService
+      ) { }
+    }
+
+    // 子类 - 必须显式声明依赖并传递给基类
+    class ChildClass extends BaseClass {
+      constructor(
+        id: string,
+        @ITestService testService: TestService  // ✅ 必须显式声明
+      ) {
+        super(id, testService);  // ✅ 必须显式传递
+      }
+    }
+
+    const instantiationService = new InstantiationService(serviceRegistry.makeCollection());
+
+    // 测试：子类可以正确实例化，依赖被正确注入
+    let child: ChildClass | undefined;
+    expect(() => {
+      child = instantiationService.createInstance(ChildClass, 'test-id');
+    }).not.toThrow();
+
+    expect(child).not.toBeUndefined();
+    expect(child!.id).toBe('test-id');
+    expect(child!.testService).not.toBeUndefined();
+    expect(child!.testService.name).toBe('TestService');
+  });
+
+  it('demonstrates why base class DI does not work without explicit child declaration', () => {
+    // 这个测试展示了为什么基类依赖不能自动传递
+    const ITestService = createDecorator<TestService>('TestService');
+
+    class TestService {
+      _serviceBrand: undefined;
+      name = 'TestService';
+    }
+    serviceRegistry.register(ITestService, TestService);
+
+    class BaseClass {
+      constructor(
+        public id: string,
+        @ITestService public testService: TestService
+      ) { }
+    }
+
+    // 如果子类不声明依赖，DI 系统无法知道需要注入什么
+    // 因为 getServiceDependencies(ChildClassNoDeps) 返回空数组
+    class ChildClassNoDeps extends BaseClass {
+      constructor(id: string) {
+        // TypeScript 编译器会报错：Expected 2 arguments, but got 1
+        // 即使我们绕过编译器，运行时也会因为 testService 为 undefined 而出错
+        super(id, undefined as any);
+      }
+    }
+
+    const instantiationService = new InstantiationService(serviceRegistry.makeCollection());
+
+    // 创建实例会成功（因为 ChildClassNoDeps 没有声明任何依赖）
+    // 但是 testService 会是 undefined，违反了类型契约
+    const child = instantiationService.createInstance(ChildClassNoDeps, 'test-id');
+    expect(child.id).toBe('test-id');
+    expect(child.testService).toBeUndefined();  // ❌ 依赖没有被注入
+  });
+
+  it('multiple levels of inheritance require each level to pass dependencies', () => {
+    // 测试多层继承的情况
+    const IServiceA = createDecorator<ServiceA>('ServiceA');
+    const IServiceB = createDecorator<ServiceB>('ServiceB');
+
+    class ServiceA {
+      _serviceBrand: undefined;
+      name = 'ServiceA';
+    }
+
+    class ServiceB {
+      _serviceBrand: undefined;
+      name = 'ServiceB';
+    }
+
+    serviceRegistry.register(IServiceA, ServiceA);
+    serviceRegistry.register(IServiceB, ServiceB);
+
+    // 基类
+    class GrandParent {
+      constructor(
+        @IServiceA public serviceA: ServiceA
+      ) { }
+    }
+
+    // 中间层
+    class Parent extends GrandParent {
+      constructor(
+        @IServiceA serviceA: ServiceA,
+        @IServiceB public serviceB: ServiceB
+      ) {
+        super(serviceA);
+      }
+    }
+
+    // 子类
+    class Child extends Parent {
+      constructor(
+        @IServiceA serviceA: ServiceA,
+        @IServiceB serviceB: ServiceB
+      ) {
+        super(serviceA, serviceB);
+      }
+    }
+
+    const instantiationService = new InstantiationService(serviceRegistry.makeCollection());
+    const child = instantiationService.createInstance(Child);
+
+    expect(child.serviceA).not.toBeUndefined();
+    expect(child.serviceA.name).toBe('ServiceA');
+    expect(child.serviceB).not.toBeUndefined();
+    expect(child.serviceB.name).toBe('ServiceB');
+  });
+});

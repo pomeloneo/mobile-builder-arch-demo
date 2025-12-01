@@ -1,7 +1,8 @@
 import { BaseComponentModel } from '../../bedrock/model';
-import { IHttpService, ITrackerService } from '../../services/service-identifiers';
+import { IHttpService, ITrackerService, IPrefetchService } from '../../services/service-identifiers';
 import type { HttpService } from '../../services/http.service';
 import type { TrackerService } from '../../services/tracker.service';
+import type { PrefetchService } from '../../services/prefetch.service';
 
 /**
  * 商品数据
@@ -34,9 +35,10 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
     id: string,
     props: ProductCardProps,
     @IHttpService private http: HttpService,
-    @ITrackerService private tracker: TrackerService
+    @ITrackerService private tracker: TrackerService,
+    @IPrefetchService prefetchService: PrefetchService  // 🔥 新增
   ) {
-    super(id, props);
+    super(id, props, prefetchService);  // 🔥 传递给基类
   }
 
   /**
@@ -64,7 +66,6 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
   async fetchData(): Promise<void> {
     // 模拟 API 请求延迟 (500ms - 1500ms)
     const delay = Math.min(1500 + Math.random() * 1000, 2000)
-    // const delay = 10;
     await new Promise(resolve => setTimeout(resolve, delay));
 
     const descriptions = [

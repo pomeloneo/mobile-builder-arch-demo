@@ -1,10 +1,11 @@
 import { AbstractJob } from '../bedrock/launch';
 import type { ComponentService } from '../services/component.service';
 import { type ComponentSchema } from '../services/component.service';
-import { IComponentService, ISchemaService } from '../services/service-identifiers';
+import { IComponentService, ISchemaService, IPrefetchService } from '../services/service-identifiers';
 import { BaseComponentModel } from '../bedrock/model';
 import { PageLifecycle } from './lifecycle';
 import { SchemaService } from '@/services/schema.service';
+import { PrefetchService } from '@/services/prefetch.service';
 import { Barrier } from '@/bedrock/async';
 
 /**
@@ -18,6 +19,7 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
 
     @ISchemaService private schemaService: SchemaService,
     @IComponentService private componentService: ComponentService,
+    @IPrefetchService private prefetchService: PrefetchService  // 🔥 新增
   ) {
     super();
   }
@@ -49,19 +51,24 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
     this._setBarrier(PageLifecycle.Open, this._schemaBarrier)
     console.log('==================开始远端拉取 schema============');
     console.time('==================远端拉取 schema 完成');
-    const schema = await this.schemaService.fetchSchema()
-    console.log('==================远端拉取 schema 完成============', schema);
+    const pageSchema = await this.schemaService.fetchSchema()
+    console.log('==================远端拉取 schema 完成============', pageSchema);
+    console.timeEnd('==================远端拉取 schema 完成');
     // 此处是 mock，应该要依赖 schema 内容，所以需要在此处执行
     this._registerComponentLoader()
 
+    // 🔥 启动预加载（异步，不阻塞）
+    console.log('==================开始预加载组件数据============');
+    console.time('==================首屏接口数据预加载完成============');
+    this.prefetchService.startPrefetch(
+      pageSchema.prefetch,
+      pageSchema.root
+    );
 
-
-    console.timeEnd('==================远端拉取 schema 完成');
-
-    // schema 获取完成后，开始预加载组件
+    // schema 获取完成后，开始预加载组件资源
     console.time('==================远端拉取所有组件相关资源完成 - Model');
     console.time('==================远端拉取所有组件相关资源完成 - View');
-    this.componentService.preloadComponentsUnified(schema);
+    this.componentService.preloadComponentsUnified(pageSchema.root);
     this._schemaBarrier.open();
   }
 
@@ -73,6 +80,12 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
     this.componentService.registerAsync('ProductCard', {
       model: () => import('../components/product-card').then(m => m.ProductCardModel),
       view: () => import('../components/product-card').then(m => m.ProductCardView),
+    }, { priority: 'high', delayRange: [200, 800] });
+
+    // 🔥 新增：增强版商品卡片（演示预加载 + 补充数据）
+    this.componentService.registerAsync('ProductCardEnhanced', {
+      model: () => import('../components/product-card-enhanced').then(m => m.ProductCardEnhancedModel),
+      view: () => import('../components/product-card-enhanced').then(m => m.ProductCardEnhancedView),
     }, { priority: 'high', delayRange: [200, 800] });
 
     this.componentService.registerAsync('TextCard', {

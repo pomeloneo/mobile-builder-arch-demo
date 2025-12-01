@@ -2,9 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentService, ComponentSchema } from '../services/component.service';
 import { ServiceCollection, InstantiationService } from '../bedrock/di/index.common';
 import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
-import { ITrackerService, IBridgeService } from '../services/service-identifiers';
+import { ITrackerService, IBridgeService, IPrefetchService } from '../services/service-identifiers';
 import { TrackerService } from '../services/tracker.service';
 import { BridgeService } from '../services/bridge.service';
+import { PrefetchService } from '../services/prefetch.service';
 import { ErrorPlaceholderModel } from '../placeholder';
 
 // 测试用的简单组件
@@ -37,6 +38,10 @@ describe('ComponentService', () => {
 
     tracker = instantiationService.createInstance(TrackerService, { debug: false });
     services.set(ITrackerService, tracker);
+
+    // 🔥 注册 PrefetchService
+    const prefetchService = instantiationService.createInstance(PrefetchService);
+    services.set(IPrefetchService, prefetchService);
 
     loader = instantiationService.createInstance(ComponentService);
   });

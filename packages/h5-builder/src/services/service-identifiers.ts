@@ -5,6 +5,7 @@ import type { BridgeService } from './bridge.service';
 import type { PageContextService } from './context.service';
 import type { ComponentService } from './component.service';
 import type { SchemaService } from './schema.service';
+import type { PrefetchService } from './prefetch.service';
 
 /**
  * Service identifiers for dependency injection
@@ -17,3 +18,4 @@ export const IBridgeService = createDecorator<BridgeService>('bridgeService');
 export const IPageContextService = createDecorator<PageContextService>('pageContextService');
 export const IComponentService = createDecorator<ComponentService>('componentService');
 export const ISchemaService = createDecorator<SchemaService>('schemaService');
+export const IPrefetchService = createDecorator<PrefetchService>('prefetchService');

@@ -46,13 +46,13 @@ export class BuildTreeJob extends AbstractJob<PageLifecycle> {
   private async _whenPrepare() {
 
 
-    const schema = this.schemaService.getSchema()
-    if (!schema) {
-      throw new Error('Schema not found');
+    const root = this.schemaService.getRoot()
+    if (!root) {
+      throw new Error('Schema root not found');
     }
     console.log('==================开始构建逻辑树');
     console.time('==================构建逻辑树完成');
-    this.rootModel = this.componentService.buildModelTree(schema);
+    this.rootModel = this.componentService.buildModelTree(root);
     console.timeEnd('==================构建逻辑树完成');
   }
 }

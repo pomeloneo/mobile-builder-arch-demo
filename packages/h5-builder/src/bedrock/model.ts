@@ -1,5 +1,7 @@
 import { observable } from 'mobx-vue-lite';
 import { DisposableStore, IDisposable } from './dispose';
+import { IPrefetchService } from '../services/service-identifiers';
+import type { PrefetchService } from '../services/prefetch.service';
 
 /**
  * 组件 Model 基类
@@ -20,7 +22,14 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
   public loading = false;
   public error: Error | null = null;
 
-  constructor(public id: string, public props: P) {
+  // 🔥 新增：标记数据来源
+  private _dataFromPrefetch = false;
+
+  constructor(
+    public id: string,
+    public props: P,
+    @IPrefetchService protected prefetchService: PrefetchService  // 🔥 必选依赖
+  ) {
     // 使用 mobx-vue-lite 的 observable 使整个对象响应式
     return observable(this) as this;
   }
@@ -59,7 +68,10 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
 
   /**
    * 初始化 Model
-   * 确保 onInit 只执行一次
+   * 🔥 支持三种场景：
+   * 1. 只有预加载数据 - 使用预加载数据，可选调用 onInitWithPrefetchData
+   * 2. 预加载失败 - 降级到 onInit
+   * 3. 无预加载数据 - 直接调用 onInit
    */
   async init(): Promise<void> {
     if (this.isInited) {
@@ -69,7 +81,47 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
 
     this.isInited = true;
     console.log(`[Model:${this.id}] Initializing`);
-    return await this.onInit();
+
+    // 1. 先尝试获取预加载 Promise
+    const prefetchPromise = this.prefetchService.getData(this.id);
+
+    if (prefetchPromise) {
+      // 有预加载数据，等待 Promise 完成
+      console.log(`[Model:${this.id}] 发现预加载数据，等待加载...`);
+
+      try {
+        this.data = await prefetchPromise;
+        this._dataFromPrefetch = true;
+        console.log(`[Model:${this.id}] 预加载数据加载成功`);
+
+        // 🔥 检查子类是否覆写了 onInitWithPrefetchData 方法
+        // 只有覆写了才调用，避免不必要的空调用
+        const hasCustomPrefetchHandler = this.onInitWithPrefetchData !== BaseComponentModel.prototype.onInitWithPrefetchData;
+
+        if (hasCustomPrefetchHandler) {
+          console.log(`[Model:${this.id}] 调用 onInitWithPrefetchData 加载补充数据...`);
+          await this.onInitWithPrefetchData(this.data);
+        } else {
+          console.log(`[Model:${this.id}] 无需加载补充数据，直接使用预加载数据`);
+        }
+      } catch (error) {
+        // 预加载失败，降级到 onInit
+        console.warn(`[Model:${this.id}] 预加载失败，降级到 onInit`, error);
+        this._dataFromPrefetch = false;
+        await this.onInit();
+      }
+    } else {
+      // 没有预加载数据，走正常流程
+      console.log(`[Model:${this.id}] 无预加载数据，执行 onInit`);
+      await this.onInit();
+    }
+  }
+
+  /**
+   * 检查数据是否来自预加载
+   */
+  get isDataFromPrefetch(): boolean {
+    return this._dataFromPrefetch;
   }
 
   /**
@@ -128,6 +180,40 @@ export abstract class BaseComponentModel<P = any> implements IDisposable {
    * 注意：此方法必须返回 Promise，即使是同步操作也要用 async
    */
   protected abstract onInit(): Promise<void>;
+
+  /**
+   * 预加载数据初始化钩子
+   * 🔥 当组件有预加载数据时调用，允许子类执行额外的初始化逻辑
+   * 
+   * @param prefetchedData 预加载的数据
+   * 
+   * @example
+   * // 场景1：只使用预加载数据，不需要额外逻辑
+   * protected async onInitWithPrefetchData(prefetchedData: any): Promise<void> {
+   *   // 不实现或留空，只使用预加载数据
+   * }
+   * 
+   * @example
+   * // 场景2：预加载主数据 + 加载补充数据
+   * protected async onInitWithPrefetchData(prefetchedData: ProductData): Promise<void> {
+   *   // prefetchedData 已经被赋值到 this.data
+   *   // 加载补充数据（如用户收藏状态、实时库存等）
+   *   const [isFavorited, stock] = await Promise.all([
+   *     this.checkFavoriteStatus(prefetchedData.id),
+   *     this.fetchRealTimeStock(prefetchedData.id)
+   *   ]);
+   *   
+   *   // 合并到 this.data
+   *   this.data = {
+   *     ...this.data,
+   *     isFavorited,
+   *     stock
+   *   };
+   * }
+   */
+  protected async onInitWithPrefetchData(prefetchedData: any): Promise<void> {
+    // 默认空实现，子类可以选择性覆写
+  }
 
   /**
    * 销毁钩子

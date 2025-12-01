@@ -1,4 +1,6 @@
 import { BaseContainerModel } from '../../bedrock/model';
+import { IPrefetchService } from '../../services/service-identifiers';
+import type { PrefetchService } from '../../services/prefetch.service';
 
 /**
  * 时间段容器 Props
@@ -25,8 +27,12 @@ export class TimeBasedContainerModel extends BaseContainerModel<TimeBasedContain
   // 当前时间段
   public currentSlot: string = 'default';
 
-  constructor(id: string, props: TimeBasedContainerProps) {
-    super(id, props);
+  constructor(
+    id: string,
+    props: TimeBasedContainerProps,
+    @IPrefetchService prefetchService: PrefetchService
+  ) {
+    super(id, props, prefetchService);
   }
 
   protected async onInit(): Promise<void> {

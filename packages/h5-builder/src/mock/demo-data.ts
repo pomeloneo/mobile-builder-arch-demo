@@ -1,4 +1,4 @@
-import { ComponentSchema } from '../services/component.service';
+import { PageSchema } from '../services/component.service';
 
 export const textContents = [
   '这是一段简短的文本内容。',
@@ -7,326 +7,379 @@ export const textContents = [
   '这是一段非常长的文本内容，包含了大量的详细信息和描述。这段文本可以用来测试组件在不同高度下的渲染效果，以及虚拟滚动在处理大量不同高度组件时的性能表现。我们希望通过这个测试来验证虚拟滚动的稳定性和可靠性。',
 ];
 
-export const schema: ComponentSchema = {
-  type: 'TabsContainer',
-  id: 'main-tabs',
-  props: {
-    defaultIndex: 0,
-    // 虚拟滚动配置
-    virtualScroll: {
-      threshold: 25,             // 超过 15 个就启用虚拟滚动
-      estimatedItemHeight: 120,  // 估算高度（动态高度模式）
-      containerHeight: 600,      // 容器高度
+// 🔥 页面 Schema（最外层）
+export const pageSchema: PageSchema = {
+  // 页面结构（递归）
+  root: {
+    type: 'TabsContainer',
+    id: 'main-tabs',
+    props: {
+      defaultIndex: 0,
+      // 虚拟滚动配置
+      virtualScroll: {
+        threshold: 25,             // 超过 15 个就启用虚拟滚动
+        estimatedItemHeight: 120,  // 估算高度（动态高度模式）
+        containerHeight: 600,      // 容器高度
+      },
     },
-  },
-  children: [
-    // Tab 1: 混合高度组件（文本卡片 + 商品卡片）
-    {
-      type: 'ProductList',
-      id: 'tab-1-list',
-      props: {},
-      children: Array.from({ length: 20 }, (_, i) => {
-        // 每 3 个商品卡片插入 1-2 个文本卡片
-        if (i % 3 === 0) {
-          const textCards = [];
-          // 随机 1-2 个文本卡片
-          const textCardCount = (i % 2) + 1;
-          for (let j = 0; j < textCardCount; j++) {
-            const lines = ((i + j) % 4) + 1; // 1-4 行
-            textCards.push({
-              type: 'TextCard',
-              id: `tab1-text-${i}-${j}`,
+    children: [
+      // Tab 1: 混合高度组件（文本卡片 + 商品卡片 + 增强版商品卡片）
+      {
+        type: 'ProductList',
+        id: 'tab-1-list',
+        props: {},
+        children: Array.from({ length: 20 }, (_, i) => {
+          // 🔥 索引 10-15: 使用 ProductCardEnhanced（演示预加载 + 补充数据）
+          if (i >= 10 && i <= 15) {
+            return {
+              type: 'ProductCardEnhanced',
+              id: `tab1-enhanced-${i}`,
               props: {
-                title: `文本卡片 #${i}-${j}`,
-                content: textContents[(i + j) % textContents.length],
-                lines: lines,
+                productId: i + 1000,
+                showPrice: true,
+                userId: 'user-123',  // 用于加载个性化数据
               },
-            });
+            };
           }
-          return textCards;
-        }
-        // 商品卡片
-        return {
-          type: 'ProductCard',
-          id: `tab1-product-${i}`,
-          props: {
-            productId: i + 1,
-            showPrice: true,
-          },
-        };
-      }).flat(),
-    },
 
-    // Tab 2: 嵌套容器 - 实验容器根据实验信息动态渲染
-    {
-      type: 'ProductList',
-      id: 'tab-2-list',
-      props: {},
-      children: Array.from({ length: 30 }, (_, i) => {
-        // 每 5 个商品插入一个实验容器
-        if (i % 5 === 0) {
-          return {
-            type: 'ExperimentContainer',
-            id: `tab2-experiment-${i}`,
-            props: {
-              experimentKey: `product_card_style_${i}`,
-              variants: {
-                control: [],       // 对照组：不显示
-                variant_a: [0],    // 实验组 A：显示文本卡片 (索引 0)
-                variant_b: [1],    // 实验组 B：显示商品卡片 (索引 1)
-              },
-            },
-            // 实验容器的子组件（根据实验分组决定渲染哪些）
-            children: [
-              {
+          // 每 3 个商品卡片插入 1-2 个文本卡片
+          if (i % 3 === 0) {
+            const textCards = [];
+            // 随机 1-2 个文本卡片
+            const textCardCount = (i % 2) + 1;
+            for (let j = 0; j < textCardCount; j++) {
+              const lines = ((i + j) % 4) + 1; // 1-4 行
+              textCards.push({
                 type: 'TextCard',
-                id: `tab2-experiment-${i}-text`,
+                id: `tab1-text-${i}-${j}`,
                 props: {
-                  title: `🧪 实验组内容 #${i}`,
-                  content: `这是实验容器内的文本卡片，根据实验分组动态渲染。${textContents[i % textContents.length]}`,
-                  lines: 3,
+                  title: `文本卡片 #${i}-${j}`,
+                  content: textContents[(i + j) % textContents.length],
+                  lines: lines,
                 },
-              },
-              {
-                type: 'ProductCard',
-                id: `tab2-experiment-${i}-product`,
-                props: {
-                  productId: i + 100,
-                  showPrice: true,
-                },
-              },
-            ],
-          };
-        }
-        // 普通商品卡片
-        return {
-          type: 'ProductCard',
-          id: `tab2-product-${i}`,
-          props: {
-            productId: i + 50,
-            showPrice: true,
-          },
-        };
-      }),
-    },
-
-    // Tab 3: 大量混合组件（测试虚拟滚动性能）
-    {
-      type: 'ProductList',
-      id: 'tab-3-list',
-      props: {},
-      children: Array.from({ length: 100 }, (_, i) => {
-        const type = i % 4;
-        if (type === 0) {
-          // 短文本卡片
-          return {
-            type: 'TextCard',
-            id: `tab3-text-short-${i}`,
-            props: {
-              title: `短文本 #${i}`,
-              content: textContents[0],
-              lines: 1,
-            },
-          };
-        } else if (type === 1) {
-          // 长文本卡片
-          return {
-            type: 'TextCard',
-            id: `tab3-text-long-${i}`,
-            props: {
-              title: `长文本 #${i}`,
-              content: textContents[3],
-              lines: 5,
-            },
-          };
-        } else {
-          // 商品卡片
+              });
+            }
+            return textCards;
+          }
+          // 普通商品卡片
           return {
             type: 'ProductCard',
-            id: `tab3-product-${i}`,
+            id: `tab1-product-${i}`,
             props: {
-              productId: i + 200,
+              productId: i + 1,
               showPrice: true,
             },
           };
-        }
-      }),
-    },
+        }).flat(),
+      },
 
-    // Tab 4: 深度嵌套容器（展示容器嵌套能力）
-    {
-      type: 'ProductList',
-      id: 'tab-4-list',
-      props: {},
-      children: [
-        // 第1层：时间段容器
-        {
-          type: 'TimeBasedContainer',
-          id: 'tab4-time-container',
-          props: {
-            timeSlots: {
-              morning: { startHour: 6, endHour: 12 },
-              afternoon: { startHour: 12, endHour: 18 },
-              evening: { startHour: 18, endHour: 24 },
-              night: { startHour: 0, endHour: 6 },
+      // Tab 2: 嵌套容器 - 实验容器根据实验信息动态渲染
+      {
+        type: 'ProductList',
+        id: 'tab-2-list',
+        props: {},
+        children: Array.from({ length: 30 }, (_, i) => {
+          // 每 5 个商品插入一个实验容器
+          if (i % 5 === 0) {
+            return {
+              type: 'ExperimentContainer',
+              id: `tab2-experiment-${i}`,
+              props: {
+                experimentKey: `product_card_style_${i}`,
+                variants: {
+                  control: [],       // 对照组：不显示
+                  variant_a: [0],    // 实验组 A：显示文本卡片 (索引 0)
+                  variant_b: [1],    // 实验组 B：显示商品卡片 (索引 1)
+                },
+              },
+              // 实验容器的子组件（根据实验分组决定渲染哪些）
+              children: [
+                {
+                  type: 'TextCard',
+                  id: `tab2-experiment-${i}-text`,
+                  props: {
+                    title: `🧪 实验组内容 #${i}`,
+                    content: `这是实验容器内的文本卡片，根据实验分组动态渲染。${textContents[i % textContents.length]}`,
+                    lines: 3,
+                  },
+                },
+                {
+                  type: 'ProductCard',
+                  id: `tab2-experiment-${i}-product`,
+                  props: {
+                    productId: i + 100,
+                    showPrice: true,
+                  },
+                },
+              ],
+            };
+          }
+          // 普通商品卡片
+          return {
+            type: 'ProductCard',
+            id: `tab2-product-${i}`,
+            props: {
+              productId: i + 50,
+              showPrice: true,
             },
+          };
+        }),
+      },
+
+      // Tab 3: 大量混合组件（测试虚拟滚动性能）
+      {
+        type: 'ProductList',
+        id: 'tab-3-list',
+        props: {},
+        children: Array.from({ length: 100 }, (_, i) => {
+          const type = i % 4;
+          if (type === 0) {
+            // 短文本卡片
+            return {
+              type: 'TextCard',
+              id: `tab3-text-short-${i}`,
+              props: {
+                title: `短文本 #${i}`,
+                content: textContents[0],
+                lines: 1,
+              },
+            };
+          } else if (type === 1) {
+            // 长文本卡片
+            return {
+              type: 'TextCard',
+              id: `tab3-text-long-${i}`,
+              props: {
+                title: `长文本 #${i}`,
+                content: textContents[3],
+                lines: 5,
+              },
+            };
+          } else {
+            // 商品卡片
+            return {
+              type: 'ProductCard',
+              id: `tab3-product-${i}`,
+              props: {
+                productId: i + 200,
+                showPrice: true,
+              },
+            };
+          }
+        }),
+      },
+
+      // Tab 4: 深度嵌套容器（展示容器嵌套能力）
+      {
+        type: 'ProductList',
+        id: 'tab-4-list',
+        props: {},
+        children: [
+          // 第1层：时间段容器
+          {
+            type: 'TimeBasedContainer',
+            id: 'tab4-time-container',
+            props: {
+              timeSlots: {
+                morning: { startHour: 6, endHour: 12 },
+                afternoon: { startHour: 12, endHour: 18 },
+                evening: { startHour: 18, endHour: 24 },
+                night: { startHour: 0, endHour: 6 },
+              },
+            },
+            children: [
+              // 第2层：条件容器（VIP 用户）
+              {
+                type: 'ConditionalContainer',
+                id: 'tab4-vip-container',
+                props: {
+                  condition: 'user_vip',
+                },
+                children: [
+                  {
+                    type: 'TextCard',
+                    id: 'tab4-vip-welcome',
+                    props: {
+                      title: '🌟 VIP 专属',
+                      content: '尊贵的 VIP 用户，欢迎您！享受专属优惠和服务。',
+                      lines: 2,
+                    },
+                  },
+                  // 第3层：网格布局容器
+                  {
+                    type: 'GridLayoutContainer',
+                    id: 'tab4-vip-grid',
+                    props: {
+                      columns: 2,
+                      gap: 8,
+                    },
+                    children: [
+                      {
+                        type: 'ProductCard',
+                        id: 'tab4-vip-product-1',
+                        props: { productId: 301, showPrice: true },
+                      },
+                      {
+                        type: 'ProductCard',
+                        id: 'tab4-vip-product-2',
+                        props: { productId: 302, showPrice: true },
+                      },
+                    ],
+                  },
+                ],
+              },
+
+              // 第2层：条件容器（新用户）
+              {
+                type: 'ConditionalContainer',
+                id: 'tab4-new-user-container',
+                props: {
+                  condition: 'user_new',
+                },
+                children: [
+                  {
+                    type: 'TextCard',
+                    id: 'tab4-new-user-welcome',
+                    props: {
+                      title: '👋 新用户欢迎',
+                      content: '欢迎新用户！这里有新手专享优惠等你来领取。',
+                      lines: 2,
+                    },
+                  },
+                  // 第3层：实验容器
+                  {
+                    type: 'ExperimentContainer',
+                    id: 'tab4-new-user-experiment',
+                    props: {
+                      experimentKey: 'new_user_guide',
+                      variants: {
+                        control: [],       // 对照组：不显示
+                        variant_a: [0],    // 实验组 A：显示指南
+                        variant_b: [1],    // 实验组 B：显示步骤网格
+                      },
+                    },
+                    children: [
+                      {
+                        type: 'TextCard',
+                        id: 'tab4-experiment-guide',
+                        props: {
+                          title: '📖 新手指南',
+                          content: '跟随指引，快速了解我们的产品和服务。',
+                          lines: 3,
+                        },
+                      },
+                      // 第4层：网格布局
+                      {
+                        type: 'GridLayoutContainer',
+                        id: 'tab4-experiment-grid',
+                        props: {
+                          columns: 3,
+                          gap: 4,
+                        },
+                        children: [
+                          {
+                            type: 'TextCard',
+                            id: 'tab4-guide-1',
+                            props: { title: '步骤1', content: '注册账号', lines: 1 },
+                          },
+                          {
+                            type: 'TextCard',
+                            id: 'tab4-guide-2',
+                            props: { title: '步骤2', content: '完善资料', lines: 1 },
+                          },
+                          {
+                            type: 'TextCard',
+                            id: 'tab4-guide-3',
+                            props: { title: '步骤3', content: '开始购物', lines: 1 },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+
+              // 第2层：随机惊喜容器
+              {
+                type: 'ConditionalContainer',
+                id: 'tab4-surprise-container',
+                props: {
+                  condition: 'random',
+                  probability: 0.7, // 70% 概率显示
+                },
+                children: [
+                  {
+                    type: 'TextCard',
+                    id: 'tab4-surprise',
+                    props: {
+                      title: '🎁 惊喜福利',
+                      content: '恭喜你！获得了一个随机惊喜福利，快来领取吧！',
+                      lines: 2,
+                    },
+                  },
+                  // 第3层：网格布局（惊喜商品）
+                  {
+                    type: 'GridLayoutContainer',
+                    id: 'tab4-surprise-grid',
+                    props: {
+                      columns: 2,
+                      gap: 8,
+                    },
+                    children: Array.from({ length: 4 }, (_, i) => ({
+                      type: 'ProductCard',
+                      id: `tab4-surprise-product-${i}`,
+                      props: { productId: 400 + i, showPrice: true },
+                    })),
+                  },
+                ],
+              },
+            ],
           },
-          children: [
-            // 第2层：条件容器（VIP 用户）
-            {
-              type: 'ConditionalContainer',
-              id: 'tab4-vip-container',
-              props: {
-                condition: 'user_vip',
-              },
-              children: [
-                {
-                  type: 'TextCard',
-                  id: 'tab4-vip-welcome',
-                  props: {
-                    title: '🌟 VIP 专属',
-                    content: '尊贵的 VIP 用户，欢迎您！享受专属优惠和服务。',
-                    lines: 2,
-                  },
-                },
-                // 第3层：网格布局容器
-                {
-                  type: 'GridLayoutContainer',
-                  id: 'tab4-vip-grid',
-                  props: {
-                    columns: 2,
-                    gap: 8,
-                  },
-                  children: [
-                    {
-                      type: 'ProductCard',
-                      id: 'tab4-vip-product-1',
-                      props: { productId: 301, showPrice: true },
-                    },
-                    {
-                      type: 'ProductCard',
-                      id: 'tab4-vip-product-2',
-                      props: { productId: 302, showPrice: true },
-                    },
-                  ],
-                },
-              ],
-            },
 
-            // 第2层：条件容器（新用户）
-            {
-              type: 'ConditionalContainer',
-              id: 'tab4-new-user-container',
-              props: {
-                condition: 'user_new',
-              },
-              children: [
-                {
-                  type: 'TextCard',
-                  id: 'tab4-new-user-welcome',
-                  props: {
-                    title: '👋 新用户欢迎',
-                    content: '欢迎新用户！这里有新手专享优惠等你来领取。',
-                    lines: 2,
-                  },
-                },
-                // 第3层：实验容器
-                {
-                  type: 'ExperimentContainer',
-                  id: 'tab4-new-user-experiment',
-                  props: {
-                    experimentKey: 'new_user_guide',
-                    variants: {
-                      control: [],       // 对照组：不显示
-                      variant_a: [0],    // 实验组 A：显示指南
-                      variant_b: [1],    // 实验组 B：显示步骤网格
-                    },
-                  },
-                  children: [
-                    {
-                      type: 'TextCard',
-                      id: 'tab4-experiment-guide',
-                      props: {
-                        title: '📖 新手指南',
-                        content: '跟随指引，快速了解我们的产品和服务。',
-                        lines: 3,
-                      },
-                    },
-                    // 第4层：网格布局
-                    {
-                      type: 'GridLayoutContainer',
-                      id: 'tab4-experiment-grid',
-                      props: {
-                        columns: 3,
-                        gap: 4,
-                      },
-                      children: [
-                        {
-                          type: 'TextCard',
-                          id: 'tab4-guide-1',
-                          props: { title: '步骤1', content: '注册账号', lines: 1 },
-                        },
-                        {
-                          type: 'TextCard',
-                          id: 'tab4-guide-2',
-                          props: { title: '步骤2', content: '完善资料', lines: 1 },
-                        },
-                        {
-                          type: 'TextCard',
-                          id: 'tab4-guide-3',
-                          props: { title: '步骤3', content: '开始购物', lines: 1 },
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
+          // 普通商品列表（作为对比）
+          ...Array.from({ length: 10 }, (_, i) => ({
+            type: 'ProductCard',
+            id: `tab4-normal-product-${i}`,
+            props: { productId: 500 + i, showPrice: true },
+          })),
+        ],
+      },
+    ],
+  },
 
-            // 第2层：随机惊喜容器
-            {
-              type: 'ConditionalContainer',
-              id: 'tab4-surprise-container',
-              props: {
-                condition: 'random',
-                probability: 0.7, // 70% 概率显示
-              },
-              children: [
-                {
-                  type: 'TextCard',
-                  id: 'tab4-surprise',
-                  props: {
-                    title: '🎁 惊喜福利',
-                    content: '恭喜你！获得了一个随机惊喜福利，快来领取吧！',
-                    lines: 2,
-                  },
-                },
-                // 第3层：网格布局（惊喜商品）
-                {
-                  type: 'GridLayoutContainer',
-                  id: 'tab4-surprise-grid',
-                  props: {
-                    columns: 2,
-                    gap: 8,
-                  },
-                  children: Array.from({ length: 4 }, (_, i) => ({
-                    type: 'ProductCard',
-                    id: `tab4-surprise-product-${i}`,
-                    props: { productId: 400 + i, showPrice: true },
-                  })),
-                },
-              ],
-            },
-          ],
-        },
+  // 🔥 全局预加载配置（最外层）
+  prefetch: {
+    // Tab 1 的商品卡片（首屏，会被自动提升为高优先级）
+    'tab1-product-1': { params: { productId: 1 }, priority: 'normal' },
+    'tab1-product-2': { params: { productId: 2 }, priority: 'normal' },
+    'tab1-product-4': { params: { productId: 4 }, priority: 'normal' },
+    'tab1-product-5': { params: { productId: 5 }, priority: 'normal' },
+    'tab1-product-7': { params: { productId: 7 }, priority: 'normal' },
+    'tab1-product-8': { params: { productId: 8 }, priority: 'normal' },
 
-        // 普通商品列表（作为对比）
-        ...Array.from({ length: 10 }, (_, i) => ({
-          type: 'ProductCard',
-          id: `tab4-normal-product-${i}`,
-          props: { productId: 500 + i, showPrice: true },
-        })),
-      ],
-    },
-  ],
+    // 🔥 Tab 1 的增强版商品卡片（非首屏，演示预加载 + 补充数据）
+    'tab1-enhanced-10': { params: { productId: 1010 }, priority: 'normal' },
+    'tab1-enhanced-11': { params: { productId: 1011 }, priority: 'normal' },
+    'tab1-enhanced-12': { params: { productId: 1012 }, priority: 'normal' },
+    'tab1-enhanced-13': { params: { productId: 1013 }, priority: 'normal' },
+    'tab1-enhanced-14': { params: { productId: 1014 }, priority: 'normal' },
+    'tab1-enhanced-15': { params: { productId: 1015 }, priority: 'normal' },
+
+    // Tab 2 的商品卡片（非首屏，会被自动降低为低优先级）
+    'tab2-product-1': { params: { productId: 51 }, priority: 'normal' },
+    'tab2-product-2': { params: { productId: 52 }, priority: 'normal' },
+    'tab2-experiment-0-product': { params: { productId: 100 }, priority: 'normal' },
+
+    // 注意：
+    // 1. 文本卡片没有配置，因为不需要预加载数据
+    // 2. Tab 容器和列表容器也没有配置，因为它们不需要预加载数据
+    // 3. 优先级会根据是否在当前激活的 Tab 中自动调整
+  },
+
+  // 其他全局配置
+  meta: {
+    title: '搭建 C 端落地页新架构 Demo',
+    version: '1.0.0',
+  },
 };
+

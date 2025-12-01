@@ -2,8 +2,9 @@ import { AbstractJob } from '../bedrock/launch';
 import { Barrier } from '../bedrock/async/barrier';
 import { PageLifecycle } from './lifecycle';
 
-import { IComponentService } from '@/services';
+import { IComponentService, IPrefetchService } from '@/services';
 import type { ComponentService } from '../services/component.service';
+import type { PrefetchService } from '../services/prefetch.service';
 
 /**
  * Job 3: 初始化数据（后台异步）
@@ -14,7 +15,8 @@ export class InitFirstScreenDataJob extends AbstractJob<PageLifecycle> {
   private _renderCompletedBarrier = new Barrier();
 
   constructor(
-    @IComponentService private componentService: ComponentService
+    @IComponentService private componentService: ComponentService,
+    @IPrefetchService private prefetchService: PrefetchService  // 🔥 新增
   ) {
     super();
   }
@@ -55,11 +57,13 @@ export class InitFirstScreenDataJob extends AbstractJob<PageLifecycle> {
       this._renderCompletedBarrier.open();
       return;
     }
-    console.log('==========================首屏接口相关数据拉取开始=============');
-    console.time('==========================首屏接口相关数据拉取完成');
+
+    console.log('==========================首 tab 但非首屏组件接口相关数据拉取开始=============');
+    console.time('==========================首 tab 但非首屏组件接口相关数据拉取完成');
     await rootModel.init()
-    console.log('==========================首屏接口相关数据拉取完成=============');
-    console.timeEnd('==========================首屏接口相关数据拉取完成');
+    console.log('==========================首 tab 但非首屏组件接口相关数据拉取完成=============');
+    console.timeEnd('==========================首 tab 但非首屏组件接口相关数据拉取完成');
+    console.log('==========================首 tab 可以交互了=============');
     this._renderCompletedBarrier.open();
 
   }

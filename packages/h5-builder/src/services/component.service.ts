@@ -21,13 +21,13 @@ export interface ComponentMetadata {
 }
 
 /**
- * 组件 Schema 定义
+ * 组件 Schema 定义（递归部分，不包含 prefetch）
  */
 export interface ComponentSchema {
   // 组件类型（用于查找对应的 Model 类）
   type: string;
 
-  // 组件唯一 ID
+  // 组件唯一 ID（nodeId）
   id: string;
 
   // 组件属性（传递给 Model 的 props）
@@ -39,6 +39,44 @@ export interface ComponentSchema {
   // 元数据（可选）
   meta?: ComponentMetadata;
 }
+
+/**
+ * 单个组件的预加载配置
+ */
+export interface PrefetchItemConfig {
+  // 预加载接口的入参
+  params: Record<string, any>;
+
+  // 可选：预加载优先级（默认 normal）
+  priority?: 'critical' | 'high' | 'normal' | 'low';
+}
+
+/**
+ * 全局预加载配置
+ * key 是组件的 nodeId，value 是预加载参数
+ */
+export interface PrefetchConfigs {
+  [nodeId: string]: PrefetchItemConfig;
+}
+
+/**
+ * 页面 Schema（最外层）
+ */
+export interface PageSchema {
+  // 页面结构（递归）
+  root: ComponentSchema;
+
+  // 全局预加载配置（可选）
+  prefetch?: PrefetchConfigs;
+
+  // 其他全局配置（可选）
+  meta?: {
+    title?: string;
+    version?: string;
+    [key: string]: any;
+  };
+}
+
 
 /**
  * 组件注册表

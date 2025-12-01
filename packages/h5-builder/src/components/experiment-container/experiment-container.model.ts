@@ -1,4 +1,6 @@
 import { BaseContainerModel } from '../../bedrock/model';
+import { IPrefetchService } from '../../services/service-identifiers';
+import type { PrefetchService } from '../../services/prefetch.service';
 
 /**
  * 实验容器 Props
@@ -28,9 +30,10 @@ export class ExperimentContainerModel extends BaseContainerModel<ExperimentConta
 
   constructor(
     id: string,
-    props: ExperimentContainerProps
+    props: ExperimentContainerProps,
+    @IPrefetchService prefetchService: PrefetchService  // 🔥 新增
   ) {
-    super(id, props);
+    super(id, props, prefetchService);  // 🔥 传递给基类
   }
 
   protected async onInit(): Promise<void> {
