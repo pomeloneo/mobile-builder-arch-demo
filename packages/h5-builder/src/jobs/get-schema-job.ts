@@ -52,7 +52,7 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
     console.log('==================开始远端拉取 schema============');
     console.time('==================远端拉取 schema 完成');
     const pageSchema = await this.schemaService.fetchSchema()
-    console.log('==================远端拉取 schema 完成============', pageSchema);
+    console.log('==================远端拉取 schema 完成============');
     console.timeEnd('==================远端拉取 schema 完成');
     // 此处是 mock，应该要依赖 schema 内容，所以需要在此处执行
     this._registerComponentLoader()

@@ -191,8 +191,8 @@ function makeContainerService() {
   console.time('==========================应用初始化耗时==========');
   console.time('==========================首屏 TTI 完成时间==========');
   console.time('==========================应用完全可以 TTI 的完成时间==========');
-  console.log('==========================services 开始初始化===========');
-  console.time('==========================services 初始化耗时');
+  console.log('==========================DI 容器 & 基础 services 初始化开始===========');
+  console.time('==========================DI 容器 & 基础services 初始化耗时');
 
   const registry = new ServiceRegistry();
   registry.register(IBridgeService, new SyncDescriptor(BridgeService, [true]));
@@ -209,8 +209,8 @@ function makeContainerService() {
 
   const instantiationService = new InstantiationService(registry.makeCollection());
 
-  console.log('==========================services 初始化完成==========');
-  console.timeEnd('==========================services 初始化耗时');
+  console.log('==========================DI 容器 & 基础 services 初始化完成===========');
+  console.timeEnd('==========================DI 容器 & 基础services 初始化耗时');
   return instantiationService
 }
 
@@ -230,6 +230,7 @@ function useLaunch() {
 
   const bootstrap = useCallback(() => {
     'background-only';
+    console.log('====================DI 容器及基础 service 初始化完成，开始驱动生命周期调度=====')
     driveJobScheduler(jobScheduler.current!, setLifecycle).catch((err) => {
       console.error('Page init failure:', err);
       setPanic(true);
