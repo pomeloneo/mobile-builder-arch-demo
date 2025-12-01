@@ -53,7 +53,7 @@ export class DisposableStore implements IDisposable {
 
     this._toDispose.clear();
     if (errors.length > 0) {
-      throw new AggregateError(errors, 'find error when dispose store.');
+      throw new Error(errors.join('\nfind error when dispose store.'));
     }
   }
 

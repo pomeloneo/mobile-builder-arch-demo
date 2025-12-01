@@ -1,4 +1,4 @@
-import { lvErrorConst } from './error-const';
+import { bizErrorConst } from './error-const';
 
 /**
  * 提供了通用的错误码(+1至+256)
@@ -10,9 +10,7 @@ export enum GenericError {
   Cancelled = 1, // 操作被取消
   TimedOut = 2, // 操作超时
   PermissionDenied = 3, // 无权限
-  AlreadyExists = 4, // 已经存在(文件/记录等)
   NotSupported = 5, // 操作不支持
-  ResourceUnavailable = 6, // 资源不可用
   OutOfRange = 7, // (参数/结果等)发生越界
   InvalidArgument = 8, // 无效参数
   NetworkFailed = 9, // 网络失败
@@ -23,17 +21,12 @@ export enum GenericError {
 /**
  * 通用错误码所对应的编译时常量对象(ErrorConst)
  */
-export const cancelledError = lvErrorConst(GenericError.Cancelled, 'operation(s) cancelled.');
-export const timeoutError = lvErrorConst(GenericError.TimedOut, 'operation(s) timed out.');
-export const permissionDeniedError = lvErrorConst(GenericError.PermissionDenied, 'permission denied.');
-export const alreadyExistsError = lvErrorConst(GenericError.AlreadyExists, 'already exists.');
-export const notSupportedError = lvErrorConst(GenericError.NotSupported, 'operation(s) not supported.');
-export const resourceUnavailableError = lvErrorConst(
-  GenericError.ResourceUnavailable,
-  'resource is unavailable.',
-);
-export const outOfRangeError = lvErrorConst(GenericError.OutOfRange, 'out of range.');
-export const invalidArgumentError = lvErrorConst(GenericError.InvalidArgument, 'invalid arguments.');
-export const networkFailedError = lvErrorConst(GenericError.NetworkFailed, 'network failed.');
-export const interruptedError = lvErrorConst(GenericError.Interrupted, 'interrupted.');
-export const resultNilError = lvErrorConst(GenericError.ResultNil, 'result is nil.');
+export const cancelledError = bizErrorConst(GenericError.Cancelled, 'operation(s) cancelled.');
+export const timeoutError = bizErrorConst(GenericError.TimedOut, 'operation(s) timed out.');
+export const permissionDeniedError = bizErrorConst(GenericError.PermissionDenied, 'permission denied.');
+export const notSupportedError = bizErrorConst(GenericError.NotSupported, 'operation(s) not supported.');
+export const outOfRangeError = bizErrorConst(GenericError.OutOfRange, 'out of range.');
+export const invalidArgumentError = bizErrorConst(GenericError.InvalidArgument, 'invalid arguments.');
+export const networkFailedError = bizErrorConst(GenericError.NetworkFailed, 'network failed.');
+export const interruptedError = bizErrorConst(GenericError.Interrupted, 'interrupted.');
+export const resultNilError = bizErrorConst(GenericError.ResultNil, 'result is nil.');

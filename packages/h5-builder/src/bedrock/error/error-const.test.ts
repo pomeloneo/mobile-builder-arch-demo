@@ -1,11 +1,11 @@
-import { lvErrorConst } from './error-const';
+import { bizErrorConst } from './error-const';
 
 const NETWORK_CODE = 404;
 const NETWORK_MSG = 'network error';
 
-const networkError = lvErrorConst(NETWORK_CODE, NETWORK_MSG);
+const networkError = bizErrorConst(NETWORK_CODE, NETWORK_MSG);
 
-describe('LvErrorConst', () => {
+describe('BizErrorConst', () => {
   test('creates runtime error', () => {
     const err = networkError();
     expect(err.ok).toBe(false);

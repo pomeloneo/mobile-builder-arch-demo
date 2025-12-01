@@ -1,4 +1,4 @@
-import { isLvErrorRef } from './error-t';
+import { isBizErrorRef } from './error-t';
 
 export function getErrorInfo(ex: unknown): {
   name: string;
@@ -31,23 +31,14 @@ export function getErrorInfo(ex: unknown): {
     };
   }
 
-  if (isLvErrorRef(ex)) {
+  if (isBizErrorRef(ex)) {
     return {
-      name: 'LvError',
+      name: 'BizError',
       code: ex.code,
       message: `${ex.code}: ${ex.msg}`,
     };
   }
 
-  if (ex instanceof AggregateError) {
-    const message = ex.errors.map((e) => getErrorInfo(e).message).join('\n');
-    return {
-      name: 'AggregateError',
-      code: -1,
-      message,
-      stack: ex.stack,
-    };
-  }
 
   if (isError(ex)) {
     const { code, msg } = parseCodeAndMsg(ex.message);

@@ -1,32 +1,32 @@
-import type { ILvErrorRef, ILvErrorOr, ILvRealErrorRef } from './error-base';
+import type { IBizErrorRef, IBizErrorOr, ILvRealErrorRef } from './error-base';
 
 //
 // Error类
 //
 // 用户给函数签名明确错误
-// function foo(): ILvErrorRef
+// function foo(): IBizErrorRef
 //   return makeOk();  // 如果没有错误
 //   return makeError(code, msg);  // 指定错误码和携带消息
 //
-//   const SomeError = LvErrorConst(code, msg);  // 更推荐用LvErrorConst生成
+//   const SomeError = BizErrorConst(code, msg);  // 更推荐用BizErrorConst生成
 //   return SomeError();
 //
 
-const lvErrorRefSymbol = Symbol('lvErrorRef');
+const bizErrorRefSymbol = Symbol('bizErrorRef');
 
-function findJsError(error: ILvErrorRef | Error) {
-  let obj: ILvErrorRef | Error | undefined = error;
+function findJsError(error: IBizErrorRef | Error) {
+  let obj: IBizErrorRef | Error | undefined = error;
   while (obj) {
     if (obj instanceof Error) {
       return obj;
     }
-    obj = (obj as ILvErrorRef).cause;
+    obj = (obj as IBizErrorRef).cause;
   }
-  // 如果没有Error，那就序列化lvError
-  return new Error((error as ILvErrorRef).toString());
+  // 如果没有Error，那就序列化bizError
+  return new Error((error as IBizErrorRef).toString());
 }
 
-export function makeOk<K>(): ILvErrorOr<never, K> {
+export function makeOk<K>(): IBizErrorOr<never, K> {
   return {
     ok: true,
     value: null!,
@@ -35,11 +35,11 @@ export function makeOk<K>(): ILvErrorOr<never, K> {
     },
     code: 0,
     msg: '',
-    ...{ [lvErrorRefSymbol]: true }, // 跳过类型检测
+    ...{ [bizErrorRefSymbol]: true }, // 跳过类型检测
   };
 }
 
-export function makeOkWith<T, K = unknown>(value: T): ILvErrorOr<T, K> {
+export function makeOkWith<T, K = unknown>(value: T): IBizErrorOr<T, K> {
   return {
     ok: true,
     value,
@@ -48,11 +48,11 @@ export function makeOkWith<T, K = unknown>(value: T): ILvErrorOr<T, K> {
     },
     code: 0,
     msg: '',
-    ...{ [lvErrorRefSymbol]: true }, // 跳过类型检测
+    ...{ [bizErrorRefSymbol]: true }, // 跳过类型检测
   };
 }
 
-function printCause(cause: ILvErrorRef | Error | undefined): string {
+function printCause(cause: IBizErrorRef | Error | undefined): string {
   if (cause === undefined) {
     return '';
   } else if (cause instanceof Error) {
@@ -62,7 +62,7 @@ function printCause(cause: ILvErrorRef | Error | undefined): string {
   }
 }
 
-function internalMakeError<T>(code: number, msg: string, cause?: ILvErrorRef | Error, errorInfo?: T) {
+function internalMakeError<T>(code: number, msg: string, cause?: IBizErrorRef | Error, errorInfo?: T) {
   const errorRef: ILvRealErrorRef<T> = {
     ok: false,
     code,
@@ -77,7 +77,7 @@ function internalMakeError<T>(code: number, msg: string, cause?: ILvErrorRef | E
     },
     stack: cause instanceof Error ? cause.stack : undefined,
     findJsError: () => findJsError(errorRef),
-    ...{ [lvErrorRefSymbol]: true }, // 跳过类型检测
+    ...{ [bizErrorRefSymbol]: true }, // 跳过类型检测
   };
   return errorRef;
 }
@@ -89,12 +89,12 @@ export function makeError<T = unknown>(code: number, msg: string, errorInfo?: T)
 export function makeErrorBy<T = unknown>(
   code: number,
   msg: string,
-  cause: ILvErrorRef | Error,
+  cause: IBizErrorRef | Error,
   errorInfo?: T,
 ): ILvRealErrorRef<T> {
   return internalMakeError(code, msg, cause, errorInfo);
 }
 
-export function isLvErrorRef(val: unknown): val is ILvErrorRef {
-  return typeof val === 'object' && val !== null && lvErrorRefSymbol in val;
+export function isBizErrorRef(val: unknown): val is IBizErrorRef {
+  return typeof val === 'object' && val !== null && bizErrorRefSymbol in val;
 }

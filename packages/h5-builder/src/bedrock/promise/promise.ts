@@ -1,12 +1,12 @@
 import {
   makeOkWith,
-  type ILvErrorOr,
+  type IBizErrorOr,
   cancelledError,
   GenericError,
   timeoutError,
-  type ILvErrorRef,
+  type IBizErrorRef,
   makeOk,
-  isLvErrorRef,
+  isBizErrorRef,
 } from '../error';
 import type { ICancellationToken } from '../async';
 import { CancellationTokenSource } from '../async';
@@ -26,12 +26,12 @@ import { CancellationTokenSource } from '../async';
  * 1. makeCancelablePromise 返回一个可取消的promise
  * const promise = makeCancelablePromise(() => { ... });
  * promise.then((res) => {
- *   // res是一个ILvErrorRef对象
+ *   // res是一个IBizErrorRef对象
  * });
  * // 可以直接取消promise
  * promise.cancel();
  *
- * 2. parallelPromise 并发执行promise，会自动观测ILvErrorRef语义
+ * 2. parallelPromise 并发执行promise，会自动观测IBizErrorRef语义
  * 当单个promise出现错误返回时，promise执行失败，尽可能调用所有cancelablePromise
  * 当单个promise出现reject时，promise执行失败，尽可能调用所有cancelablePromise，并且将reject继续上抛
  *
@@ -52,11 +52,11 @@ export interface CancelablePromise<T> extends Promise<T> {
  * 快速生成一个CancelablePromise对象
  */
 export function makeCancelablePromise<T>(
-  callback: (token: ICancellationToken) => Promise<T | ILvErrorOr<T>>,
-): CancelablePromise<ILvErrorOr<T>> {
+  callback: (token: ICancellationToken) => Promise<T | IBizErrorOr<T>>,
+): CancelablePromise<IBizErrorOr<T>> {
   const source = new CancellationTokenSource();
   const thenable = callback(source.token);
-  const promise = new Promise<ILvErrorOr<T>>((resolve, reject) => {
+  const promise = new Promise<IBizErrorOr<T>>((resolve, reject) => {
     const subscription = source.token.onCancellationRequested(() => {
       subscription.dispose();
       source.dispose();
@@ -66,7 +66,7 @@ export function makeCancelablePromise<T>(
       (value) => {
         subscription.dispose();
         source.dispose();
-        if (isLvErrorRef(value)) {
+        if (isBizErrorRef(value)) {
           resolve(value);
         } else {
           resolve(makeOkWith(value as T));
@@ -84,7 +84,7 @@ export function makeCancelablePromise<T>(
       source.cancel();
     }
     then<TResult1 = T, TResult2 = never>(
-      resolve?: ((value: ILvErrorOr<T>) => TResult1 | Promise<TResult1>) | undefined | null,
+      resolve?: ((value: IBizErrorOr<T>) => TResult1 | Promise<TResult1>) | undefined | null,
       reject?: ((reason: any) => TResult2 | Promise<TResult2>) | undefined | null,
     ): Promise<TResult1 | TResult2> {
       return promise.then(resolve, reject);
@@ -94,10 +94,10 @@ export function makeCancelablePromise<T>(
     ): Promise<T | TResult> {
       return this.then(undefined, reject);
     }
-    finally(onfinally?: (() => void) | undefined | null): Promise<ILvErrorOr<T>> {
+    finally(onfinally?: (() => void) | undefined | null): Promise<IBizErrorOr<T>> {
       return promise.finally(onfinally);
     }
-  })() as CancelablePromise<ILvErrorOr<T>>;
+  })() as CancelablePromise<IBizErrorOr<T>>;
 }
 
 /**
@@ -109,7 +109,7 @@ export function makeCancelablePromise<T>(
  * 注意：某一个promise失败时，会尽可能尝试调用其他promise的cancel，但不保证一定有效
  * （有可能promiseA已经成功，但是primiseB在之后失败了）
  */
-export function parallelPromise(promiseList: Promise<any>[]): Promise<ILvErrorRef> {
+export function parallelPromise(promiseList: Promise<any>[]): Promise<IBizErrorRef> {
   if (promiseList.length === 0) {
     return Promise.resolve(makeOk());
   }
@@ -122,14 +122,14 @@ export function parallelPromise(promiseList: Promise<any>[]): Promise<ILvErrorRe
     }
   };
 
-  return new Promise<ILvErrorRef>((resolve, reject) => {
+  return new Promise<IBizErrorRef>((resolve, reject) => {
     for (const promise of promiseList) {
       promise
         // eslint-disable-next-line @typescript-eslint/no-loop-func
         .then((res) => {
-          if (isLvErrorRef(res) && !res.ok) {
+          if (isBizErrorRef(res) && !res.ok) {
             finish();
-            resolve(res as ILvErrorRef);
+            resolve(res as IBizErrorRef);
             return;
           }
           todo--;
@@ -149,15 +149,15 @@ export function parallelPromise(promiseList: Promise<any>[]): Promise<ILvErrorRe
  * 包装一个promise，提供超时能力
  */
 export function makePromiseWithTimeout<T>(
-  callback: (token: ICancellationToken) => Promise<T | ILvErrorOr<T>>,
+  callback: (token: ICancellationToken) => Promise<T | IBizErrorOr<T>>,
   timeout: number,
   defaultValue?: T, // 当发生超时时，提供的默认值
-): Promise<ILvErrorOr<T>> {
+): Promise<IBizErrorOr<T>> {
   const cancellable = makeCancelablePromise<T>(callback);
   const timer = setTimeout(() => {
     cancellable.cancel();
   }, timeout);
-  return cancellable.then((res: ILvErrorOr<T>) => {
+  return cancellable.then((res: IBizErrorOr<T>) => {
     clearTimeout(timer);
     if (res.ok) {
       return res;

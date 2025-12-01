@@ -1,11 +1,11 @@
-import type { ILvErrorOr } from './error-base';
+import type { IBizErrorOr } from './error-base';
 import { makeOkWith } from './error-or';
-import { isLvErrorRef, makeError, makeErrorBy, makeOk } from './error-t';
+import { isBizErrorRef, makeError, makeErrorBy, makeOk } from './error-t';
 
 const NETWORK_CODE = 404;
 const NETWORK_MSG = 'network error';
 
-describe('LvError', () => {
+describe('BizError', () => {
   test('creates error without error state', () => {
     const err = makeOk();
     if (!err.ok) {
@@ -70,9 +70,9 @@ describe('LvError', () => {
     }
 
     if (err1) {
-      // Can directly convert destructured value to ILvErrorOr<string> for easy propagation
+      // Can directly convert destructured value to IBizErrorOr<string> for easy propagation
       // eslint-disable-next-line no-unused-vars
-      const err2: ILvErrorOr<string> = err1;
+      const err2: IBizErrorOr<string> = err1;
     }
     const [err2, value2] = makeOkWith(1).pair();
     if (!err2) {
@@ -81,11 +81,11 @@ describe('LvError', () => {
     }
   });
 
-  test('checks if any object is LvErrorRef', () => {
-    expect(isLvErrorRef(makeOk())).toBe(true);
-    expect(isLvErrorRef(makeOkWith(1))).toBe(true);
-    expect(isLvErrorRef(makeError(1, 'hello'))).toBe(true);
-    expect(isLvErrorRef(makeErrorBy(NETWORK_CODE, NETWORK_MSG, makeError(1, 'hello')))).toBe(true);
+  test('checks if any object is BizErrorRef', () => {
+    expect(isBizErrorRef(makeOk())).toBe(true);
+    expect(isBizErrorRef(makeOkWith(1))).toBe(true);
+    expect(isBizErrorRef(makeError(1, 'hello'))).toBe(true);
+    expect(isBizErrorRef(makeErrorBy(NETWORK_CODE, NETWORK_MSG, makeError(1, 'hello')))).toBe(true);
     const falsyValues = [
       undefined,
       null,
@@ -97,20 +97,20 @@ describe('LvError', () => {
       new Error(),
     ];
     falsyValues.forEach((val) => {
-      expect(isLvErrorRef(val)).toBe(false);
+      expect(isBizErrorRef(val)).toBe(false);
     });
   });
 
-  test('finds jsError from LvErrorRef if possible', () => {
+  test('finds jsError from BizErrorRef if possible', () => {
     const jsError = new Error('jsError1');
-    const lvError1 = makeErrorBy(-1, 'hello', jsError);
-    expect(lvError1.findJsError()).toBe(jsError);
+    const bizError1 = makeErrorBy(-1, 'hello', jsError);
+    expect(bizError1.findJsError()).toBe(jsError);
 
-    const lvError2 = makeErrorBy(-1, 'hello', lvError1);
-    expect(lvError2.findJsError()).toBe(jsError);
+    const bizError2 = makeErrorBy(-1, 'hello', bizError1);
+    expect(bizError2.findJsError()).toBe(jsError);
 
-    const lvError3 = makeError(-1, 'world');
-    const lvError4 = makeErrorBy(-1, 'hello', lvError3);
-    expect(lvError4.findJsError().message).toBe('[-1]hello.\ncaused by [-1]world');
+    const bizError3 = makeError(-1, 'world');
+    const bizError4 = makeErrorBy(-1, 'hello', bizError3);
+    expect(bizError4.findJsError().message).toBe('[-1]hello.\ncaused by [-1]world');
   });
 });

@@ -1,11 +1,11 @@
 import { Disposable, type IDisposable } from '@/bedrock/dispose';
 import { type Event, Emitter } from '@/bedrock/event';
-import { makeErrorBy, type ILvErrorRef } from '@/bedrock/error';
+import { makeErrorBy, type IBizErrorRef } from '@/bedrock/error';
 import { CancellationToken, type ICancellationToken } from '../cancellation';
 
 export interface IAsyncTask extends IDisposable {
   onSuccess: Event<[]>;
-  onFailure: Event<[ILvErrorRef]>;
+  onFailure: Event<[IBizErrorRef]>;
   onCancel: Event<[]>;
 
   /** 取消当前任务 */
@@ -16,7 +16,7 @@ export class AsyncTask extends Disposable implements IAsyncTask {
   private readonly _onSuccess = this._store.add(new Emitter<[]>());
   public readonly onSuccess = this._onSuccess.event;
 
-  private readonly _onFailure = this._store.add(new Emitter<[ILvErrorRef]>());
+  private readonly _onFailure = this._store.add(new Emitter<[IBizErrorRef]>());
   public readonly onFailure = this._onFailure.event;
 
   private readonly _onCancel = this._store.add(new Emitter<[]>());

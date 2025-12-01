@@ -1,14 +1,14 @@
 //
-// lv项目中使用的错误类型
+// 业务项目中使用的错误类型
 //
 
-export type ILvErrorRef<K = unknown> = ILvErrorOr<never, K>;
+export type IBizErrorRef<K = unknown> = IBizErrorOr<never, K>;
 
 export interface ILvRealErrorRef<K = unknown> {
   readonly ok: false;
   readonly code: number;
   readonly msg: string;
-  readonly cause?: ILvErrorRef | Error;
+  readonly cause?: IBizErrorRef | Error;
   readonly toString: () => string;
   readonly pair: () => [ILvRealErrorRef<K>, null];
   readonly errorInfo?: K;
@@ -19,7 +19,7 @@ export interface ILvRealErrorRef<K = unknown> {
   readonly stack?: string;
 
   /**
-   * 尽可能找到lvError对应的js错误
+   * 尽可能找到bizError对应的js错误
    */
   readonly findJsError: () => Error;
 }
@@ -38,8 +38,8 @@ type ILvValueRef<T> = {
 };
 
 //
-// lv项目中使用的携带值可能错误类型
+// 业务项目中使用的携带值可能错误类型
 //
-export type ILvErrorOr<T, K = unknown> = (ILvRealErrorRef<K> | ILvValueRef<T>) & {
+export type IBizErrorOr<T, K = unknown> = (ILvRealErrorRef<K> | ILvValueRef<T>) & {
   readonly pair: () => [null, T] | [ILvRealErrorRef<K>, null];
 };

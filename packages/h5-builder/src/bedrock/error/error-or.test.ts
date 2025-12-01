@@ -1,7 +1,7 @@
-import type { ILvErrorOr } from './error-base';
+import type { IBizErrorOr } from './error-base';
 import { makeOkWith } from './error-or';
 
-describe('LvErrorOr', () => {
+describe('BizErrorOr', () => {
   test('creates error without error state', () => {
     const result = makeOkWith<number>(3);
     expect(result.ok).toBe(true);
@@ -37,7 +37,7 @@ describe('LvErrorOr', () => {
       result.code.toString();
     }
 
-    function getData(): ILvErrorOr<number> {
+    function getData(): IBizErrorOr<number> {
       return makeOkWith(42);
     }
   });

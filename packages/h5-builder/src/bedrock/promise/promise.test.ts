@@ -1,5 +1,5 @@
 /* eslint-disable max-nested-callbacks */
-import type { ILvErrorOr, ILvErrorRef } from '../error';
+import type { IBizErrorOr, IBizErrorRef } from '../error';
 import { GenericError, makeError } from '../error';
 import type { ICancellationToken } from '../async';
 import { makeCancelablePromise, makePromiseWithTimeout, parallelPromise } from './promise';
@@ -11,7 +11,7 @@ describe('cancel promise', () => {
 
   // promise可以正常resolve
   it('promise resolve', async () => {
-    let res: ILvErrorOr<boolean> | undefined;
+    let res: IBizErrorOr<boolean> | undefined;
     makeCancelablePromise(
       (_token: ICancellationToken) =>
         new Promise<boolean>((resolve) => {
@@ -29,7 +29,7 @@ describe('cancel promise', () => {
 
   // promise可以正常reject
   it('promise reject', async () => {
-    let res: ILvErrorOr<boolean> | undefined;
+    let res: IBizErrorOr<boolean> | undefined;
     makeCancelablePromise(
       (_token: ICancellationToken) =>
         new Promise<boolean>((resolve, reject) => {
@@ -53,7 +53,7 @@ describe('cancel promise', () => {
 
   // promise可以取消
   it('cancel success', async () => {
-    let res: ILvErrorOr<boolean> | undefined;
+    let res: IBizErrorOr<boolean> | undefined;
     const p = makeCancelablePromise(
       (_token: ICancellationToken) =>
         new Promise<boolean>((resolve) => {
@@ -168,7 +168,7 @@ describe('parallel promise', () => {
   // 单个promise error，其他cancelablePromise尽量取消
   it('one promise error, anthor cancel', async () => {
     let t = 0;
-    const p1 = new Promise<ILvErrorRef>((resolve) => {
+    const p1 = new Promise<IBizErrorRef>((resolve) => {
       resolve(makeError(-1, 'p1 error.'));
     });
     const p2 = makeCancelablePromise(() =>
