@@ -8,3 +8,6 @@ pnpm run demo-mobile
 
 ## 如何验证job调度流程
 浏览器 devtool console 搜索 `=======`,查看具体调度过程及耗时
+
+## 架构介绍
+wip
