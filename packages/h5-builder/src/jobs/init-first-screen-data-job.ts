@@ -27,7 +27,7 @@ export class InitFirstScreenDataJob extends AbstractJob<PageLifecycle> {
       case PageLifecycle.Open:
 
         break;
-      case PageLifecycle.LoadComponentLogic:
+      case PageLifecycle.LoadComponentLogicAndPrefetch:
 
         break;
       case PageLifecycle.Prepare:

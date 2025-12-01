@@ -24,8 +24,8 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
     switch (phase) {
       case PageLifecycle.Open:
         break;
-      case PageLifecycle.LoadComponentLogic:
-        await this._whenLoadComponentLogic();
+      case PageLifecycle.LoadComponentLogicAndPrefetch:
+        await this._whenLoadComponentLogicAndPrefetch();
         break;
       case PageLifecycle.Prepare:
         break;
@@ -46,8 +46,8 @@ export class LoadComponentsJob extends AbstractJob<PageLifecycle> {
 
 
 
-  private async _whenLoadComponentLogic() {
-    this._setBarrier(PageLifecycle.LoadComponentLogic, this._loadResouseBarrier);
+  private async _whenLoadComponentLogicAndPrefetch() {
+    this._setBarrier(PageLifecycle.LoadComponentLogicAndPrefetch, this._loadResouseBarrier);
     console.log('==========================正在获取组件 model 资源中===========');
 
     // 🔥 使用统一队列并发加载策略

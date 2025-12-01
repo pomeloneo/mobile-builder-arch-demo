@@ -31,7 +31,7 @@ export class EnsureViewReadyJob extends AbstractJob<PageLifecycle> {
     switch (phase) {
       case PageLifecycle.Open:
         break;
-      case PageLifecycle.LoadComponentLogic:
+      case PageLifecycle.LoadComponentLogicAndPrefetch:
         break;
       case PageLifecycle.Prepare:
         break;

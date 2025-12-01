@@ -75,7 +75,7 @@ function makeJobScheduler(
 
   // 注册 Jobs
   jobScheduler.registerJob(PageLifecycle.Open, GetSchemaJob);
-  jobScheduler.registerJob(PageLifecycle.LoadComponentLogic, LoadComponentsJob);
+  jobScheduler.registerJob(PageLifecycle.LoadComponentLogicAndPrefetch, LoadComponentsJob);
   jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob);
   jobScheduler.registerJob(PageLifecycle.RenderReady, EnsureViewReadyJob);
   // 🔥 Render 阶段：触发渲染 + 激活组件树
@@ -116,9 +116,9 @@ async function driveJobScheduler(
   // LoadResouse: 保证组件资源 model 加载完成
   console.log('%c==========================LoadResouse 阶段开始==========', 'color: #27ae60; font-weight: bold;');
   console.time('==========================LoadResouse 阶段耗时');
-  jobScheduler.prepare(PageLifecycle.LoadComponentLogic);
-  debouncedFunc(PageLifecycle.LoadComponentLogic);
-  await jobScheduler.wait(PageLifecycle.LoadComponentLogic);
+  jobScheduler.prepare(PageLifecycle.LoadComponentLogicAndPrefetch);
+  debouncedFunc(PageLifecycle.LoadComponentLogicAndPrefetch);
+  await jobScheduler.wait(PageLifecycle.LoadComponentLogicAndPrefetch);
 
   console.log('%c==========================LoadResouse 阶段完成==========', 'color: #27ae60; font-weight: bold;');
   console.timeEnd('==========================LoadResouse 阶段耗时');

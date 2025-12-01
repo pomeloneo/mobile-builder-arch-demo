@@ -25,14 +25,14 @@ export class TriggerRenderJob extends AbstractJob<PageLifecycle> {
   protected _executePhase(phase: PageLifecycle) {
     switch (phase) {
       case PageLifecycle.Render:
-        this._triggerRender();
+        this._whenRender();
         break;
       default:
         break;
     }
   }
 
-  private _triggerRender() {
+  private _whenRender() {
     const modelTree = this.componentService.getModelTree();
 
     console.log('[TriggerRenderJob] 触发渲染，modelTree:', modelTree?.id);

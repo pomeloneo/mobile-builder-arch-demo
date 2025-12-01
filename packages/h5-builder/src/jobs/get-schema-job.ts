@@ -30,7 +30,7 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
       case PageLifecycle.Open:
         await this._whenOpen();
         break;
-      case PageLifecycle.LoadComponentLogic:
+      case PageLifecycle.LoadComponentLogicAndPrefetch:
         break;
       case PageLifecycle.Prepare:
         break;

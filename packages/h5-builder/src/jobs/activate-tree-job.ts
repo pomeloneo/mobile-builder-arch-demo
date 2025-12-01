@@ -26,7 +26,7 @@ export class ActivateTreeJob extends AbstractJob<PageLifecycle> {
     switch (phase) {
       case PageLifecycle.Open:
         break;
-      case PageLifecycle.LoadComponentLogic:
+      case PageLifecycle.LoadComponentLogicAndPrefetch:
 
         break;
       case PageLifecycle.Prepare:
@@ -35,7 +35,7 @@ export class ActivateTreeJob extends AbstractJob<PageLifecycle> {
 
         break;
       case PageLifecycle.Render:
-        this._whenActivate();
+        this._whenRender();
         break;
       case PageLifecycle.Idle:
         break;
@@ -44,7 +44,7 @@ export class ActivateTreeJob extends AbstractJob<PageLifecycle> {
     }
   }
 
-  private async _whenActivate() {
+  private async _whenRender() {
     const modelTree = this.componentService.getModelTree();
     if (!modelTree) return;
 
