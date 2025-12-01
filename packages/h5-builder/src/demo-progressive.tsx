@@ -157,7 +157,7 @@ async function driveJobScheduler(
   console.timeEnd('==========================Render 阶段完成耗时');
 
 
-  // Completed: 数据初始化（后台）
+  // Completed: 非首屏数据加载启动（后台）
   console.log('%c==========================Completed 阶段开始==========', 'color: #1abc9c; font-weight: bold;');
   console.time('==========================Completed 阶段完成耗时');
   jobScheduler.prepare(PageLifecycle.Completed);
