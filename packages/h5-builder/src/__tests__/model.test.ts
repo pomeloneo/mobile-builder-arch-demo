@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
+import { BaseComponentModel, BaseContainerModel } from '../bedrock/model/model';
 
 // 🔥 Mock PrefetchService
 const mockPrefetchService = {

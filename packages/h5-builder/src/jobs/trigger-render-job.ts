@@ -3,7 +3,7 @@ import { PageLifecycle } from './lifecycle';
 
 import type { ComponentService } from '../services/component.service';
 import { IComponentService } from '@/services';
-import { BaseComponentModel } from '../bedrock/model';
+import { BaseComponentModel } from '../bedrock/model/model';
 
 /**
  * Job: 触发渲染

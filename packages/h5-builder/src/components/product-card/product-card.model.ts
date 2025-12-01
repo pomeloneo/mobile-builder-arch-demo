@@ -1,4 +1,4 @@
-import { BaseComponentModel } from '../../bedrock/model';
+import { BaseComponentModel } from '../../bedrock/model/model';
 import { IHttpService, ITrackerService, IPrefetchService } from '../../services/service-identifiers';
 import type { HttpService } from '../../services/http.service';
 import type { TrackerService } from '../../services/tracker.service';

@@ -1,4 +1,4 @@
-import { BaseComponentModel } from '../../bedrock/model';
+import { BaseComponentModel } from '../../bedrock/model/model';
 
 /**
  * 虚拟列表 Props

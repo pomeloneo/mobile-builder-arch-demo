@@ -1,7 +1,7 @@
 import { observable } from 'mobx-vue-lite';
-import { DisposableStore, IDisposable } from './dispose';
-import { IPrefetchService } from '../services/service-identifiers';
-import type { PrefetchService } from '../services/prefetch.service';
+import { DisposableStore, IDisposable } from '../dispose';
+import { IPrefetchService } from '../../services/service-identifiers';
+import type { PrefetchService } from '../../services/prefetch.service';
 
 /**
  * 组件 Model 基类

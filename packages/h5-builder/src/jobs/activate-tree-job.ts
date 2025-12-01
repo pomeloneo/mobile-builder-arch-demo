@@ -1,5 +1,5 @@
 import { AbstractJob } from '../bedrock/launch';
-import { BaseComponentModel } from '../bedrock/model';
+import { BaseComponentModel } from '../bedrock/model/model';
 import { PageLifecycle } from './lifecycle';
 
 import type { ComponentService } from '../services/component.service';

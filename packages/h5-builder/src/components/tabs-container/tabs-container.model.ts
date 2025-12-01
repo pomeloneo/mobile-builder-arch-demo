@@ -1,4 +1,4 @@
-import { BaseContainerModel } from '../../bedrock/model';
+import { BaseContainerModel } from '../../bedrock/model/model';
 import { ITrackerService, IPrefetchService } from '../../services/service-identifiers';
 import type { TrackerService } from '../../services/tracker.service';
 import type { PrefetchService } from '../../services/prefetch.service';

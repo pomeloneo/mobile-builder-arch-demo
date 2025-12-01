@@ -2,7 +2,7 @@ import { AbstractJob } from '../bedrock/launch';
 import type { ComponentService } from '../services/component.service';
 import { type ComponentSchema } from '../services/component.service';
 import { IComponentService, ISchemaService } from '../services/service-identifiers';
-import { BaseComponentModel } from '../bedrock/model';
+import { BaseComponentModel } from '../bedrock/model/model';
 import { PageLifecycle } from './lifecycle';
 import type { SchemaService } from '@/services/schema.service';
 

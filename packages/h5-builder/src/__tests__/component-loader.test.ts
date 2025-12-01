@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentService, ComponentSchema } from '../services/component.service';
 import { ServiceCollection, InstantiationService } from '../bedrock/di/index.common';
-import { BaseComponentModel, BaseContainerModel } from '../bedrock/model';
+import { BaseComponentModel, BaseContainerModel } from '../bedrock/model/model';
 import { ITrackerService, IBridgeService, IPrefetchService } from '../services/service-identifiers';
 import { TrackerService } from '../services/tracker.service';
 import { BridgeService } from '../services/bridge.service';
