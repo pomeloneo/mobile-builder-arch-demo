@@ -3,8 +3,8 @@ export enum PageLifecycle {
   Open = "页面打开，正在拉取 schema 中... & 并注册组件资源加载器",
   // 加载组件逻辑Model JS 资源
   LoadComponentLogicAndPrefetch = "加载组件逻辑 Model JS 资源中 & 开始预加载可以预加载的组件数据...",
-  // 构建模型树（也就是逻辑树)、同时加载组件视图
-  Prepare = "构建模型树（也就是逻辑树)、同时登台组件视图加载中...",
+  // 构建模型树（也就是逻辑树)
+  Prepare = "构建模型树（也就是逻辑树)",
   // 模型树和视图资源全部准备完成
   RenderReady = "模型树和视图资源全部准备完成",
   // 启动渲染   

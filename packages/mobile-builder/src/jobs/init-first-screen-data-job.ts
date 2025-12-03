@@ -16,7 +16,7 @@ export class InitFirstScreenDataJob extends AbstractJob<PageLifecycle> {
 
   constructor(
     @IComponentService private componentService: ComponentService,
-    @IPrefetchService private prefetchService: PrefetchService  // 🔥 新增
+    @IPrefetchService private prefetchService: PrefetchService
   ) {
     super();
   }
@@ -25,10 +25,8 @@ export class InitFirstScreenDataJob extends AbstractJob<PageLifecycle> {
 
     switch (phase) {
       case PageLifecycle.Open:
-
         break;
       case PageLifecycle.LoadComponentLogicAndPrefetch:
-
         break;
       case PageLifecycle.Prepare:
         break;

@@ -309,9 +309,7 @@ export class ComponentService {
   private strategies: any[] = [];
 
   // 并发控制
-  private readonly MODEL_CONCURRENCY = 5;  // Model 并发数（双队列模式）
-  private readonly VIEW_CONCURRENCY = 3;   // View 并发数（双队列模式）
-  private readonly TOTAL_CONCURRENCY = 6;  // 统一队列总并发数
+  private readonly TOTAL_CONCURRENCY = 6;
 
   /**
    * 注册异步组件（支持分离加载）
@@ -545,83 +543,7 @@ export class ComponentService {
     });
   }
 
-  /**
-   * 处理队列（带并发控制）
-   * 使用 Promise.race 实现 "完成一个，补充一个"
-   */
-  private async processQueue(
-    queue: Array<() => Promise<void>>,
-    concurrency: number
-  ): Promise<void> {
-    // 正在执行的任务列表
-    const executing: Promise<void>[] = [];
 
-    // 遍历所有任务
-    for (const task of queue) {
-      // 1. 创建任务 Promise
-      // 任务完成后，从 executing 列表中移除自己
-      const promise = task().then(() => {
-        const index = executing.indexOf(promise);
-        if (index !== -1) {
-          executing.splice(index, 1);
-        }
-      });
-
-      // 2. 加入执行列表
-      executing.push(promise);
-
-      // 3. 如果达到并发限制，等待任意一个任务完成
-      if (executing.length >= concurrency) {
-        await Promise.race(executing);
-      }
-    }
-
-    // 4. 等待剩余所有任务完成
-    await Promise.all(executing);
-  }
-
-  /**
-   * 处理统一队列（带并发控制和分类收集）
-   * Model 和 View 任务在同一队列，但分别收集 Promise
-   */
-  private async processUnifiedQueue(
-    tasks: Array<{ type: 'model' | 'view'; componentName: string; execute: () => Promise<any> }>,
-    concurrency: number,
-    result: { modelPromises: Map<string, Promise<any>>; viewPromises: Map<string, Promise<any>> }
-  ): Promise<void> {
-    const executing: Promise<void>[] = [];
-
-    for (const task of tasks) {
-      // 🔥 关键：启动任务时就收集 Promise
-      const loaderPromise = task.execute();
-
-      // 根据任务类型，将 loader Promise 存入对应容器
-      if (task.type === 'model') {
-        result.modelPromises.set(task.componentName, loaderPromise);
-      } else {
-        result.viewPromises.set(task.componentName, loaderPromise);
-      }
-
-      // 包装为 void Promise 用于并发控制
-      const promise = loaderPromise.then(() => {
-        // 从执行列表移除
-        const index = executing.indexOf(promise);
-        if (index !== -1) {
-          executing.splice(index, 1);
-        }
-      });
-
-      executing.push(promise);
-
-      // 并发控制
-      if (executing.length >= concurrency) {
-        await Promise.race(executing);
-      }
-    }
-
-    // 等待所有任务完成
-    await Promise.all(executing);
-  }
 
   /**
    * 处理 Promise 队列（带并发控制）

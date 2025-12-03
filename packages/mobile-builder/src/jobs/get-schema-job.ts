@@ -19,7 +19,7 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
 
     @ISchemaService private schemaService: SchemaService,
     @IComponentService private componentService: ComponentService,
-    @IPrefetchService private prefetchService: PrefetchService  // 🔥 新增
+    @IPrefetchService private prefetchService: PrefetchService
   ) {
     super();
   }

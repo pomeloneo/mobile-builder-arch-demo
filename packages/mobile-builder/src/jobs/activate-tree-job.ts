@@ -27,12 +27,10 @@ export class ActivateTreeJob extends AbstractJob<PageLifecycle> {
       case PageLifecycle.Open:
         break;
       case PageLifecycle.LoadComponentLogicAndPrefetch:
-
         break;
       case PageLifecycle.Prepare:
         break;
       case PageLifecycle.RenderReady:
-
         break;
       case PageLifecycle.Render:
         this._whenRender();
@@ -48,7 +46,7 @@ export class ActivateTreeJob extends AbstractJob<PageLifecycle> {
     const modelTree = this.componentService.getModelTree();
     if (!modelTree) return;
 
-    // 激活整个组件树（上报埋点、启动定时器等）
+    // TODO：这是当前是激活的整棵逻辑树，应该激活首屏逻辑树（上报埋点、启动定时器等）
     modelTree.activate();
   }
 }

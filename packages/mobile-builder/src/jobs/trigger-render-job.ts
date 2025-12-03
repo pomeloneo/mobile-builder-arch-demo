@@ -15,7 +15,7 @@ export class TriggerRenderJob extends AbstractJob<PageLifecycle> {
   protected _name = 'TriggerRender';
 
   constructor(
-    private setModelTree: (model: BaseComponentModel | null) => void,  // 🔥 注入回调
+    private setModelTree: (model: BaseComponentModel | null) => void,
     @IComponentService private componentService: ComponentService,
 
   ) {
