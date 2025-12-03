@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
 
   // Base public path - adjust for deployment (e.g., '/app/' for subdirectory deployment)
-  base: '/',
+  base: './',
 
   resolve: {
     alias: {
@@ -33,7 +33,6 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true, // Remove console.log in production
         drop_debugger: true,
       },
     },
