@@ -49,6 +49,7 @@ export class ActivateTreeJob extends AbstractJob<PageLifecycle> {
 
     // 全部加载完成，激活的整棵逻辑树
     modelTree.activate();
+    console.log('====================modelTree', modelTree)
   }
 }
 

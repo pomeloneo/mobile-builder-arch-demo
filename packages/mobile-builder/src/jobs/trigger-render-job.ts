@@ -4,6 +4,7 @@ import { PageLifecycle } from './lifecycle';
 import type { ComponentService } from '../services/component.service';
 import { IComponentService } from '@/services';
 import { BaseComponentModel } from '../bedrock/model/model';
+import { Barrier } from '@/bedrock/async';
 
 /**
  * Job: 触发渲染
@@ -13,6 +14,7 @@ import { BaseComponentModel } from '../bedrock/model/model';
  */
 export class TriggerRenderJob extends AbstractJob<PageLifecycle> {
   protected _name = 'TriggerRender';
+  private _renderBarrier = new Barrier();
 
   constructor(
     private setModelTree: (model: BaseComponentModel | null) => void,
@@ -22,26 +24,30 @@ export class TriggerRenderJob extends AbstractJob<PageLifecycle> {
     super();
   }
 
-  protected _executePhase(phase: PageLifecycle) {
+  protected async _executePhase(phase: PageLifecycle) {
     switch (phase) {
       case PageLifecycle.Render:
-        this._whenRender();
+        await this._whenRender();
         break;
       default:
         break;
     }
   }
 
-  private _whenRender() {
+  private async _whenRender() {
+    this._setBarrier(PageLifecycle.Render, this._renderBarrier);
     const modelTree = this.componentService.getModelTree();
 
     console.log('[TriggerRenderJob] 触发渲染，modelTree:', modelTree?.id);
     console.log('==============首屏内容开始渲染============')
-    console.time('==============首屏内容渲染完成============')
 
     // 🔥 在 Job 内部触发渲染
+    const getFirstScreenModelTree = this.componentService.getFirstScreenModelTree()
+    console.log('==============getFirstScreenModelTree', getFirstScreenModelTree)
+    getFirstScreenModelTree?.init()
     this.setModelTree(modelTree);
     console.log('==========================首屏可以交互了==========');
     console.timeEnd('==========================首屏 TTI 完成时间==========');
+    this._renderBarrier.open();
   }
 }

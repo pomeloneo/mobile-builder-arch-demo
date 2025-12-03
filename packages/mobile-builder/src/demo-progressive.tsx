@@ -78,10 +78,7 @@ function makeJobScheduler(
   jobScheduler.registerJob(PageLifecycle.LoadComponentLogicAndPrefetch, LoadComponentsJob);
   jobScheduler.registerJob(PageLifecycle.Prepare, BuildTreeJob);
   jobScheduler.registerJob(PageLifecycle.RenderReady, EnsureViewReadyJob);
-  // 🔥 Render 阶段：触发渲染 + 激活组件树
   jobScheduler.registerJob(PageLifecycle.Render, TriggerRenderJob, setModelTree);
-
-  // Completed 阶段：数据初始化
   jobScheduler.registerJob(PageLifecycle.Completed, InitFirstScreenDataJob);
   jobScheduler.registerJob(PageLifecycle.Idle, ActivateTreeJob);
 
