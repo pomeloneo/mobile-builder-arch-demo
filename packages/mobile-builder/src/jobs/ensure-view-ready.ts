@@ -57,6 +57,15 @@ export class EnsureViewReadyJob extends AbstractJob<PageLifecycle> {
     console.timeEnd('==================首屏接口数据预加载完成============');
     await this.componentService.getViewsReady()
     console.timeEnd('==================远端拉取所有组件相关资源完成 - View');
+
+    console.log('==========================首屏 model 初始化开始=============');
+    console.time('==========================首屏 model 初始化完成');
+    const getFirstScreenModelTree = this.componentService.getFirstScreenModelTree()
+    console.log('==============getFirstScreenModelTree', getFirstScreenModelTree)
+    await getFirstScreenModelTree?.init()
+    console.log('==========================首屏 model 初始化完成=============');
+    console.timeEnd('==========================首屏 model 初始化完成');
+    console.log('==========================首屏组件渲染工作完全准备完成=============');
     this._loadResouseBarrier.open()
   }
 }

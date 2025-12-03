@@ -715,4 +715,55 @@ export class ComponentService {
     return this._modelTree;
   }
 
+  /**
+   * 获取首屏 Model Tree
+   * 递归查找 TabsContainer,返回其当前激活的 Tab
+   * 如果没有 TabsContainer,返回整个 Model Tree
+   */
+  public getFirstScreenModelTree(): BaseComponentModel | null {
+    if (!this._modelTree) {
+      return null;
+    }
+
+    // 递归查找首屏节点
+    return this._findFirstScreenNode(this._modelTree);
+  }
+
+  /**
+   * 递归查找首屏节点
+   * @param node 当前节点
+   * @returns 首屏节点
+   */
+  private _findFirstScreenNode(node: BaseComponentModel): BaseComponentModel {
+    // 检查当前节点是否是 TabsContainer
+    // 通过检查是否有 activeIndex 和 activeTab 属性来判断
+    if ('activeIndex' in node && 'activeTab' in node) {
+      const tabsContainer = node as any;
+      const activeTab = tabsContainer.activeTab;
+
+      if (activeTab) {
+        console.log(`[ComponentService] Found TabsContainer, activeIndex: ${tabsContainer.activeIndex}`);
+        return activeTab;
+      }
+    }
+
+    // 如果是容器组件，递归检查所有子节点，找到第一个 TabsContainer
+    if (node instanceof BaseContainerModel && node.children.length > 0) {
+      // 优先查找子节点中是否有 TabsContainer
+      for (const child of node.children) {
+        if ('activeIndex' in child && 'activeTab' in child) {
+          // 找到 TabsContainer，递归处理
+          return this._findFirstScreenNode(child);
+        }
+      }
+
+      // 如果没有找到 TabsContainer，说明这是普通容器（如最外层的 Root）
+      // 返回当前节点本身，而不是其子节点
+      return node;
+    }
+
+    // 否则返回当前节点
+    return node;
+  }
+
 }

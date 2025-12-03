@@ -33,20 +33,21 @@ export class ActivateTreeJob extends AbstractJob<PageLifecycle> {
       case PageLifecycle.RenderReady:
         break;
       case PageLifecycle.Render:
-        this._whenRender();
+
         break;
       case PageLifecycle.Idle:
+        this._whenIdle();
         break;
       default:
         break;
     }
   }
 
-  private async _whenRender() {
+  private async _whenIdle() {
     const modelTree = this.componentService.getModelTree();
     if (!modelTree) return;
 
-    // TODO：这是当前是激活的整棵逻辑树，应该激活首屏逻辑树（上报埋点、启动定时器等）
+    // 全部加载完成，激活的整棵逻辑树
     modelTree.activate();
   }
 }

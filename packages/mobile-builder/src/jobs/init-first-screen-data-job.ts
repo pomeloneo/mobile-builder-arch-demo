@@ -62,6 +62,7 @@ export class InitFirstScreenDataJob extends AbstractJob<PageLifecycle> {
     console.log('==========================首 tab 但非首屏组件接口相关数据拉取完成=============');
     console.timeEnd('==========================首 tab 但非首屏组件接口相关数据拉取完成');
     console.log('==========================首 tab 可以交互了=============');
+
     this._renderCompletedBarrier.open();
 
   }
