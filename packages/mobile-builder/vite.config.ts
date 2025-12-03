@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
 
     // Base public path - adjust for deployment
     // Use CDN_URL environment variable if available, otherwise fallback to relative path
-    base: env.CDN_OUTER_SG || CDN_URL || './',
+    base: `https://${env.CDN_OUTER_SG}` || './',
 
     resolve: {
       alias: {
