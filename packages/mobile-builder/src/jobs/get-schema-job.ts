@@ -98,7 +98,7 @@ export class GetSchemaJob extends AbstractJob<PageLifecycle> {
       view: () => import('../components/tabs-container').then(m => m.TabsContainerView),
     }, { priority: 'critical', delayRange: [100, 500] });
 
-    this.componentService.registerAsync('ProductList', {
+    this.componentService.registerAsync('SimpleList', {
       model: () => import('../components/simple-list').then(m => m.SimpleListModel),
       view: () => import('../components/simple-list').then(m => m.SimpleListView),
     }, { priority: 'high', delayRange: [150, 600] });

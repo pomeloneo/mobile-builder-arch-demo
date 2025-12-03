@@ -41,11 +41,15 @@ export class TriggerRenderJob extends AbstractJob<PageLifecycle> {
     console.log('[TriggerRenderJob] 触发渲染，modelTree:', modelTree?.id);
     console.log('==============首屏内容开始渲染============')
 
-    // 🔥 在 Job 内部触发渲染
+    //在 Job 内部触发渲染
     const getFirstScreenModelTree = this.componentService.getFirstScreenModelTree()
-    console.log('==============getFirstScreenModelTree', getFirstScreenModelTree)
-    getFirstScreenModelTree?.init()
+
+    // 初始化首屏 Model Tree（不阻塞渲染）
+    getFirstScreenModelTree?.init();
+
+    // 触发 React 渲染
     this.setModelTree(modelTree);
+
     console.log('==========================首屏可以交互了==========');
     console.timeEnd('==========================首屏 TTI 完成时间==========');
     this._renderBarrier.open();

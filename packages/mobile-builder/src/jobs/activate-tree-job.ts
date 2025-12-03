@@ -49,6 +49,8 @@ export class ActivateTreeJob extends AbstractJob<PageLifecycle> {
 
     // 全部加载完成，激活的整棵逻辑树
     modelTree.activate();
+    // 有可能根节点没有执行 init，这里补上，后面将 TabsContainer 设置 RootPage 类似这样的组件，就不用补这个 root.init
+    modelTree.init();
     console.log('====================modelTree', modelTree)
   }
 }

@@ -51,14 +51,23 @@ export class InitFirstScreenDataJob extends AbstractJob<PageLifecycle> {
 
     const rootModel = this.componentService.getModelTree();
     if (!rootModel) {
-      console.warn('rootModel 不存在');
       this._renderCompletedBarrier.open();
       return;
     }
 
     console.log('==========================首 tab 但非首屏组件接口相关数据拉取开始=============');
     console.time('==========================首 tab 但非首屏组件接口相关数据拉取完成');
-    await rootModel.init()
+
+    // 粗暴查找，如果是 TabsContainer，并发初始化所有其他 Tab
+    // 后面正式实现应该将 TabsContainer 内置到运行时，通过 componentService 去管理控制
+    if ('prewarmOtherTabs' in rootModel && typeof (rootModel as any).prewarmOtherTabs === 'function') {
+      console.log('[InitFirstScreenDataJob] 开始预热其他 Tab...');
+      await (rootModel as any).prewarmOtherTabs();
+    } else {
+      // 如果不是 TabsContainer，初始化整棵树
+      await rootModel.init();
+    }
+
     console.log('==========================首 tab 但非首屏组件接口相关数据拉取完成=============');
     console.timeEnd('==========================首 tab 但非首屏组件接口相关数据拉取完成');
     console.log('==========================首 tab 可以交互了=============');

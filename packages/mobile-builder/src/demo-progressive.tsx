@@ -92,6 +92,7 @@ async function driveJobScheduler(
   jobScheduler: JobScheduler<PageLifecycle>,
   setLifecycle: (cycle: PageLifecycle) => void,
 ) {
+  console.time('====================驱动生命周期调度总耗时=====')
 
   // const debouncedFunc = debounce((c: PageLifecycle) => {
   //   setLifecycle(c);
@@ -178,8 +179,12 @@ async function driveJobScheduler(
   console.log('%c==========================Idle 阶段完成==========', 'color: #7cebf3ff; font-weight: bold;');
   console.timeEnd('==========================Idle 阶段耗时');
 
+  console.timeEnd('====================驱动生命周期调度总耗时=====')
+
   console.log('==========================应用初始化完成==========');
   console.timeEnd('==========================应用完全可以 TTI 的完成时间==========');
+
+
 
 }
 
@@ -229,12 +234,12 @@ function useLaunch() {
   const bootstrap = useCallback(() => {
     'background-only';
     console.log('====================开始驱动生命周期调度=====')
-    console.time('====================驱动生命周期调度总耗时=====')
+
     driveJobScheduler(jobScheduler.current!, setLifecycle).catch((err) => {
       console.error('Page init failure:', err);
       setPanic(true);
     }).finally(() => {
-      console.timeEnd('====================驱动生命周期调度总耗时=====')
+
     });
   }, [setPanic]);
 

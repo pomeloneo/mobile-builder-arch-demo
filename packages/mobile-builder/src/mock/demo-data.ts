@@ -25,7 +25,7 @@ export const pageSchema: PageSchema = {
     children: [
       // Tab 1: 混合高度组件（文本卡片 + 商品卡片 + 增强版商品卡片）
       {
-        type: 'ProductList',
+        type: 'SimpleList',
         id: 'tab-1-list',
         props: {},
         children: Array.from({ length: 20 }, (_, i) => {
@@ -75,7 +75,7 @@ export const pageSchema: PageSchema = {
 
       // Tab 2: 嵌套容器 - 实验容器根据实验信息动态渲染
       {
-        type: 'ProductList',
+        type: 'SimpleList',
         id: 'tab-2-list',
         props: {},
         children: Array.from({ length: 30 }, (_, i) => {
@@ -128,7 +128,7 @@ export const pageSchema: PageSchema = {
 
       // Tab 3: 大量混合组件（测试虚拟滚动性能）
       {
-        type: 'ProductList',
+        type: 'SimpleList',
         id: 'tab-3-list',
         props: {},
         children: Array.from({ length: 100 }, (_, i) => {
@@ -171,7 +171,7 @@ export const pageSchema: PageSchema = {
 
       // Tab 4: 深度嵌套容器（展示容器嵌套能力）
       {
-        type: 'ProductList',
+        type: 'SimpleList',
         id: 'tab-4-list',
         props: {},
         children: [
