@@ -11,7 +11,7 @@ export enum PageLifecycle {
   Render = "启动渲染",
   // 视图数据填充阶段，暂时叫 completed，更多的是指 render 完成
   // 因为现在是渐进式渲染方案，如果要首屏直出，这个任务换到 renderReady 阶段就行了
-  Completed = "首屏视图数据填充中...",
+  Completed = "非首屏 Tab 视图数据填充中...",
   // 空闲阶段，处理闲时任务
   Idle = "处于空闲空闲空闲空闲空闲阶段",
 }
