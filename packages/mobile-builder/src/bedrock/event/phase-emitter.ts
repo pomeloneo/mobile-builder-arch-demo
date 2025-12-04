@@ -107,7 +107,6 @@ interface IPhaseEmitterConfig<T> {
  *   onPhaseChange = this.phaseEmitter.event;
  * }
  * ```
- * 有问题联系基建侧同学。
  */
 export class PhaseEmitter<T, K extends T = T> {
   private _globalEmitter?: Emitter<[T]>;

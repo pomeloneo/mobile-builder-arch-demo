@@ -207,10 +207,6 @@ export class RefCountedDisposable<T extends IDisposable> implements IDisposable 
  *   }
  * }
  *
- * 注意：
- * 不同于C++中的unique_ptr，该class只作用于转移场景。
- * 所以class理论上只在栈上出现，不应该在堆上存在。
- * 如果出现了需要在堆上存储的场景，可以联系架构侧
  */
 export class TransferDisposable<T extends IDisposable> extends Disposable {
   private _val?: T;
