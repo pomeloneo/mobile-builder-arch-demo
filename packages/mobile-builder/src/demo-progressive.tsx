@@ -14,7 +14,7 @@ import { PageLifecycle, LoadComponentsJob, BuildTreeJob, InitFirstScreenDataJob,
 import { SchemaService } from './services/schema.service';
 import { PrefetchService } from './services/prefetch.service';
 import { GetSchemaJob } from './jobs/get-schema-job';
-import { debounce } from './bedrock/function/debounce';
+import { IEventBus, EventBus } from './bedrock/event';
 import './demo.css';
 
 
@@ -209,6 +209,7 @@ function makeContainerService() {
   ]));
   registry.register(IComponentService, ComponentService);
   registry.register(IPrefetchService, PrefetchService);
+  registry.register(IEventBus, EventBus);  // 🔥 注册 EventBus 服务
 
   const instantiationService = new InstantiationService(registry.makeCollection());
 

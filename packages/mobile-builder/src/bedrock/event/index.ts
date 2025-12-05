@@ -32,3 +32,6 @@ export { asyncUnexpectedError } from './error-handler';
 export { syncUnexpectedError } from './error-handler';
 // 忽略错误
 export { ignoreUnexpectedError } from './error-handler';
+
+// EventBus 服务（类型安全的跨组件事件通信）
+export { EventBus, IEventBus, type IEventClass } from './event-bus';

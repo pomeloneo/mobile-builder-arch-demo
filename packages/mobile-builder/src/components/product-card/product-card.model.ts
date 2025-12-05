@@ -3,6 +3,8 @@ import { IHttpService, ITrackerService, IPrefetchService } from '../../services/
 import type { HttpService } from '../../services/http.service';
 import type { TrackerService } from '../../services/tracker.service';
 import type { PrefetchService } from '../../services/prefetch.service';
+import { IEventBus, type IEventBus as IEventBusType } from '../../bedrock/event';
+import { makeProductClickEvent } from '../../events';
 
 /**
  * 商品数据
@@ -36,9 +38,10 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
     props: ProductCardProps,
     @IHttpService private http: HttpService,
     @ITrackerService private tracker: TrackerService,
-    @IPrefetchService prefetchService: PrefetchService  // 🔥 新增
+    @IPrefetchService prefetchService: PrefetchService,
+    @IEventBus private eventBus: IEventBusType  // 🔥 注入 EventBus
   ) {
-    super(id, props, prefetchService);  // 🔥 传递给基类
+    super(id, props, prefetchService);
   }
 
   /**
@@ -112,7 +115,12 @@ export class ProductCardModel extends BaseComponentModel<ProductCardProps> {
       productName: this.data.name,
     });
 
-    // 这里可以触发导航等操作
+    // 通过 EventBus 发布事件，通知其他组件
+    this.eventBus.publish(makeProductClickEvent({
+      productId: this.data.id,
+      productName: this.data.name,
+    }));
+
     console.log(`[ProductCard] Clicked: ${this.data.name}`);
   }
 
