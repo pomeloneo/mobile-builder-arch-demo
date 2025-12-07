@@ -146,7 +146,7 @@ export class SharedMutex {
   public unLockShared(): void {
     lvAssertNotNil(this._reader);
     if (this._writer) {
-      // TODO(niurouwan): 暂时保留，方便验证，稳定后可以去掉
+
       lvAssert(this._writer.status === CapabilityStatus.Unlocked);
     }
 
