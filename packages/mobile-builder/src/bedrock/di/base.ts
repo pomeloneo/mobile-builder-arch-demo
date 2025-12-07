@@ -65,7 +65,6 @@ export function createDecorator<T>(serviceId: string): ServiceIdentifier<T> {
   return id;
 }
 
-// TODO(niurouwan): 补一下注释和例子
 export function refineServiceDecorator<T1, T extends T1>(
   serviceIdentifier: ServiceIdentifier<T1>,
 ): ServiceIdentifier<T> {
